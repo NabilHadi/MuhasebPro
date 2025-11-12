@@ -1,0 +1,157 @@
+/* Animated Gradient Background */
+.animated-gradient-bg {
+  background: linear-gradient(
+    -45deg,
+    #1e40af,
+    #1d4484,
+    #24548f,
+    #1e3a8a
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Floating Circles Base Style */
+.floating-circle {
+  position: absolute;
+  border-radius: 70%;
+  pointer-events: none;
+  background: white;
+  opacity: 0.1;
+  z-index: 1;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Circle 1 - Top Left */
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  background: white;
+  top: -50px;
+  right: -50px;
+  animation-delay: 0s;
+}
+
+/* Circle 2 - Bottom Right */
+.circle-2 {
+  width: 200px;
+  height: 200px;
+  bottom: 50px;
+  right: 100px;
+  animation-delay: 2s;
+}
+
+/* Circle 3 - Center */
+.circle-3 {
+  width: 250px;
+  height: 250px;
+  bottom: -100px;
+  left: 50px;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(30px) translateX(20px);
+  }
+}
+
+/* Float animations */
+@keyframes float1 {
+  0% {
+    top: -100px;
+    left: -100px;
+  }
+  25% {
+    top: 50px;
+    left: 100px;
+  }
+  50% {
+    top: 200px;
+    left: -50px;
+  }
+  75% {
+    top: 100px;
+    left: 150px;
+  }
+  100% {
+    top: -100px;
+    left: -100px;
+  }
+}
+
+@keyframes float2 {
+  0% {
+    bottom: -100px;
+    right: -100px;
+  }
+  25% {
+    bottom: 100px;
+    right: 50px;
+  }
+  50% {
+    bottom: -50px;
+    right: 200px;
+  }
+  75% {
+    bottom: 150px;
+    right: 100px;
+  }
+  100% {
+    bottom: -100px;
+    right: -100px;
+  }
+}
+
+@keyframes float3 {
+  0% {
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  33% {
+    top: 30%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
+  66% {
+    top: 40%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
+  100% {
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Ensure content appears above animations */
+.animated-gradient-bg > *:not(.floating-circle) {
+  position: relative;
+  z-index: 10;
+}

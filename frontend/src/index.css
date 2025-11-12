@@ -1,0 +1,233 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  direction: rtl;
+  text-align: right;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: Cairo, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.bg-color {
+  background: #2c3e50;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition;
+}
+
+.btn-danger {
+  @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold;
+}
+
+.btn-success {
+  @apply px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold;
+}
+
+.btn-sm {
+  @apply px-2 py-1 text-sm rounded transition;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-lg rounded-lg transition;
+}
+
+/* ==================== CARDS & CONTAINERS ==================== */
+.card {
+  @apply bg-white rounded-lg shadow p-6;
+}
+
+.card-header {
+  @apply border-b border-gray-200 pb-4 mb-4;
+}
+
+.card-footer {
+  @apply border-t border-gray-200 pt-4 mt-4;
+}
+
+/* ==================== FORM ELEMENTS ==================== */
+.input-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition;
+}
+
+.input-field:disabled {
+  @apply bg-gray-100 cursor-not-allowed;
+}
+
+.textarea-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.label-field {
+  @apply block text-gray-700 font-semibold mb-2;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+/* ==================== TABLES ==================== */
+.table-header {
+  @apply bg-gray-100 border-b border-gray-300 font-semibold;
+}
+
+.table-row {
+  @apply border-b border-gray-200 hover:bg-gray-50 transition;
+}
+
+.table-cell {
+  @apply px-4 py-3;
+}
+
+/* ==================== BADGES & TAGS ==================== */
+.badge {
+  @apply inline-block px-3 py-1 rounded-full text-sm font-semibold;
+}
+
+.badge-primary {
+  @apply badge bg-blue-100 text-blue-800;
+}
+
+.badge-success {
+  @apply badge bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply badge bg-yellow-100 text-yellow-800;
+}
+
+.badge-danger {
+  @apply badge bg-red-100 text-red-800;
+}
+
+/* ==================== TEXT UTILITIES ==================== */
+.text-truncate {
+  @apply truncate;
+}
+
+.text-center-ar {
+  @apply text-center;
+}
+
+.font-bold-ar {
+  @apply font-bold;
+}
+
+/* ==================== ALERTS ==================== */
+.alert {
+  @apply px-4 py-3 rounded-lg border;
+}
+
+.alert-info {
+  @apply alert bg-blue-50 border-blue-300 text-blue-700;
+}
+
+.alert-success {
+  @apply alert bg-green-50 border-green-300 text-green-700;
+}
+
+.alert-warning {
+  @apply alert bg-yellow-50 border-yellow-300 text-yellow-700;
+}
+
+.alert-danger {
+  @apply alert bg-red-50 border-red-300 text-red-700;
+}
+
+/* ==================== SPACING ==================== */
+.section-spacing {
+  @apply py-8 px-6;
+}
+
+.gap-section {
+  @apply gap-4;
+}
+
+/* ==================== SHADOWS ==================== */
+.shadow-sm-custom {
+  @apply shadow-sm;
+}
+
+.shadow-lg-custom {
+  @apply shadow-lg;
+}
+
+/* ==================== GRID & FLEX ==================== */
+.grid-cols-responsive {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.flex-center {
+  @apply flex items-center justify-center;
+}
+
+.flex-between {
+  @apply flex items-center justify-between;
+}
+
+/* ==================== TAB BAR ==================== */
+.tab-bar {
+  @apply bg-white border-b border-gray-200 py-0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tabs-container {
+  @apply flex items-center gap-1 overflow-x-auto;
+}
+
+.tab {
+  @apply flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-600 border-b-2 border-transparent cursor-pointer transition-all hover:text-gray-800 whitespace-nowrap;
+  min-width: fit-content;
+  max-width: 200px;
+}
+
+.tab-inactive {
+  @apply text-gray-500 hover:bg-gray-50;
+}
+
+.tab-active {
+  @apply text-blue-600 border-b-blue-600 bg-blue-50;
+}
+
+.tab-icon {
+  @apply text-lg;
+}
+
+.tab-title {
+  @apply truncate flex-1;
+}
+
+.tab-close {
+  @apply ml-2 px-1 py-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.tab-close:hover {
+  @apply text-red-600 bg-red-50;
+}
+
+.tab-empty {
+  @apply flex items-center justify-center w-full py-4 text-gray-400;
+}
