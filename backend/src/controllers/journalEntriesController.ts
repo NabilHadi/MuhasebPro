@@ -186,12 +186,13 @@ export const updateJournalEntry = async (id: string | number, data: {
   }
 };
 
-export const deleteJournalEntry = async (id: string | number) => {
+export const reverseJournalEntry = async (id: string | number) => {
   const connection = await getConnection();
+
   try {
     // Check if entry exists
     const [entry]: any = await connection.execute(
-      'SELECT id FROM journal_entries WHERE id = ?',
+      'SELECT * FROM journal_entries WHERE id = ?',
       [id]
     );
 
@@ -199,17 +200,64 @@ export const deleteJournalEntry = async (id: string | number) => {
       throw new Error('القيد غير موجود');
     }
 
+    const original = entry[0];
+
+    if (original.is_void) {
+      throw new Error('هذا القيد تم إلغاؤه بالفعل');
+    }
+
     await connection.beginTransaction();
 
-    // Delete lines
-    await connection.execute('DELETE FROM journal_lines WHERE journal_entry_id = ?', [id]);
+    // Create the reversal journal entry
+    const [result]: any = await connection.execute(
+      `INSERT INTO journal_entries 
+        (date, description, reference, status, is_void, reversed_of, created_at)
+       VALUES (NOW(), ?, CONCAT(?, '-REV'), 'Posted', FALSE, ?, NOW())`,
+      [`عكس القيد رقم ${id}`, original.reference || id, id]
+    );
 
-    // Delete main entry
-    await connection.execute('DELETE FROM journal_entries WHERE id = ?', [id]);
+    const newJournalId = result.insertId;
+
+    // Reverse the journal lines (swap debit and credit)
+    const [lines]: any = await connection.execute(
+      'SELECT * FROM journal_lines WHERE journal_entry_id = ?',
+      [id]
+    );
+
+    if (lines.length === 0) {
+      throw new Error('لا يوجد تفاصيل لهذا القيد');
+    }
+
+    for (const line of lines) {
+      await connection.execute(
+        `INSERT INTO journal_lines 
+           (journal_entry_id, account_id, debit, credit, description)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          newJournalId,
+          line.account_id,
+          line.credit, // swapped
+          line.debit,  // swapped
+          `عكس السطر من القيد رقم ${id}`,
+        ]
+      );
+    }
+
+    // Mark original as voided
+    await connection.execute(
+      `UPDATE journal_entries 
+       SET is_void = TRUE, status = 'Voided' 
+       WHERE id = ?`,
+      [id]
+    );
 
     await connection.commit();
 
-    return { message: 'تم حذف القيد بنجاح' };
+    return {
+      message: 'تم إنشاء قيد عكسي بنجاح',
+      original_id: id,
+      reversal_id: newJournalId,
+    };
   } catch (error) {
     await connection.rollback();
     throw error;

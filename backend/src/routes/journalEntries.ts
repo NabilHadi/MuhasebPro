@@ -57,17 +57,17 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// حذف قيد محاسبي
-router.delete('/:id', async (req: Request, res: Response) => {
+// عكس قيد محاسبي (بدلاً من الحذف)
+router.post('/:id/reverse', async (req: Request, res: Response) => {
   try {
-    const result = await journalEntriesController.deleteJournalEntry(req.params.id);
+    const result = await journalEntriesController.reverseJournalEntry(req.params.id);
     res.json(result);
   } catch (error: any) {
-    console.error('خطأ في حذف القيد:', error);
+    console.error('خطأ في عكس القيد:', error);
     if (error.message.includes('غير موجود')) {
       return res.status(404).json({ message: error.message });
     }
-    res.status(500).json({ message: error.message || 'خطأ في السيرفر' });
+    res.status(400).json({ message: error.message || 'خطأ في السيرفر' });
   }
 });
 

@@ -61,6 +61,10 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     date DATE NOT NULL,
     description VARCHAR(255),
     reference VARCHAR(50),
+    is_void BOOLEAN DEFAULT FALSE,
+    status ENUM('draft', 'posted', 'voided') DEFAULT 'draft',
+    reversed_of INT DEFAULT NULL,
+    FOREIGN KEY (reversed_of) REFERENCES journal_entries(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -218,18 +218,18 @@ export default function JournalEntries() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا القيد؟')) {
+    if (!window.confirm('هل أنت متأكد من عكس هذا القيد؟ سيتم إنشاء قيد معاكس بدلاً من الحذف.')) {
       return;
     }
 
     try {
       setError('');
-      await apiClient.delete(`/journal-entries/${id}`);
-      setSuccess('تم حذف القيد بنجاح');
+      await apiClient.post(`/journal-entries/${id}/reverse`);
+      setSuccess('تم عكس القيد بنجاح - تم إنشاء قيد معاكس');
       setViewingEntry(null);
       fetchEntries();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'فشل حذف القيد');
+      setError(err.response?.data?.message || 'فشل عكس القيد');
     }
   };
 

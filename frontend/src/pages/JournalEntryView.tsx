@@ -100,7 +100,7 @@ export default function JournalEntryView({ viewingEntry, onClose, onEdit, onDele
             تعديل
           </button>
           <button onClick={() => onDelete(viewingEntry.id)} className="btn-danger">
-            حذف
+            عكس
           </button>
         </div>
       </div>
