@@ -124,32 +124,37 @@ CREATE TABLE IF NOT EXISTS customers (
   FOREIGN KEY (account_receivable_id) REFERENCES chart_of_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS units_of_measure (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name_ar VARCHAR(100) NOT NULL,             -- Arabic name (e.g. "قطعة", "كرتون", "لتر")
+  name_en VARCHAR(100),                      -- English name (optional)
+  short_name VARCHAR(20),                    -- Abbreviation (e.g. "pcs", "ctn", "L")
+  category VARCHAR(100) DEFAULT 'General',   -- For grouping (e.g. Weight, Length, Volume)
+  ratio_to_base DECIMAL(15,6) DEFAULT 1.000000,  -- Conversion factor to base unit (e.g. 1 box = 12 pcs)
+  is_base BOOLEAN DEFAULT FALSE,             -- Marks the base unit in that category
+  is_active BOOLEAN DEFAULT TRUE,            -- Soft delete flag
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_code VARCHAR(50) UNIQUE,                -- SKU or internal code
-    product_name_ar VARCHAR(255) NOT NULL,          -- Arabic name
-    product_name_en VARCHAR(255),                   -- English name
-    category_id INT DEFAULT NULL,                   -- For grouping (e.g. Electronics)
-    unit_of_measure VARCHAR(50) DEFAULT 'وحدة',    -- e.g. قطعة / كرتون
-    product_type ENUM('Stockable', 'Service', 'Consumable') DEFAULT 'Stockable',
-    track_inventory BOOLEAN DEFAULT TRUE,           -- True if it affects stock
-    quantity_on_hand DECIMAL(12,2) DEFAULT 0.00,    -- Total current quantity
-    cost_price DECIMAL(12,2) DEFAULT 0.00,          -- Purchase cost
-    sale_price DECIMAL(12,2) DEFAULT 0.00,          -- Sale price
-    reorder_level DECIMAL(12,2) DEFAULT 0.00,       -- Alert when stock below this
-    warehouse_id INT DEFAULT NULL,                  -- Main storage location
-    income_account_id INT DEFAULT NULL,             -- Link to chart_of_accounts (Sales)
-    expense_account_id INT DEFAULT NULL,            -- Link to chart_of_accounts (COGS)
-    inventory_account_id INT DEFAULT NULL,          -- Link to chart_of_accounts (Inventory)
-    is_active BOOLEAN DEFAULT TRUE,                 -- Can be sold/purchased
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (income_account_id) REFERENCES chart_of_accounts(id),
-    FOREIGN KEY (expense_account_id) REFERENCES chart_of_accounts(id),
-    FOREIGN KEY (inventory_account_id) REFERENCES chart_of_accounts(id)
+
+CREATE TABLE IF NOT EXISTS products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_code VARCHAR(50) UNIQUE,
+  product_name_ar VARCHAR(255) NOT NULL,
+  product_name_en VARCHAR(255),
+  category_id INT DEFAULT NULL,
+  unit_id INT DEFAULT NULL,
+  product_type ENUM('Stockable','Service') DEFAULT 'Stockable',
+  reorder_level DECIMAL(12,2) DEFAULT 0.00,
+  is_active BOOLEAN DEFAULT TRUE,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL,
+  FOREIGN KEY (unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `product_categories` (

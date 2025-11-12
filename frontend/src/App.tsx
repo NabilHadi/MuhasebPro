@@ -14,6 +14,7 @@ import Products from './pages/Products';
 import ProductCategories from './pages/ProductCategories';
 import Warehouses from './pages/Warehouses';
 import Customers from './pages/Customers';
+import UnitsOfMeasure from './pages/UnitsOfMeasure';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -43,6 +44,7 @@ function App() {
           <Route path="sales-management" element={<SalesManagement />} />
           <Route path="products" element={<Products />} />
           <Route path="product-categories" element={<ProductCategories />} />
+          <Route path="units-of-measure" element={<UnitsOfMeasure />} />
           <Route path="warehouses" element={<Warehouses />} />
           <Route path="customers" element={<Customers />} />
           <Route path="accounts" element={<Accounts />} />

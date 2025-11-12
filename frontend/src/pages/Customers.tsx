@@ -121,8 +121,8 @@ export default function Customers() {
     setError(null);
     setSuccessMessage(null);
 
-    if (!formData.name.trim() || (!formData.email.trim() && !formData.phone.trim())) {
-      setError('الاسم والبريد الإلكتروني أو الهاتف مطلوبان');
+    if (!formData.name.trim()) {
+      setError('الاسم مطلوب');
       return;
     }
 
@@ -591,12 +591,12 @@ export default function Customers() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <button
+                          {/* <button
                             onClick={() => handleViewDetails(customer)}
                             className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm font-medium"
                           >
                             التفاصيل
-                          </button>
+                          </button> */}
                           <button
                             onClick={() => handleEdit(customer)}
                             className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition text-sm font-medium"

@@ -51,8 +51,8 @@ export const createCustomer = async (req: Request, res: Response) => {
   try {
     const { name, email, phone, address, city, country, tax_id, credit_limit, opening_balance } = req.body;
 
-    if (!name || (!email && !phone)) {
-      return res.status(400).json({ message: 'الاسم والبريد الإلكتروني أو الهاتف مطلوبان' });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'الاسم مطلوب' });
     }
 
     const connection = await getConnection();
@@ -104,8 +104,8 @@ export const updateCustomer = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, email, phone, address, city, country, tax_id, credit_limit, opening_balance } = req.body;
 
-    if (!name || (!email && !phone)) {
-      return res.status(400).json({ message: 'الاسم والبريد الإلكتروني أو الهاتف مطلوبان' });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'الاسم مطلوب' });
     }
 
     const connection = await getConnection();
