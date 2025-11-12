@@ -10,6 +10,7 @@ import Accounts from './pages/Accounts';
 import JournalEntries from './pages/JournalEntries';
 import Layout from './components/Layout';
 import SalesManagement from './pages/SalesManagement';
+import Products from './pages/Products';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -37,6 +38,7 @@ function App() {
           <Route path="purchases-management" element={<PurchasesManagement />} />
           <Route path="accounts-management" element={<AccountsManagement />} />
           <Route path="sales-management" element={<SalesManagement />} />
+          <Route path="products" element={<Products />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="journal-entries" element={<JournalEntries />} />
         </Route>
