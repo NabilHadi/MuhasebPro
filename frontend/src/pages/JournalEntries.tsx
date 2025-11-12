@@ -61,6 +61,8 @@ export default function JournalEntries() {
     try {
       setLoading(true);
       const response = await apiClient.get('/journal-entries');
+      console.log(response);
+      
       setEntries(response.data);
     } catch (err) {
       setError('فشل في جلب القيود');
@@ -187,7 +189,7 @@ export default function JournalEntries() {
 
   const handleView = async (id: number) => {
     try {
-      const response = await apiClient.get(`/journal-entries/${id}`);
+      const response = await apiClient.get(`/journal-entries/${id}`);      
       setViewingEntry(response.data);
     } catch (err) {
       setError('فشل جلب تفاصيل القيد');
