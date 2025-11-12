@@ -148,9 +148,9 @@ export const deleteProductCategory = async (id: string | number) => {
       throw new Error(`لا يمكن حذف الفئة - يوجد ${productsUsingCategory[0].count} منتج(ات) تستخدم هذه الفئة`);
     }
 
-    // Soft delete: set is_active = FALSE
+    // Hard delete: permanently remove from database
     await connection.execute(
-      'UPDATE product_categories SET is_active = FALSE WHERE id = ?',
+      'DELETE FROM product_categories WHERE id = ?',
       [id]
     );
 
