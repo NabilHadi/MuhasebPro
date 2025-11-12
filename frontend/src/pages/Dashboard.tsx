@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../services/api';
+import { useTabNavigation } from '../hooks/useTabNavigation';
 
 interface DashboardStats {
   productCount: number;
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { openTab } = useTabNavigation();
 
   useEffect(() => {
     loadStats();
@@ -84,7 +86,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-800 mb-1">القائمة الرئيسية</h1>
           <p className="text-gray-500">{formatDate(currentTime)}</p>
         </div>
-        <div className="text-left">
+        <div className="text-left w-[10rem]">
           <div className="text-3xl font-bold text-blue-600">{formatTime(currentTime)}</div>
           <p className="text-sm text-gray-500">التوقيت المحلي</p>
         </div>
@@ -95,7 +97,7 @@ export default function Dashboard() {
         {/* Products Card */}
         <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
           <div className="flex-between mb-3">
-            <div className="text-2xl">�</div>
+            <div className="text-2xl">📦</div>
             <div className="rounded-full px-3 py-1 text-xs bg-blue-100 text-blue-700">إجمالي</div>
           </div>
           <h3 className="text-sm text-gray-600 mb-1">عدد المنتجات</h3>
@@ -117,7 +119,7 @@ export default function Dashboard() {
         {/* Accounts Card */}
         <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
           <div className="flex-between mb-3">
-            <div className="text-2xl">�</div>
+            <div className="text-2xl">🏦</div>
             <div className="rounded-full px-3 py-1 text-xs bg-purple-100 text-purple-700">إجمالي</div>
           </div>
           <h3 className="text-sm text-gray-600 mb-1">عدد الحسابات</h3>
@@ -166,20 +168,40 @@ export default function Dashboard() {
           <div className="card">
             <h2 className="text-xl font-bold text-gray-800 mb-4">⚡ إجراءات سريعة</h2>
             <div className="grid grid-cols-2 gap-3">
-              <button className="btn-primary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+              <button onClick={() => openTab({
+                id: 'products-tab',
+                title: 'المنتجات',
+                path: '/products',
+                icon: '📦',
+              })} className="btn-primary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
                 <span>📦</span>
                 <span>المنتجات</span>
               </button>
-              <button className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+              <button onClick={() => openTab({
+                id: 'categories-tab',
+                title: 'الفئات',
+                path: '/product-categories',
+                icon: '🏷️',
+              })} className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
                 <span>🏷️</span>
                 <span>الفئات</span>
               </button>
-              <button className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
-                <span>�</span>
+              <button onClick={() => openTab({
+                id: 'accounts-tab',
+                title: 'الحسابات',
+                path: '/accounts',
+                icon: '🏦',
+              })} className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+                <span>🏦</span>
                 <span>الحسابات</span>
               </button>
-              <button className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
-                <span>�</span>
+              <button onClick={() => openTab({
+                id: 'journals-tab',
+                title: 'القيود',
+                path: '/journal-entries',
+                icon: '📝',
+              })} className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+                <span>📝</span>
                 <span>القيود</span>
               </button>
             </div>
