@@ -290,9 +290,9 @@ export const deleteProduct = async (id: string | number) => {
       throw new Error('المنتج غير موجود');
     }
 
-    // Hard delete: permanently remove from database
+    // Soft delete: set is_active = FALSE
     await connection.execute(
-      'DELETE FROM products WHERE id = ?',
+      'UPDATE products SET is_active = FALSE WHERE id = ?',
       [id]
     );
 
