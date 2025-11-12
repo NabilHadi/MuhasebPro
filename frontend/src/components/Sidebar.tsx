@@ -21,8 +21,9 @@ export default function Sidebar() {
     { label: 'ادارة المخزون', href: '/inventory-management', icon: '📦' },
     { label: 'ادارة المشتريات', href: '/purchases-management', icon: '📥' },
     { label: 'ادارة المبيعات', href: '/sales-management', icon: '🛒' },
+    { label: 'ادارة الحسابات', href: '/accounts-management', icon: '🏦' },
   ];
-
+  
   return (
     <aside className="w-64 bg-color text-white shadow-lg flex flex-col ">
       <div className="p-6">

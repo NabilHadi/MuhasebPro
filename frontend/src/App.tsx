@@ -5,10 +5,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import InventoryManagement from './pages/InventoryManagement';
 import PurchasesManagement from './pages/PurchasesManagement';
-import SalesManagement from './pages/SalesManagement';
+import AccountsManagement from './pages/AccountsManagement';
 import Accounts from './pages/Accounts';
 import JournalEntries from './pages/JournalEntries';
 import Layout from './components/Layout';
+import SalesManagement from './pages/SalesManagement';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -34,6 +35,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="inventory-management" element={<InventoryManagement />} />
           <Route path="purchases-management" element={<PurchasesManagement />} />
+          <Route path="accounts-management" element={<AccountsManagement />} />
           <Route path="sales-management" element={<SalesManagement />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="journal-entries" element={<JournalEntries />} />

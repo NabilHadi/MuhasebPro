@@ -1,30 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import { useTabStore } from '../store/tabStore';
-
 export default function SalesManagement() {
-  const navigate = useNavigate();
-  const { addTab } = useTabStore();
-
-  const handleOpenAccounts = () => {
-    const tabId = `accounts-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'الحسابات',
-      path: '/accounts',
-      icon: '🏦',
-    });
-    navigate('/accounts');
+  const handleOpenInvoices = () => {
+    // TODO: Add invoices logic later
   };
 
-  const handleOpenJournalEntries = () => {
-    const tabId = `journal-entries-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'القيود المحاسبية',
-      path: '/journal-entries',
-      icon: '📝',
-    });
-    navigate('/journal-entries');
+  const handleOpenCustomers = () => {
+    // TODO: Add customers logic later
   };
 
   return (
@@ -39,21 +19,25 @@ export default function SalesManagement() {
       {/* Quick Access Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
-          onClick={handleOpenAccounts}
+          onClick={handleOpenInvoices}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
-          <div className="text-4xl mb-3">🏦</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">الحسابات</h2>
-          <p className="text-gray-600 text-sm">إدارة الحسابات والمخطط المحاسبي</p>
+          <div className="text-4xl mb-3">🧾</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">الفواتير</h2>
+          <p className="text-gray-600 text-sm">إدارة الفواتير والمبيعات</p>
+          <p className='text-black mt-2'>(قريبا)</p>
+
         </button>
 
         <button
-          onClick={handleOpenJournalEntries}
+          onClick={handleOpenCustomers}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
-          <div className="text-4xl mb-3">📝</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">القيود المحاسبية</h2>
-          <p className="text-gray-600 text-sm">تسجيل والعرض القيود المحاسبية</p>
+          <div className="text-4xl mb-3">👤</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">العملاء</h2>
+          <p className="text-gray-600 text-sm">إدارة بيانات العملاء</p>
+          <p className='text-black mt-2'>(قريبا)</p>
+
         </button>
       </div>
     </div>
