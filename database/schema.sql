@@ -36,6 +36,48 @@ CREATE TABLE IF NOT EXISTS company (
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- جدول الحسابات (Chart of Accounts)
+CREATE TABLE IF NOT EXISTS chart_of_accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    account_code VARCHAR(20) UNIQUE,
+    account_name_ar VARCHAR(255) NOT NULL,
+    account_name_en VARCHAR(255),
+    account_type ENUM('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') NOT NULL,
+    normal_side ENUM('مدين', 'دائن') NOT NULL,
+    parent_id INT DEFAULT NULL,
+    is_group BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_id) REFERENCES chart_of_accounts(id) ON DELETE SET NULL,
+    INDEX idx_code (account_code),
+    INDEX idx_type (account_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- جدول القيود المحاسبية (Journal Entries)
+CREATE TABLE IF NOT EXISTS journal_entries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    date DATE NOT NULL,
+    description VARCHAR(255),
+    reference VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- جدول تفاصيل القيود (Journal Lines)
+CREATE TABLE IF NOT EXISTS journal_lines (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    journal_entry_id INT NOT NULL,
+    account_id INT NOT NULL,
+    debit DECIMAL(12,2) DEFAULT 0,
+    credit DECIMAL(12,2) DEFAULT 0,
+    FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE,
+    FOREIGN KEY (account_id) REFERENCES chart_of_accounts(id) ON DELETE RESTRICT,
+    INDEX idx_account (account_id),
+    INDEX idx_entry (journal_entry_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- جدول الموردين
 CREATE TABLE IF NOT EXISTS suppliers (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -70,23 +112,6 @@ CREATE TABLE IF NOT EXISTS customers (
   INDEX idx_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- جدول المنتجات
--- CREATE TABLE IF NOT EXISTS products (
---   id INT PRIMARY KEY AUTO_INCREMENT,
---   name VARCHAR(200) NOT NULL,
---   sku VARCHAR(100) UNIQUE NOT NULL,
---   description TEXT,
---   category VARCHAR(100),
---   buyingPrice DECIMAL(15, 2) NOT NULL,
---   sellingPrice DECIMAL(15, 2) NOT NULL,
---   quantity INT DEFAULT 0,
---   minimumStock INT DEFAULT 10,
---   maximumStock INT DEFAULT 1000,
---   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---   INDEX idx_sku (sku),
---   INDEX idx_category (category)
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -250,47 +275,6 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (roleId) REFERENCES roles(id) ON DELETE CASCADE,
   UNIQUE KEY unique_role_permission (roleId, permission)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- جدول الحسابات (Chart of Accounts)
-CREATE TABLE IF NOT EXISTS chart_of_accounts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    account_code VARCHAR(20) UNIQUE,
-    account_name_ar VARCHAR(255) NOT NULL,
-    account_name_en VARCHAR(255),
-    account_type ENUM('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') NOT NULL,
-    normal_side ENUM('مدين', 'دائن') NOT NULL,
-    parent_id INT DEFAULT NULL,
-    is_group BOOLEAN DEFAULT FALSE,
-    is_active BOOLEAN DEFAULT TRUE,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (parent_id) REFERENCES chart_of_accounts(id) ON DELETE SET NULL,
-    INDEX idx_code (account_code),
-    INDEX idx_type (account_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- جدول القيود المحاسبية (Journal Entries)
-CREATE TABLE IF NOT EXISTS journal_entries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    date DATE NOT NULL,
-    description VARCHAR(255),
-    reference VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- جدول تفاصيل القيود (Journal Lines)
-CREATE TABLE IF NOT EXISTS journal_lines (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    journal_entry_id INT NOT NULL,
-    account_id INT NOT NULL,
-    debit DECIMAL(12,2) DEFAULT 0,
-    credit DECIMAL(12,2) DEFAULT 0,
-    FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE,
-    FOREIGN KEY (account_id) REFERENCES chart_of_accounts(id) ON DELETE RESTRICT,
-    INDEX idx_account (account_id),
-    INDEX idx_entry (journal_entry_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- إدراج الأدوار الافتراضية

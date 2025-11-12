@@ -269,13 +269,13 @@ export default function JournalEntries() {
               <tbody>
                 {viewingEntry.lines.map((line: any, index: number) => (
                   <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm">{line.name}</td>
-                    <td className="px-6 py-3 text-sm font-mono">{line.code}</td>
+                    <td className="px-6 py-3 text-sm">{line.account_name_ar}</td>
+                    <td className="px-6 py-3 text-sm font-mono">{line.account_code}</td>
                     <td className="px-6 py-3 text-sm text-left">
-                      {line.debit > 0 ? line.debit.toFixed(2) : '--'}
+                      {parseFloat(line.debit) > 0 ? parseFloat(line.debit).toFixed(2) : '--'}
                     </td>
                     <td className="px-6 py-3 text-sm text-left">
-                      {line.credit > 0 ? line.credit.toFixed(2) : '--'}
+                      {parseFloat(line.credit) > 0 ? parseFloat(line.credit).toFixed(2) : '--'}
                     </td>
                   </tr>
                 ))}
@@ -284,10 +284,10 @@ export default function JournalEntries() {
                     الإجمالي
                   </td>
                   <td className="px-6 py-3 text-left">
-                    {viewingEntry.lines.reduce((sum: number, line: any) => sum + line.debit, 0).toFixed(2)}
+                    {viewingEntry.lines.reduce((sum: number, line: any) => sum + parseFloat(line.debit || 0), 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-3 text-left">
-                    {viewingEntry.lines.reduce((sum: number, line: any) => sum + line.credit, 0).toFixed(2)}
+                    {viewingEntry.lines.reduce((sum: number, line: any) => sum + parseFloat(line.credit || 0), 0).toFixed(2)}
                   </td>
                 </tr>
               </tbody>
