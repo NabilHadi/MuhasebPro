@@ -7,8 +7,7 @@ import { testConnection } from './config/database';
 import { authMiddleware, roleMiddleware } from './middleware/auth';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
-import supplierRoutes from './routes/supplier';
-import customerRoutes from './routes/customer';
+import customerRoutes from './routes/customers';
 import productRoutes from './routes/product';
 import warehouseRoutes from './routes/warehouses';
 import purchaseRoutes from './routes/purchase';
@@ -45,7 +44,6 @@ app.use('/api/auth', authRoutes);
 
 // Protected Routes
 app.use('/api/users', authMiddleware, userRoutes);
-app.use('/api/suppliers', authMiddleware, supplierRoutes);
 app.use('/api/customers', authMiddleware, customerRoutes);
 app.use('/api/products', authMiddleware, productRoutes);
 app.use('/api/warehouses', authMiddleware, warehouseRoutes);

@@ -1,10 +1,23 @@
+import { useNavigate } from 'react-router-dom';
+import { useTabStore } from '../store/tabStore';
+
 export default function SalesManagement() {
+  const navigate = useNavigate();
+  const { addTab } = useTabStore();
+
   const handleOpenInvoices = () => {
     // TODO: Add invoices logic later
   };
 
   const handleOpenCustomers = () => {
-    // TODO: Add customers logic later
+    const tabId = `customers-${Date.now()}`;
+    addTab({
+      id: tabId,
+      title: 'العملاء',
+      path: '/customers',
+      icon: '👥',
+    });
+    navigate('/customers');
   };
 
   return (
@@ -36,7 +49,6 @@ export default function SalesManagement() {
           <div className="text-4xl mb-3">👤</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">العملاء</h2>
           <p className="text-gray-600 text-sm">إدارة بيانات العملاء</p>
-          <p className='text-black mt-2'>(قريبا)</p>
 
         </button>
       </div>
