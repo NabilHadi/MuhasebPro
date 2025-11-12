@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../services/api';
-import { DashboardStats, Product } from '../types';
+
+interface DashboardStats {
+  productCount: number;
+  categoryCount: number;
+  accountCount: number;
+  journalCount: number;
+  totalDebit: number;
+  totalCredit: number;
+}
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -15,10 +23,19 @@ export default function Dashboard() {
 
   const loadStats = async () => {
     try {
-      const response = await apiClient.get('/reports/dashboard');
-      setStats(response.data);
+      const dashboardRes = await apiClient.get('/reports/dashboard');
+      setStats(dashboardRes.data);
     } catch (error) {
       console.error('Failed to load stats', error);
+      // Set defaults
+      setStats({
+        productCount: 0,
+        categoryCount: 0,
+        accountCount: 0,
+        journalCount: 0,
+        totalDebit: 0,
+        totalCredit: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -73,132 +90,97 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main Stats Cards - muted palette */}
+      {/* Main Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Sales Card */}
-        <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
-          <div className="flex-between mb-3">
-            <div className="text-2xl">💰</div>
-            <div className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700">اليوم</div>
-          </div>
-          <h3 className="text-sm text-gray-600 mb-1">إجمالي المبيعات</h3>
-          <p className="text-xl font-semibold text-gray-800 mb-0">{formatCurrency(stats?.totalSalesToday || 0)}</p>
-          <div className="text-xs text-gray-500 mt-2">📈 مقارنة بالماضي</div>
-        </div>
-
-        {/* Purchases Card */}
-        <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
-          <div className="flex-between mb-3">
-            <div className="text-2xl">🛒</div>
-            <div className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700">اليوم</div>
-          </div>
-          <h3 className="text-sm text-gray-600 mb-1">إجمالي المشتريات</h3>
-          <p className="text-xl font-semibold text-gray-800 mb-0">{formatCurrency(stats?.totalPurchasesToday || 0)}</p>
-          <div className="text-xs text-gray-500 mt-2">📊 مقارنة بالماضي</div>
-        </div>
-
         {/* Products Card */}
         <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
           <div className="flex-between mb-3">
-            <div className="text-2xl">📦</div>
-            <div className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700">إجمالي</div>
+            <div className="text-2xl">�</div>
+            <div className="rounded-full px-3 py-1 text-xs bg-blue-100 text-blue-700">إجمالي</div>
           </div>
           <h3 className="text-sm text-gray-600 mb-1">عدد المنتجات</h3>
-          <p className="text-xl font-semibold text-gray-800 mb-0">{stats?.productCount || 0}</p>
-          <div className="text-xs text-gray-500 mt-2">متوفر: {stats?.productCount ? Math.floor(stats.productCount * 0.85) : 0}</div>
+          <p className="text-2xl font-bold text-blue-600">{stats?.productCount || 0}</p>
+          <div className="text-xs text-gray-500 mt-2">المنتجات النشطة</div>
         </div>
 
-        {/* Low Stock Card */}
+        {/* Categories Card */}
         <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
           <div className="flex-between mb-3">
-            <div className="text-2xl">⚠️</div>
-            <div className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700">تحذير</div>
+            <div className="text-2xl">🏷️</div>
+            <div className="rounded-full px-3 py-1 text-xs bg-green-100 text-green-700">إجمالي</div>
           </div>
-          <h3 className="text-sm text-gray-600 mb-1">تحذيرات المخزون</h3>
-          <p className="text-xl font-semibold text-gray-800 mb-0">{stats?.lowStockProducts?.length || 0}</p>
-          <div className="text-xs text-gray-500 mt-2">🔔 يوصى بإعادة الطلب</div>
+          <h3 className="text-sm text-gray-600 mb-1">عدد الفئات</h3>
+          <p className="text-2xl font-bold text-green-600">{stats?.categoryCount || 0}</p>
+          <div className="text-xs text-gray-500 mt-2">فئات النشطة</div>
         </div>
-      </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card text-center">
-          <div className="text-2xl mb-2">👥</div>
-          <p className="text-gray-600 text-sm">العملاء</p>
-          <p className="text-xl font-bold text-gray-800">0</p>
+        {/* Accounts Card */}
+        <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
+          <div className="flex-between mb-3">
+            <div className="text-2xl">�</div>
+            <div className="rounded-full px-3 py-1 text-xs bg-purple-100 text-purple-700">إجمالي</div>
+          </div>
+          <h3 className="text-sm text-gray-600 mb-1">عدد الحسابات</h3>
+          <p className="text-2xl font-bold text-purple-600">{stats?.accountCount || 0}</p>
+          <div className="text-xs text-gray-500 mt-2">حسابات نشطة</div>
         </div>
-        <div className="card text-center">
-          <div className="text-2xl mb-2">🏢</div>
-          <p className="text-gray-600 text-sm">الموردين</p>
-          <p className="text-xl font-bold text-gray-800">0</p>
-        </div>
-        <div className="card text-center">
-          <div className="text-2xl mb-2">📝</div>
-          <p className="text-gray-600 text-sm">فواتير اليوم</p>
-          <p className="text-xl font-bold text-gray-800">0</p>
-        </div>
-        <div className="card text-center">
-          <div className="text-2xl mb-2">💵</div>
-          <p className="text-gray-600 text-sm">الأرباح المتوقعة</p>
-          <p className="text-xl font-bold text-green-600">{formatCurrency(0)}</p>
+
+        {/* Journal Entries Card */}
+        <div className="card border border-gray-100 bg-white hover:shadow-md transition-shadow">
+          <div className="flex-between mb-3">
+            <div className="text-2xl">📝</div>
+            <div className="rounded-full px-3 py-1 text-xs bg-orange-100 text-orange-700">إجمالي</div>
+          </div>
+          <h3 className="text-sm text-gray-600 mb-1">عدد القيود</h3>
+          <p className="text-2xl font-bold text-orange-600">{stats?.journalCount || 0}</p>
+          <div className="text-xs text-gray-500 mt-2">قيود محاسبية</div>
         </div>
       </div>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Low Stock Products */}
+        {/* Journal Summary */}
         <div className="card">
-          <div className="flex-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">⚠️ منتجات بمخزون منخفض</h2>
-            {stats?.lowStockProducts && stats.lowStockProducts.length > 0 && (
-              <span className="badge-danger">{stats.lowStockProducts.length} منتج</span>
-            )}
+          <h2 className="text-xl font-bold text-gray-800 mb-4">📊 ملخص القيود (آخر 30 يوم)</h2>
+          <div className="space-y-4">
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">إجمالي الدين</p>
+              <p className="text-2xl font-bold text-blue-600">{formatCurrency(stats?.totalDebit || 0)}</p>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">إجمالي الدائن</p>
+              <p className="text-2xl font-bold text-red-600">{formatCurrency(stats?.totalCredit || 0)}</p>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">الفرق</p>
+              <p className={`text-2xl font-bold ${Math.abs((stats?.totalDebit || 0) - (stats?.totalCredit || 0)) > 0 ? 'text-gray-600' : 'text-green-600'}`}>
+                {formatCurrency(Math.abs((stats?.totalDebit || 0) - (stats?.totalCredit || 0)))}
+              </p>
+            </div>
           </div>
-          
-          {stats?.lowStockProducts && stats.lowStockProducts.length > 0 ? (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {stats.lowStockProducts.map((product: Product) => (
-                <div key={product.id} className="flex-between p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition">
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{product.name}</p>
-                    <p className="text-sm text-gray-600">الرمز: {product.sku}</p>
-                  </div>
-                  <div className="text-left">
-                    <div className="text-lg font-bold text-red-600">{product.quantity}</div>
-                    <div className="text-xs text-gray-500">الحد: {product.minimumStock}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-2">✅</div>
-              <p>جميع المنتجات بمخزون كافٍ</p>
-            </div>
-          )}
         </div>
 
-        {/* Recent Activity / Quick Actions */}
+        {/* Quick Actions & System Status */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <div className="card">
             <h2 className="text-xl font-bold text-gray-800 mb-4">⚡ إجراءات سريعة</h2>
             <div className="grid grid-cols-2 gap-3">
-              <button className="btn-primary flex items-center justify-center gap-2 py-3">
-                <span>➕</span>
-                <span>فاتورة بيع</span>
-              </button>
-              <button className="btn-secondary flex items-center justify-center gap-2 py-3">
-                <span>🛒</span>
-                <span>فاتورة شراء</span>
-              </button>
-              <button className="btn-secondary flex items-center justify-center gap-2 py-3">
-                <span>👤</span>
-                <span>عميل جديد</span>
-              </button>
-              <button className="btn-secondary flex items-center justify-center gap-2 py-3">
+              <button className="btn-primary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
                 <span>📦</span>
-                <span>منتج جديد</span>
+                <span>المنتجات</span>
+              </button>
+              <button className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+                <span>🏷️</span>
+                <span>الفئات</span>
+              </button>
+              <button className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+                <span>�</span>
+                <span>الحسابات</span>
+              </button>
+              <button className="btn-secondary flex items-center justify-center gap-2 py-3 hover:shadow-md transition">
+                <span>�</span>
+                <span>القيود</span>
               </button>
             </div>
           </div>
@@ -216,12 +198,12 @@ export default function Dashboard() {
                 <span className="badge-success">نشط ✅</span>
               </div>
               <div className="flex-between">
-                <span className="text-gray-600">آخر نسخ احتياطي</span>
-                <span className="text-sm text-gray-500">منذ ساعتين</span>
+                <span className="text-gray-600">إجمالي المنتجات</span>
+                <span className="text-sm text-gray-500">{stats?.productCount || 0} منتج</span>
               </div>
               <div className="flex-between">
-                <span className="text-gray-600">مساحة التخزين</span>
-                <span className="text-sm text-gray-500">78% متاح</span>
+                <span className="text-gray-600">إجمالي القيود</span>
+                <span className="text-sm text-gray-500">{stats?.journalCount || 0} قيد</span>
               </div>
             </div>
           </div>
