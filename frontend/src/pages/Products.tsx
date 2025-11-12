@@ -516,9 +516,9 @@ export default function Products() {
                             : 'تعديل'}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-sm text-left">{movement.quantity.toFixed(2)}</td>
-                      <td className="px-6 py-3 text-sm text-left">{movement.unit_cost.toFixed(2)}</td>
-                      <td className="px-6 py-3 text-sm text-left font-semibold">{movement.total_cost.toFixed(2)}</td>
+                      <td className="px-6 py-3 text-sm text-left">{parseFloat(String(movement.quantity)).toFixed(2)}</td>
+                      <td className="px-6 py-3 text-sm text-left">{parseFloat(String(movement.unit_cost)).toFixed(2)}</td>
+                      <td className="px-6 py-3 text-sm text-left font-semibold">{parseFloat(String(movement.total_cost)).toFixed(2)}</td>
                       <td className="px-6 py-3 text-sm">{movement.reference || '--'}</td>
                     </tr>
                   ))
