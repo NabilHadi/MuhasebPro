@@ -145,6 +145,13 @@ export const createJournalForMovement = async (
   try {
     const totalCost = quantity * unitCost;
 
+    // Fetch product name
+    const [product]: any = await connection.execute(
+      'SELECT product_name_ar, product_code FROM products WHERE id = ?',
+      [productId]
+    );
+    const productName = product.length > 0 ? product[0].product_name_ar : `منتج ${productId}`;
+
     let debitAccount: number;
     let creditAccount: number;
     let description: string;
@@ -156,18 +163,18 @@ export const createJournalForMovement = async (
         "SELECT id FROM chart_of_accounts WHERE account_type = 'Equity' LIMIT 1"
       );
       creditAccount = capitalAccounts.length > 0 ? capitalAccounts[0].id : inventoryAccountId; // Fallback to inventory
-      description = `استقبال مخزون - منتج ${productId}`;
+      description = `استقبال مخزون - ${productName}`;
     } else if (movementType === 'ADJUSTMENT') {
       if (quantity > 0) {
         // Increase: Debit Inventory, Credit Adjustment Account
         debitAccount = inventoryAccountId;
         creditAccount = adjustmentAccountId || inventoryAccountId;
-        description = `تعديل مخزون زيادة - منتج ${productId}`;
+        description = `تعديل مخزون زيادة - ${productName}`;
       } else {
         // Decrease: Debit Adjustment Account, Credit Inventory
         debitAccount = adjustmentAccountId || inventoryAccountId;
         creditAccount = inventoryAccountId;
-        description = `تعديل مخزون نقصان - منتج ${productId}`;
+        description = `تعديل مخزون نقصان - ${productName}`;
       }
     } else if (movementType === 'OUT') {
       // OUT: Debit COGS/Expense, Credit Inventory
@@ -176,7 +183,7 @@ export const createJournalForMovement = async (
       );
       debitAccount = expenseAccounts.length > 0 ? expenseAccounts[0].id : inventoryAccountId;
       creditAccount = inventoryAccountId;
-      description = `صرف مخزون - منتج ${productId}`;
+      description = `صرف مخزون - ${productName}`;
     } else {
       return null;
     }
