@@ -71,21 +71,64 @@ CREATE TABLE IF NOT EXISTS customers (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول المنتجات
-CREATE TABLE IF NOT EXISTS products (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(200) NOT NULL,
-  sku VARCHAR(100) UNIQUE NOT NULL,
-  description TEXT,
-  category VARCHAR(100),
-  buyingPrice DECIMAL(15, 2) NOT NULL,
-  sellingPrice DECIMAL(15, 2) NOT NULL,
-  quantity INT DEFAULT 0,
-  minimumStock INT DEFAULT 10,
-  maximumStock INT DEFAULT 1000,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_sku (sku),
-  INDEX idx_category (category)
+-- CREATE TABLE IF NOT EXISTS products (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   name VARCHAR(200) NOT NULL,
+--   sku VARCHAR(100) UNIQUE NOT NULL,
+--   description TEXT,
+--   category VARCHAR(100),
+--   buyingPrice DECIMAL(15, 2) NOT NULL,
+--   sellingPrice DECIMAL(15, 2) NOT NULL,
+--   quantity INT DEFAULT 0,
+--   minimumStock INT DEFAULT 10,
+--   maximumStock INT DEFAULT 1000,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--   INDEX idx_sku (sku),
+--   INDEX idx_category (category)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_code VARCHAR(50) UNIQUE,                -- SKU or internal code
+    product_name_ar VARCHAR(255) NOT NULL,          -- Arabic name
+    product_name_en VARCHAR(255),                   -- English name
+    category_id INT DEFAULT NULL,                   -- For grouping (e.g. Electronics)
+    unit_of_measure VARCHAR(50) DEFAULT 'وحدة',    -- e.g. قطعة / كرتون
+    product_type ENUM('Stockable', 'Service', 'Consumable') DEFAULT 'Stockable',
+    track_inventory BOOLEAN DEFAULT TRUE,           -- True if it affects stock
+    quantity_on_hand DECIMAL(12,2) DEFAULT 0.00,    -- Total current quantity
+    cost_price DECIMAL(12,2) DEFAULT 0.00,          -- Purchase cost
+    sale_price DECIMAL(12,2) DEFAULT 0.00,          -- Sale price
+    reorder_level DECIMAL(12,2) DEFAULT 0.00,       -- Alert when stock below this
+    warehouse_id INT DEFAULT NULL,                  -- Main storage location
+    income_account_id INT DEFAULT NULL,             -- Link to chart_of_accounts (Sales)
+    expense_account_id INT DEFAULT NULL,            -- Link to chart_of_accounts (COGS)
+    inventory_account_id INT DEFAULT NULL,          -- Link to chart_of_accounts (Inventory)
+    is_active BOOLEAN DEFAULT TRUE,                 -- Can be sold/purchased
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (income_account_id) REFERENCES chart_of_accounts(id),
+    FOREIGN KEY (expense_account_id) REFERENCES chart_of_accounts(id),
+    FOREIGN KEY (inventory_account_id) REFERENCES chart_of_accounts(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE stock_movements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    warehouse_id INT DEFAULT NULL,
+    movement_type ENUM('IN', 'OUT', 'TRANSFER', 'ADJUSTMENT') NOT NULL,
+    reference VARCHAR(50),                         -- e.g. INV-1001 or PO-2002
+    description VARCHAR(255),
+    quantity DECIMAL(12,2) NOT NULL,
+    unit_cost DECIMAL(12,2) DEFAULT 0.00,          -- Cost per unit for valuation
+    total_cost DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_cost) STORED,
+    movement_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    related_journal_id INT DEFAULT NULL,           -- Optional: link to accounting entry
+    created_by INT DEFAULT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول المخازن
