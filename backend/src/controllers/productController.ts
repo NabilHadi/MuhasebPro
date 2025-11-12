@@ -75,9 +75,9 @@ export const createProduct = async (data: {
 
   const connection = await getConnection();
   try {
-    // Check if product code already exists
+    // Check if product code already exists among active products only
     const [existing]: any = await connection.execute(
-      'SELECT id FROM products WHERE product_code = ?',
+      'SELECT id FROM products WHERE product_code = ? AND is_active = TRUE',
       [product_code]
     );
 
@@ -207,7 +207,7 @@ export const updateProduct = async (
     // Check if product code is unique (if changed)
     if (product_code !== currentProduct.product_code) {
       const [existing]: any = await connection.execute(
-        'SELECT id FROM products WHERE product_code = ? AND id != ?',
+        'SELECT id FROM products WHERE product_code = ? AND id != ? AND is_active = TRUE',
         [product_code, id]
       );
 
