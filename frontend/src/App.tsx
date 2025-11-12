@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import InventoryManagement from './pages/InventoryManagement';
 import Suppliers from './pages/Suppliers';
 import Customers from './pages/Customers';
-import Products from './pages/Products';
 import Warehouses from './pages/Warehouses';
 import PurchasesManagement from './pages/PurchasesManagement';
 import Purchases from './pages/Purchases';
