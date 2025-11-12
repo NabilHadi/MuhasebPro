@@ -1,31 +1,31 @@
-import { useNavigate } from 'react-router-dom';
-import { useTabStore } from '../store/tabStore';
+// import { useNavigate } from 'react-router-dom';
+// import { useTabStore } from '../store/tabStore';
 
 export default function PurchasesManagement() {
-  const navigate = useNavigate();
-  const { addTab } = useTabStore();
+  // const navigate = useNavigate();
+  // const { addTab } = useTabStore();
 
-  const handleOpenSuppliers = () => {
-    const tabId = `suppliers-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'الموردون',
-      path: '/suppliers',
-      icon: '🏭',
-    });
-    navigate('/suppliers');
-  };
+  // const handleOpenSuppliers = () => {
+  //   const tabId = `suppliers-${Date.now()}`;
+  //   addTab({
+  //     id: tabId,
+  //     title: 'الموردون',
+  //     path: '/suppliers',
+  //     icon: '🏭',
+  //   });
+  //   navigate('/suppliers');
+  // };
 
-  const handleOpenPurchases = () => {
-    const tabId = `purchases-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'المشتريات',
-      path: '/purchases-detail',
-      icon: '📥',
-    });
-    navigate('/purchases-detail');
-  };
+  // const handleOpenPurchases = () => {
+  //   const tabId = `purchases-${Date.now()}`;
+  //   addTab({
+  //     id: tabId,
+  //     title: 'المشتريات',
+  //     path: '/purchases-detail',
+  //     icon: '📥',
+  //   });
+  //   navigate('/purchases-detail');
+  // };
 
   return (
     <div className="space-y-6">
@@ -37,21 +37,23 @@ export default function PurchasesManagement() {
       {/* Quick Access Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
-          onClick={handleOpenSuppliers}
+          // onClick={handleOpenSuppliers}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
           <div className="text-4xl mb-3">🏭</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">الموردون</h2>
           <p className="text-gray-600 text-sm">إدارة الموردين والعقود</p>
+          <p className='text-black mt-2'>(قريبا)</p>
         </button>
 
         <button
-          onClick={handleOpenPurchases}
+          // onClick={handleOpenPurchases}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
           <div className="text-4xl mb-3">📥</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">المشتريات</h2>
           <p className="text-gray-600 text-sm">تسجيل والعرض فواتير المشتريات</p>
+          <p className='text-black mt-2'>(قريبا)</p>
         </button>
       </div>
     </div>

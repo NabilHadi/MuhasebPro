@@ -4,15 +4,10 @@ import { useAuthStore } from './store/authStore';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import InventoryManagement from './pages/InventoryManagement';
-import Suppliers from './pages/Suppliers';
-import Customers from './pages/Customers';
-import Warehouses from './pages/Warehouses';
 import PurchasesManagement from './pages/PurchasesManagement';
-import Purchases from './pages/Purchases';
 import SalesManagement from './pages/SalesManagement';
 import Accounts from './pages/Accounts';
 import JournalEntries from './pages/JournalEntries';
-import Reports from './pages/Reports';
 import Layout from './components/Layout';
 
 function App() {
@@ -37,16 +32,11 @@ function App() {
           element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}
         >
           <Route index element={<Dashboard />} />
-          <Route path="products" element={<InventoryManagement />} />
-          <Route path="warehouses" element={<Warehouses />} />
-          <Route path="suppliers" element={<Suppliers />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="purchases" element={<PurchasesManagement />} />
-          <Route path="purchases-detail" element={<Purchases />} />
-          <Route path="sales" element={<SalesManagement />} />
+          <Route path="inventory-management" element={<InventoryManagement />} />
+          <Route path="purchases-management" element={<PurchasesManagement />} />
+          <Route path="sales-management" element={<SalesManagement />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="journal-entries" element={<JournalEntries />} />
-          <Route path="reports" element={<Reports />} />
         </Route>
       </Routes>
     </Router>

@@ -11,7 +11,7 @@ export default function SalesManagement() {
       id: tabId,
       title: 'الحسابات',
       path: '/accounts',
-      icon: '�',
+      icon: '🏦',
     });
     navigate('/accounts');
   };
@@ -42,7 +42,7 @@ export default function SalesManagement() {
           onClick={handleOpenAccounts}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
-          <div className="text-4xl mb-3">📊</div>
+          <div className="text-4xl mb-3">🏦</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">الحسابات</h2>
           <p className="text-gray-600 text-sm">إدارة الحسابات والمخطط المحاسبي</p>
         </button>

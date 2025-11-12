@@ -1,33 +1,26 @@
 import { useNavigate as useReactNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { useTabStore } from '../store/tabStore';
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
   const navigate = useReactNavigate();
-  const { addTab } = useTabStore();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const handleNavigation = (href: string, label: string, icon: string) => {
-    const tabId = `${href}-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: label,
-      path: href,
-      icon,
-    });
+  const handleNavigation = (href: string) => {
+    // Direct navigation to management page without creating a tab
+    // (sidebar stays visible, so no need to duplicate in tab bar)
     navigate(href);
   };
 
   const menuItems = [
     { label: 'القائمة الرئيسية', href: '/', icon: '📊' },
-    { label: 'ادارة المخزون', href: '/products', icon: '📦' },
-    { label: 'ادارة المشتريات', href: '/purchases', icon: '📥' },
-    { label: 'ادارة المبيعات', href: '/sales', icon: '�' },
+    { label: 'ادارة المخزون', href: '/inventory-management', icon: '📦' },
+    { label: 'ادارة المشتريات', href: '/purchases-management', icon: '📥' },
+    { label: 'ادارة المبيعات', href: '/sales-management', icon: '🛒' },
   ];
 
   return (
@@ -41,7 +34,7 @@ export default function Sidebar() {
         {menuItems.map((item) => (
           <button
             key={item.href}
-            onClick={() => handleNavigation(item.href, item.label, item.icon)}
+            onClick={() => handleNavigation(item.href)}
             className="w-full flex items-center space-x-3 px-6 py-3 hover:bg-slate-800 transition rounded-lg text-left border-none bg-transparent cursor-pointer"
           >
             <span className="text-xl">{item.icon}</span>
