@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
+import JournalEntryForm from './JournalEntryForm';
+import JournalEntryView from './JournalEntryView';
+import JournalEntriesList from './JournalEntriesList';
 
 interface Account {
   id: number;
@@ -13,6 +16,19 @@ interface JournalEntry {
   description: string;
   reference: string;
   created_at: string;
+  total_debit?: number;
+  total_credit?: number;
+}
+
+interface FormDataType {
+  date: string;
+  description: string;
+  reference: string;
+  lines: Array<{
+    account_id: string | number;
+    debit: string | number;
+    credit: string | number;
+  }>;
 }
 
 export default function JournalEntries() {
@@ -20,12 +36,12 @@ export default function JournalEntries() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const [selectedEntry, setSelectedEntry] = useState<number | null>(null);
   const [viewingEntry, setViewingEntry] = useState<any>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     date: new Date().toISOString().split('T')[0],
     description: '',
     reference: '',
@@ -234,271 +250,37 @@ export default function JournalEntries() {
 
       {/* عرض القيد */}
       {viewingEntry && (
-        <div className="card mb-8">
-          <div className="card-header flex justify-between items-center">
-            <h2 className="text-xl font-semibold">تفاصيل القيد</h2>
-            <button onClick={() => setViewingEntry(null)} className="text-gray-500 hover:text-gray-700">
-              ✕
-            </button>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div>
-                <p className="text-sm text-gray-500">التاريخ</p>
-                <p className="font-semibold">{viewingEntry.date}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">المرجع</p>
-                <p className="font-semibold">{viewingEntry.reference || '--'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">البيان</p>
-                <p className="font-semibold">{viewingEntry.description || '--'}</p>
-              </div>
-            </div>
-
-            <table className="w-full mb-6">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-right text-sm font-semibold">الحساب</th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold">الرمز</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">دين</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">دائن</th>
-                </tr>
-              </thead>
-              <tbody>
-                {viewingEntry.lines.map((line: any, index: number) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm">{line.account_name_ar}</td>
-                    <td className="px-6 py-3 text-sm font-mono">{line.account_code}</td>
-                    <td className="px-6 py-3 text-sm text-left">
-                      {parseFloat(line.debit) > 0 ? parseFloat(line.debit).toFixed(2) : '--'}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-left">
-                      {parseFloat(line.credit) > 0 ? parseFloat(line.credit).toFixed(2) : '--'}
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50 font-semibold">
-                  <td colSpan={2} className="px-6 py-3 text-right">
-                    الإجمالي
-                  </td>
-                  <td className="px-6 py-3 text-left">
-                    {viewingEntry.lines.reduce((sum: number, line: any) => sum + parseFloat(line.debit || 0), 0).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-3 text-left">
-                    {viewingEntry.lines.reduce((sum: number, line: any) => sum + parseFloat(line.credit || 0), 0).toFixed(2)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setViewingEntry(null)} className="btn-secondary">
-                إغلاق
-              </button>
-              <button onClick={() => handleEdit(viewingEntry.id)} className="btn-primary">
-                تعديل
-              </button>
-              <button onClick={() => handleDelete(viewingEntry.id)} className="btn-danger">
-                حذف
-              </button>
-            </div>
-          </div>
-        </div>
+        <JournalEntryView
+          viewingEntry={viewingEntry}
+          onClose={() => setViewingEntry(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
 
       {/* نموذج الإضافة/التعديل */}
       {showForm && (
-        <div className="card mb-8">
-          <div className="card-header">
-            <h2 className="text-xl font-semibold">
-              {selectedEntry ? 'تعديل القيد' : 'إضافة قيد جديد'}
-            </h2>
-          </div>
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="label-field">التاريخ *</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  className="input-field"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="label-field">المرجع (اختياري)</label>
-                <input
-                  type="text"
-                  name="reference"
-                  value={formData.reference}
-                  onChange={handleInputChange}
-                  placeholder="مثال: FV001"
-                  className="input-field"
-                />
-              </div>
-              <div className="form-group">
-                <label className="label-field">البيان (اختياري)</label>
-                <input
-                  type="text"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="وصف القيد"
-                  className="input-field"
-                />
-              </div>
-            </div>
-
-            {/* جدول الأسطر */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-3 py-2 text-right">الحساب</th>
-                    <th className="px-3 py-2 text-left">دين</th>
-                    <th className="px-3 py-2 text-left">دائن</th>
-                    <th className="px-3 py-2 text-center">إجراء</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {formData.lines.map((line, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="px-3 py-2">
-                        <select
-                          value={line.account_id}
-                          onChange={(e) => handleLineChange(index, 'account_id', e.target.value)}
-                          className="input-field text-sm"
-                          required
-                        >
-                          <option value="">-- اختر حساب --</option>
-                          {accounts.map((account) => (
-                            <option key={account.id} value={account.id}>
-                              {account.account_code} - {account.account_name_ar}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={line.debit}
-                          onChange={(e) => handleLineChange(index, 'debit', e.target.value)}
-                          placeholder="0.00"
-                          className="input-field text-sm"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={line.credit}
-                          onChange={(e) => handleLineChange(index, 'credit', e.target.value)}
-                          placeholder="0.00"
-                          className="input-field text-sm"
-                        />
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {formData.lines.length > 2 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveLine(index)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className={`font-semibold ${isBalanced ? 'bg-green-50' : 'bg-red-50'}`}>
-                    <td className="px-3 py-2 text-right">الإجمالي</td>
-                    <td className="px-3 py-2 text-left">{totalDebit.toFixed(2)}</td>
-                    <td className="px-3 py-2 text-left">{totalCredit.toFixed(2)}</td>
-                    <td className="px-3 py-2 text-center">
-                      {isBalanced ? (
-                        <span className="text-green-600">✓</span>
-                      ) : (
-                        <span className="text-red-600">✕</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAddLine}
-              className="btn-secondary text-sm flex items-center gap-2"
-            >
-              <span>➕</span>
-              <span>إضافة سطر</span>
-            </button>
-
-            <div className="flex gap-2 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setSelectedEntry(null);
-                }}
-                className="btn-secondary"
-              >
-                إلغاء
-              </button>
-              <button type="submit" className="btn-primary" disabled={!isBalanced}>
-                {selectedEntry ? 'تحديث' : 'إضافة'}
-              </button>
-            </div>
-          </form>
-        </div>
+        <JournalEntryForm
+          formData={formData}
+          accounts={accounts}
+          selectedEntry={selectedEntry}
+          isBalanced={isBalanced}
+          totalDebit={totalDebit}
+          totalCredit={totalCredit}
+          onInputChange={handleInputChange}
+          onLineChange={handleLineChange}
+          onAddLine={handleAddLine}
+          onRemoveLine={handleRemoveLine}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setShowForm(false);
+            setSelectedEntry(null);
+          }}
+        />
       )}
 
       {/* قائمة القيود */}
-      {loading ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">جاري التحميل...</p>
-        </div>
-      ) : entries.length === 0 ? (
-        <div className="card text-center py-8">
-          <p className="text-gray-500">لا توجد قيود حتى الآن</p>
-        </div>
-      ) : (
-        <div className="card">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">التاريخ</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">المرجع</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">البيان</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry) => (
-                <tr key={entry.id} className="border-b hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-sm text-gray-700">{entry.date}</td>
-                  <td className="px-6 py-4 text-sm font-mono text-gray-700">{entry.reference || '--'}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{entry.description || '--'}</td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleView(entry.id)}
-                      className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition mr-2"
-                    >
-                      👁️ عرض
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <JournalEntriesList entries={entries} loading={loading} onView={handleView} />
     </div>
   );
 }
