@@ -231,14 +231,13 @@ export const reverseJournalEntry = async (id: string | number) => {
     for (const line of lines) {
       await connection.execute(
         `INSERT INTO journal_lines 
-           (journal_entry_id, account_id, debit, credit, description)
-         VALUES (?, ?, ?, ?, ?)`,
+           (journal_entry_id, account_id, debit, credit)
+         VALUES (?, ?, ?, ?)`,
         [
           newJournalId,
           line.account_id,
           line.credit, // swapped
           line.debit,  // swapped
-          `عكس السطر من القيد رقم ${id}`,
         ]
       );
     }
