@@ -28,6 +28,9 @@ export default function JournalEntryView({ viewingEntry, onClose, onEdit, onDele
   const totalDebit = viewingEntry.lines.reduce((sum: number, line) => sum + parseFloat(String(line.debit) || '0'), 0);
   const totalCredit = viewingEntry.lines.reduce((sum: number, line) => sum + parseFloat(String(line.credit) || '0'), 0);
 
+  console.log(viewingEntry.date);
+  
+
   return (
     <div className="card mb-8">
       <div className="card-header flex justify-between items-center">
@@ -41,7 +44,9 @@ export default function JournalEntryView({ viewingEntry, onClose, onEdit, onDele
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
             <p className="text-sm text-gray-500">التاريخ</p>
-            <p className="font-semibold">{viewingEntry.date}</p>
+            <p className="font-semibold">{new Date(viewingEntry.date).getTime() ? new Date(new Date(viewingEntry.date).getTime() - new Date(viewingEntry.date).getTimezoneOffset() * 60000)
+  .toISOString()
+  .split('T')[0] : ''}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">المرجع</p>

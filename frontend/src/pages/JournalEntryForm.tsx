@@ -48,6 +48,9 @@ export default function JournalEntryForm({
   onSubmit,
   onCancel,
 }: Props) {
+
+    console.log(new Date(formData.date).toLocaleString('en-GB'));
+    
   return (
     <div className="card mb-8">
       <div className="card-header">
@@ -63,7 +66,9 @@ export default function JournalEntryForm({
             <input
               type="date"
               name="date"
-              value={formData.date}
+              value={new Date(formData.date).getTime() ? new Date(new Date(formData.date).getTime() - new Date(formData.date).getTimezoneOffset() * 60000)
+  .toISOString()
+  .split('T')[0] : ''}
               onChange={onInputChange}
               className="input-field"
               required
