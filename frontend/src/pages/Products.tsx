@@ -21,6 +21,14 @@ interface StockMovement {
   related_journal_id?: number;
 }
 
+interface ProductCategory {
+  id: number;
+  category_name_ar: string;
+  category_name_en?: string;
+  description?: string;
+  is_active: boolean;
+}
+
 interface Product {
   id: number;
   product_code: string;
@@ -44,6 +52,7 @@ interface Product {
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -69,6 +78,7 @@ export default function Products() {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
     fetchAccounts();
   }, []);
 
@@ -82,6 +92,15 @@ export default function Products() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await apiClient.get('/product-categories');
+      setCategories(response.data);
+    } catch (err) {
+      console.error('خطأ في جلب فئات المنتجات:', err);
     }
   };
 
@@ -264,6 +283,19 @@ export default function Products() {
                   <option value="Stockable">مخزون</option>
                   <option value="Service">خدمة</option>
                   <option value="Consumable">مستهلك</option>
+                </select>
+              </div>
+
+              {/* الفئة */}
+              <div className="form-group">
+                <label className="label-field">فئة المنتج</label>
+                <select name="category_id" value={formData.category_id || ''} onChange={handleInputChange} className="input-field">
+                  <option value="">-- اختر فئة --</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.category_name_ar}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -538,6 +570,7 @@ export default function Products() {
                 <tr>
                   <th className="px-6 py-3 text-right text-sm font-semibold">الرمز</th>
                   <th className="px-6 py-3 text-right text-sm font-semibold">الاسم</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold">الفئة</th>
                   <th className="px-6 py-3 text-right text-sm font-semibold">النوع</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold">الكمية</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold">سعر التكلفة</th>
@@ -557,6 +590,11 @@ export default function Products() {
                       {isLowStock(product) && (
                         <div className="text-xs text-red-600 font-semibold">⚠️ مخزون منخفض</div>
                       )}
+                    </td>
+                    <td className="px-6 py-3 text-sm">
+                      {product.category_id
+                        ? categories.find((c) => c.id === product.category_id)?.category_name_ar
+                        : '--'}
                     </td>
                     <td className="px-6 py-3 text-sm">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${

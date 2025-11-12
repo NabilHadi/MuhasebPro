@@ -18,6 +18,7 @@ import companyRoutes from './routes/company';
 import accountsRoutes from './routes/accounts';
 import journalEntriesRoutes from './routes/journalEntries';
 import stockMovementsRoutes from './routes/stockMovements';
+import productCategoriesRoutes from './routes/productCategories';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use('/api/company', authMiddleware, companyRoutes);
 app.use('/api/accounts', authMiddleware, accountsRoutes);
 app.use('/api/journal-entries', authMiddleware, journalEntriesRoutes);
 app.use('/api/stock-movements', authMiddleware, stockMovementsRoutes);
+app.use('/api/product-categories', authMiddleware, productCategoriesRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
