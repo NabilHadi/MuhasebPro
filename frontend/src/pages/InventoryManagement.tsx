@@ -27,16 +27,16 @@ export default function InventoryManagement() {
     navigate('/product-categories');
   };
 
-  // const handleOpenWarehouses = () => {
-  //   const tabId = `warehouses-${Date.now()}`;
-  //   addTab({
-  //     id: tabId,
-  //     title: 'المستودعات',
-  //     path: '/warehouses',
-  //     icon: '🏢',
-  //   });
-  //   navigate('/warehouses');
-  // };
+  const handleOpenWarehouses = () => {
+    const tabId = `warehouses-${Date.now()}`;
+    addTab({
+      id: tabId,
+      title: 'المخازن',
+      path: '/warehouses',
+      icon: '🏢',
+    });
+    navigate('/warehouses');
+  };
 
   return (
     <div className="space-y-6">
@@ -66,13 +66,12 @@ export default function InventoryManagement() {
         </button>
 
         <button
-          // onClick={handleOpenWarehouses}
+          onClick={handleOpenWarehouses}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
           <div className="text-4xl mb-3">🏢</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">المستودعات</h2>
-          <p className="text-gray-600 text-sm">إدارة المستودعات والأرصدة</p>
-          <p className='text-black mt-2'>(قريبا)</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">المخازن</h2>
+          <p className="text-gray-600 text-sm">إدارة المخازن</p>
         </button>
       </div>
     </div>

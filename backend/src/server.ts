@@ -10,7 +10,7 @@ import userRoutes from './routes/user';
 import supplierRoutes from './routes/supplier';
 import customerRoutes from './routes/customer';
 import productRoutes from './routes/product';
-import warehouseRoutes from './routes/warehouse';
+import warehouseRoutes from './routes/warehouses';
 import purchaseRoutes from './routes/purchase';
 import salesRoutes from './routes/sales';
 import reportRoutes from './routes/report';
