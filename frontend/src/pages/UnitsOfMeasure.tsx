@@ -146,8 +146,7 @@ export default function UnitsOfMeasure() {
 
   const totalPages = Math.ceil(filteredUnits.length / itemsPerPage);
 
-  // Get unique categories for reference
-  const categories = Array.from(new Set(units.map((u) => u.category)));
+ 
 
   return (
     <div className="space-y-6">
@@ -260,7 +259,7 @@ export default function UnitsOfMeasure() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={formData.is_base}
@@ -364,7 +363,6 @@ export default function UnitsOfMeasure() {
                   <th className="px-4 py-3 text-right font-medium text-gray-700">الفئة</th>
                   <th className="px-4 py-3 text-right font-medium text-gray-700">النسبة</th>
                   <th className="px-4 py-3 text-right font-medium text-gray-700">أساسية</th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-700">الحالة</th>
                   <th className="px-4 py-3 text-right font-medium text-gray-700">الإجراءات</th>
                 </tr>
               </thead>
@@ -384,7 +382,7 @@ export default function UnitsOfMeasure() {
                           {unit.category}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{unit.ratio_to_base.toFixed(6)}</td>
+                      <td className="px-4 py-3 text-gray-600">{(Number(unit.ratio_to_base) || 0).toFixed(6)}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           unit.is_base ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
@@ -393,30 +391,30 @@ export default function UnitsOfMeasure() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleStatusToggle(unit)}
-                          className={`px-3 py-1 rounded text-xs font-semibold transition ${
-                            unit.is_active
-                              ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                              : 'bg-red-100 text-red-800 hover:bg-red-200'
-                          }`}
-                        >
-                          {unit.is_active ? 'نشط' : 'معطل'}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleEdit(unit)}
-                          className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition text-sm font-medium"
-                        >
-                          تعديل
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(unit)}
+                            className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition text-sm font-medium"
+                          >
+                            تعديل
+                          </button>
+                          <button
+                            onClick={() => handleStatusToggle(unit)}
+                            className={`px-3 py-1 rounded text-xs font-semibold transition cursor-pointer ${
+                              unit.is_active
+                                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                : 'bg-green-100 text-green-700 hover:bg-green-200'
+                            }`}
+                          >
+                            {unit.is_active ? 'تعطيل' : 'تفعيل'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       <div className="text-4xl mb-2">📭</div>
                       <p>لم يتم العثور على وحدات قياس</p>
                     </td>

@@ -38,6 +38,17 @@ export default function InventoryManagement() {
     navigate('/warehouses');
   };
 
+  const handleOpenUnits = () => {
+    const tabId = `units-of-measure-${Date.now()}`;
+    addTab({
+      id: tabId,
+      title: 'وحدات القياس',
+      path: '/units-of-measure',
+      icon: '📏',
+    });
+    navigate('/units-of-measure');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -72,6 +83,15 @@ export default function InventoryManagement() {
           <div className="text-4xl mb-3">🏢</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">المخازن</h2>
           <p className="text-gray-600 text-sm">إدارة المخازن</p>
+        </button>
+
+        <button
+          onClick={handleOpenUnits}
+          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
+        >
+          <div className="text-4xl mb-3">📏</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">وحدات القياس</h2>
+          <p className="text-gray-600 text-sm">إدارة وحدات القياس والتحويلات</p>
         </button>
       </div>
     </div>

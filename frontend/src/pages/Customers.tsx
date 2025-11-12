@@ -103,18 +103,18 @@ export default function Customers() {
     setIsFormOpen(true);
   };
 
-  const handleViewDetails = async (customer: Customer) => {
-    try {
-      setSelectedCustomer(customer);
-      setIsFormOpen(false);
-      const response = await apiClient.get(`/customers/${customer.id}/transactions`);
-      setTransactionsSummary(response.data);
-      setError(null);
-    } catch (error: any) {
-      console.error('Error loading transaction summary:', error);
-      setError(error.response?.data?.message || 'فشل في تحميل ملخص المعاملات');
-    }
-  };
+  // const handleViewDetails = async (customer: Customer) => {
+  //   try {
+  //     setSelectedCustomer(customer);
+  //     setIsFormOpen(false);
+  //     const response = await apiClient.get(`/customers/${customer.id}/transactions`);
+  //     setTransactionsSummary(response.data);
+  //     setError(null);
+  //   } catch (error: any) {
+  //     console.error('Error loading transaction summary:', error);
+  //     setError(error.response?.data?.message || 'فشل في تحميل ملخص المعاملات');
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
