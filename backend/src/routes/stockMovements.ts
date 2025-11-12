@@ -1,55 +1,52 @@
 import { Router, Request, Response } from 'express';
-import * as productController from '../controllers/productController';
+import * as stockMovementsController from '../controllers/stockMovementsController';
 
 const router = Router();
 
-// الحصول على جميع المنتجات
+// الحصول على جميع حركات المخزون
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const products = await productController.getAllProducts();
-    res.json(products);
+    const movements = await stockMovementsController.getAllStockMovements();
+    res.json(movements);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'خطأ في السيرفر' });
   }
 });
 
-// الحصول على منتج بواسطة المعرف
-router.get('/:id', async (req: Request, res: Response) => {
+// الحصول على حركات مخزون منتج معين
+router.get('/product/:productId', async (req: Request, res: Response) => {
   try {
-    const product = await productController.getProductById(req.params.id);
-    res.json(product);
+    const movements = await stockMovementsController.getMovementsByProductId(parseInt(req.params.productId));
+    res.json(movements);
   } catch (error: any) {
-    if (error.message.includes('غير موجود')) {
-      return res.status(404).json({ message: error.message });
-    }
     res.status(500).json({ message: error.message || 'خطأ في السيرفر' });
   }
 });
 
-// إضافة منتج جديد
+// إضافة حركة مخزون جديدة
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const result = await productController.createProduct(req.body);
+    const result = await stockMovementsController.createStockMovement(req.body);
     res.status(201).json(result);
   } catch (error: any) {
     res.status(400).json({ message: error.message || 'خطأ في السيرفر' });
   }
 });
 
-// تحديث منتج
+// تحديث حركة مخزون
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const result = await productController.updateProduct(req.params.id, req.body);
+    const result = await stockMovementsController.updateStockMovement(parseInt(req.params.id), req.body);
     res.json(result);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'خطأ في السيرفر' });
   }
 });
 
-// حذف منتج
+// حذف حركة مخزون
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const result = await productController.deleteProduct(req.params.id);
+    const result = await stockMovementsController.deleteStockMovement(parseInt(req.params.id));
     res.json(result);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'خطأ في السيرفر' });

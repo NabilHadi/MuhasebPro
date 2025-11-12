@@ -17,6 +17,7 @@ import reportRoutes from './routes/report';
 import companyRoutes from './routes/company';
 import accountsRoutes from './routes/accounts';
 import journalEntriesRoutes from './routes/journalEntries';
+import stockMovementsRoutes from './routes/stockMovements';
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use('/api/reports', authMiddleware, reportRoutes);
 app.use('/api/company', authMiddleware, companyRoutes);
 app.use('/api/accounts', authMiddleware, accountsRoutes);
 app.use('/api/journal-entries', authMiddleware, journalEntriesRoutes);
+app.use('/api/stock-movements', authMiddleware, stockMovementsRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
