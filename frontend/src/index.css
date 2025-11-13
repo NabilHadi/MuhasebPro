@@ -52,7 +52,7 @@ body {
 
 /* ==================== CARDS & CONTAINERS ==================== */
 .card {
-  @apply bg-white rounded-lg shadow p-6;
+  @apply bg-white rounded-lg shadow p-2;
 }
 
 .card-header {
