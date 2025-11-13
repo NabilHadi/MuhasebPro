@@ -7,7 +7,6 @@ import InventoryManagement from './pages/InventoryManagement';
 import PurchasesManagement from './pages/PurchasesManagement';
 import AccountsManagement from './pages/AccountsManagement';
 import Accounts from './pages/Accounts';
-import JournalEntries from './pages/JournalEntries';
 import Layout from './components/Layout';
 import SalesManagement from './pages/SalesManagement';
 import Products from './pages/Products';
@@ -52,7 +51,6 @@ function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="accounts/foundational" element={<FoundationalAccounts />} />
-          <Route path="journal-entries" element={<JournalEntries />} />
         </Route>
       </Routes>
     </Router>

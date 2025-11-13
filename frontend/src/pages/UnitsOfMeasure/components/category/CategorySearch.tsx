@@ -10,14 +10,14 @@ export default function CategorySearch({
   onAddClick,
 }: CategorySearchProps) {
   return (
-    <div className="flex items-center gap-2 mb-2">
+    <div className="flex items-center gap-2 my-4">
       <button
-          onClick={onAddClick}
-          className="btn-primary flex items-center gap-2"
-        >
-          <span>➕</span>
-          <span>إضافة فئة جديدة</span>
-        </button>
+        onClick={onAddClick}
+        className="btn-primary flex items-center gap-2"
+      >
+        <span>➕</span>
+        <span>إضافة فئة جديدة</span>
+      </button>
       <input
         type="text"
         placeholder="ابحث عن الفئات..."

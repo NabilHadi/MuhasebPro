@@ -1,42 +1,33 @@
-import { useNavigate } from 'react-router-dom';
-import { useTabStore } from '../store/tabStore';
+import ManagementButtons, { ManagementButton } from '../components/ManagementButtons';
 
 export default function AccountsManagement() {
-  const navigate = useNavigate();
-  const { addTab } = useTabStore();
-
-  const handleOpenFoundationalAccounts = () => {
-    const tabId = `foundational-accounts-${Date.now()}`;
-    addTab({
-      id: tabId,
+  const buttons: ManagementButton[] = [
+    {
+      id: 'foundational-accounts',
+      icon: '🏦',
       title: 'حسابات التأسيس',
+      description: 'إدارة حسابات التأسيس',
       path: '/accounts/foundational',
+      tabTitle: 'حسابات التأسيس',
+    },
+    {
+      id: 'accounts',
       icon: '🏦',
-    });
-    navigate('/accounts/foundational');
-  };
-
-  const handleOpenAccounts = () => {
-    const tabId = `accounts-${Date.now()}`;
-    addTab({
-      id: tabId,
       title: 'الحسابات',
+      description: 'إدارة الحسابات والمخطط المحاسبي',
       path: '/accounts',
-      icon: '🏦',
-    });
-    navigate('/accounts');
-  };
-
-  const handleOpenJournalEntries = () => {
-    const tabId = `journal-entries-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'القيود المحاسبية',
-      path: '/journal-entries',
+      tabTitle: 'الحسابات',
+    },
+    {
+      id: 'journal-entries',
       icon: '📝',
-    });
-    navigate('/journal-entries');
-  };
+      title: 'القيود المحاسبية',
+      description: 'تسجيل والعرض القيود المحاسبية',
+      path: '/journal-entries',
+      tabTitle: 'القيود المحاسبية',
+      isDisabled: true,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -45,37 +36,8 @@ export default function AccountsManagement() {
         <h1 className="text-3xl font-bold text-gray-800">إدارة الحسابات</h1>
       </div>
 
-      
-
       {/* Quick Access Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          onClick={handleOpenFoundationalAccounts}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">🏦</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">حسابات التأسيس</h2>
-          <p className="text-gray-600 text-sm">إدارة حسابات التأسيس</p>
-        </button>
-
-        <button
-          onClick={handleOpenAccounts}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">🏦</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">الحسابات</h2>
-          <p className="text-gray-600 text-sm">إدارة الحسابات والمخطط المحاسبي</p>
-        </button>
-
-        <button
-          onClick={handleOpenJournalEntries}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">📝</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">القيود المحاسبية</h2>
-          <p className="text-gray-600 text-sm">تسجيل والعرض القيود المحاسبية</p>
-        </button>
-      </div>
+      <ManagementButtons buttons={buttons} columns={3} />
     </div>
   );
 }

@@ -41,45 +41,20 @@ export default function UnitsOfMeasureCategories() {
                 />
             </Modal>
 
-            <div className="card">
+            <div className="card-small-padding">
                 {/* Search and Add Button */}
                 <CategorySearch
                     searchTerm={categories.categorySearchTerm}
                     onSearchChange={categories.setCategorySearchTerm}
                     onAddClick={() => categories.setShowCategoryForm(true)}
                 />
-                
+
                 {/* Categories Table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-100 border-b">
-                            <tr>
-                                <th className="px-4 py-3 text-right font-medium text-gray-700">
-                                    الاسم
-                                </th>
-                                <th className="px-4 py-3 text-right font-medium text-gray-700">
-                                    الوصف
-                                </th>
-                                <th className="px-4 py-3 text-right font-medium text-gray-700">
-                                    الحالة
-                                </th>
-                                <th className="px-4 py-3 text-right font-medium text-gray-700">
-                                    تاريخ الإنشاء
-                                </th>
-                                <th className="px-4 py-3 text-right font-medium text-gray-700">
-                                    الإجراءات
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <CategoriesTable
-                                categories={categories.filteredCategories}
-                                onEdit={categories.handleEditCategory}
-                                onToggleStatus={categories.handleToggleCategoryStatus}
-                            />
-                        </tbody>
-                    </table>
-                </div>
+                <CategoriesTable
+                    categories={categories.filteredCategories}
+                    onEdit={categories.handleEditCategory}
+                    onToggleStatus={categories.handleToggleCategoryStatus}
+                />
             </div>
             {/* Confirmation Modal */}
             <ConfirmModal

@@ -1,57 +1,51 @@
-import { useNavigate } from 'react-router-dom';
-import { useTabStore } from '../store/tabStore';
+import ManagementButtons, { ManagementButton } from '../components/ManagementButtons';
 
 export default function InventoryManagement() {
-  const navigate = useNavigate();
-  const { addTab } = useTabStore();
-
-  const handleOpenProducts = () => {
-    const tabId = `products-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'المنتجات',
-      path: '/products',
-      icon: '📦',
-    });
-    navigate('/products');
-  };
-
-  const handleOpenCategories = () => {
-    const tabId = `product-categories-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'فئات المنتجات',
-      path: '/product-categories',
-      icon: '🏷️',
-    });
-    navigate('/product-categories');
-  };
-
-  const handleOpenWarehouses = () => {
-        // TODO: Add invoices logic later
-  };
-
-  const handleOpenUnits = () => {
-    const tabId = `units-of-measure-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'وحدات القياس',
-      path: '/units-of-measure',
+  const buttons: ManagementButton[] = [
+    {
+      id: 'units-of-measure',
       icon: '📏',
-    });
-    navigate('/units-of-measure');
-  };
-
-  const handleOpenUnitsCategories = () => {
-    const tabId = `units-of-measure-categories-${Date.now()}`;
-    addTab({
-      id: tabId,
+      title: 'وحدات القياس',
+      description: 'إدارة وحدات القياس والتحويلات',
+      path: '/units-of-measure',
+      tabTitle: 'وحدات القياس',
+    },
+    {
+      id: 'units-of-measure-categories',
+      icon: '📂📏',
       title: 'فئات وحدات القياس',
+      description: 'إدارة فئات وحدات القياس',
       path: '/units-of-measure/categories',
-      icon: '🏷️📏',
-    });
-    navigate('/units-of-measure/categories');
-  };
+      tabTitle: 'فئات وحدات القياس',
+    },
+    {
+      id: 'products',
+      icon: '📦',
+      title: 'المنتجات',
+      description: 'إدارة المنتجات والأصناف',
+      path: '/products',
+      tabTitle: 'المنتجات',
+      isDisabled: true,
+    },
+    {
+      id: 'product-categories',
+      icon: '📦🏷️',
+      title: 'فئات المنتجات',
+      description: 'إدارة فئات وتصنيفات المنتجات',
+      path: '/product-categories',
+      tabTitle: 'فئات المنتجات',
+      isDisabled: true,
+    },
+    {
+      id: 'warehouses',
+      icon: '🏢',
+      title: 'المخازن',
+      description: 'إدارة المخازن',
+      path: '/warehouses',
+      tabTitle: 'المخازن',
+      isDisabled: true,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -61,54 +55,7 @@ export default function InventoryManagement() {
       </div>
 
       {/* Quick Access Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          onClick={handleOpenProducts}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">📦</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">المنتجات</h2>
-          <p className="text-gray-600 text-sm">إدارة المنتجات والأصناف </p>
-        </button>
-
-        <button
-          onClick={handleOpenCategories}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">📦🏷️</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">فئات المنتجات</h2>
-          <p className="text-gray-600 text-sm">إدارة فئات وتصنيفات المنتجات</p>
-        </button>
-
-        <button
-          onClick={handleOpenUnits}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">📏</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">وحدات القياس</h2>
-          <p className="text-gray-600 text-sm">إدارة وحدات القياس والتحويلات</p>
-        </button>
-
-        <button
-          onClick={handleOpenUnitsCategories}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">📏🏷️</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">فئات وحدات القياس</h2>
-          <p className="text-gray-600 text-sm">إدارة فئات وحدات القياس</p>
-        </button>
-
-        <button
-          onClick={handleOpenWarehouses}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">🏢</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">المخازن</h2>
-          <p className="text-gray-600 text-sm">إدارة المخازن</p>
-          <p className='text-black mt-2'>(قريبا)</p>
-        </button>
-
-      </div>
+      <ManagementButtons buttons={buttons} columns={3} />
     </div>
   );
 }

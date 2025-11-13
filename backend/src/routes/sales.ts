@@ -22,7 +22,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const connection = await getConnection();
-    
+
     // الحصول على بيانات الفاتورة
     const [sales]: any = await connection.execute(
       'SELECT s.*, c.name as customerName, c.email, c.phone, c.address FROM sales s LEFT JOIN customers c ON s.customerId = c.id WHERE s.id = ?',
@@ -110,10 +110,10 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     connection.release();
-    res.status(201).json({ 
-      id: saleId, 
+    res.status(201).json({
+      id: saleId,
       invoiceNumber,
-      message: 'تم إنشاء فاتورة البيع بنجاح' 
+      message: 'تم إنشاء فاتورة البيع بنجاح'
     });
   } catch (error) {
     console.error('خطأ في إضافة فاتورة البيع:', error);
