@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import AccountsForm from './AccountsForm';
 import AccountsTable from './AccountsTable';
+import AccountsFilters from './AccountsFilters';
 import ToastContainer from '../../components/Toast';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useAccountsData, useAccountForm, useAccountFilters } from './hooks';
@@ -10,7 +11,7 @@ import { useConfirmModal } from '../../hooks/useConfirmModal';
 export default function Accounts() {
   // Toast notifications
   const { toasts, removeToast, showSuccess, showError } = useToast();
-  
+
   // Confirmation modal
   const { isOpen, options, isLoading, confirm, handleConfirm, handleCancel } = useConfirmModal();
 
@@ -113,44 +114,13 @@ export default function Accounts() {
       {/* صفحة الحسابات المدمجة */}
       <div className="card-small-padding">
         {/* التصفية والبحث */}
-        <div className="px-2 py-2 border-b bg-gray-50">
-          <div className="flex flex-wrap items-center gap-6">
-
-            <button
-            onClick={handleAddNew}
-            className="btn-primary flex items-center gap-2"
-          >
-            <span>➕</span>
-            <span>حساب جديد</span>
-          </button>
-
-            {/* Search Input */}
-            <div className="flex items-center gap-2 flex-1 min-w-64">
-              <label className="label-field[margin-bottom-0] whitespace-nowrap">البحث</label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="ابحث برقم الحساب أو الاسم..."
-                className="input-field flex-1"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div className="flex items-center gap-2">
-              <label className="label-field[margin-bottom-0] whitespace-nowrap">الحالة</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-                className="input-field"
-              >
-                <option value="all">-- الكل --</option>
-                <option value="active">نشط</option>
-                <option value="inactive">معطل</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <AccountsFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          onAddNew={handleAddNew}
+        />
 
         {/* الجدول */}
         <div className="overflow-x-auto">

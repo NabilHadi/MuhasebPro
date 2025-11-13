@@ -5,6 +5,7 @@ interface AccountsFiltersProps {
   setSearchTerm: (term: string) => void;
   statusFilter: 'all' | 'active' | 'inactive';
   setStatusFilter: (status: 'all' | 'active' | 'inactive') => void;
+  onAddNew?: () => void;
 }
 
 export const AccountsFilters: React.FC<AccountsFiltersProps> = ({
@@ -12,38 +13,44 @@ export const AccountsFilters: React.FC<AccountsFiltersProps> = ({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
+  onAddNew,
 }) => {
   return (
-    <div className="card mb-6">
-      <div className="p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search Input */}
-          <div className="form-group">
-            <label className="label-field">البحث</label>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ابحث برقم الحساب أو الاسم..."
-              className="input-field"
-            />
-            <p className="text-xs text-gray-500 mt-1">ابحث برقم الحساب أو الاسم بالعربية أو الإنجليزية</p>
-          </div>
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex flex-wrap items-center">
+        {onAddNew && (
+          <button
+            onClick={onAddNew}
+            className="btn-primary flex items-center gap-2"
+          >
+            <span>➕</span>
+            <span>حساب جديد</span>
+          </button>
+        )}
+      </div>
 
-          {/* Status Filter */}
-          <div className="form-group">
-            <label className="label-field">الحالة</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-              className="input-field"
-            >
-              <option value="all">-- الكل --</option>
-              <option value="active">نشط</option>
-              <option value="inactive">معطل</option>
-            </select>
-          </div>
-        </div>
+      {/* Search Input */}
+      <div className="flex-1">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="ابحث برقم الحساب أو الاسم بالعربية أو الإنجليزية"
+          className="input-field"
+        />
+      </div>
+
+      {/* Status Filter */}
+      <div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+          className="input-field"
+        >
+          <option value="all">-- الكل --</option>
+          <option value="active">نشط</option>
+          <option value="inactive">معطل</option>
+        </select>
       </div>
     </div>
   );

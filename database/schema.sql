@@ -6,6 +6,20 @@ SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 SET COLLATION_CONNECTION = utf8mb4_unicode_ci;
 
+-- جدول المستخدمين
+CREATE TABLE IF NOT EXISTS users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  fullName VARCHAR(100),
+  role ENUM('admin', 'accountant', 'sales', 'warehouse') DEFAULT 'accountant',
+  isActive BOOLEAN DEFAULT TRUE,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- جدول أنواع التقارير
 CREATE TABLE IF NOT EXISTS report_types (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -49,48 +63,34 @@ CREATE TABLE IF NOT EXISTS accounts (
   INDEX idx_parent_account (parent_account_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- جدول المستخدمين
-CREATE TABLE IF NOT EXISTS users (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  username VARCHAR(100) UNIQUE NOT NULL,
-  email VARCHAR(100) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  fullName VARCHAR(100),
-  role ENUM('admin', 'accountant', 'sales', 'warehouse') DEFAULT 'accountant',
-  isActive BOOLEAN DEFAULT TRUE,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_username (username)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- جدول بيانات الشركة
-CREATE TABLE IF NOT EXISTS company (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(200) NOT NULL,
-  commercialRegister VARCHAR(100),
-  taxId VARCHAR(100),
-  phone VARCHAR(20),
-  email VARCHAR(100),
-  address TEXT,
-  city VARCHAR(50),
-  country VARCHAR(50),
-  logo LONGBLOB,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS company (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   name VARCHAR(200) NOT NULL,
+--   commercialRegister VARCHAR(100),
+--   taxId VARCHAR(100),
+--   phone VARCHAR(20),
+--   email VARCHAR(100),
+--   address TEXT,
+--   city VARCHAR(50),
+--   country VARCHAR(50),
+--   logo LONGBLOB,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول القيود المحاسبية (Journal Entries)
-CREATE TABLE IF NOT EXISTS journal_entries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    date DATE NOT NULL,
-    description VARCHAR(255),
-    reference VARCHAR(50),
-    is_void BOOLEAN DEFAULT FALSE,
-    status ENUM('draft', 'posted', 'voided') DEFAULT 'draft',
-    reversed_of INT DEFAULT NULL,
-    FOREIGN KEY (reversed_of) REFERENCES journal_entries(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS journal_entries (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     date DATE NOT NULL,
+--     description VARCHAR(255),
+--     reference VARCHAR(50),
+--     is_void BOOLEAN DEFAULT FALSE,
+--     status ENUM('draft', 'posted', 'voided') DEFAULT 'draft',
+--     reversed_of INT DEFAULT NULL,
+--     FOREIGN KEY (reversed_of) REFERENCES journal_entries(id) ON DELETE SET NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 
@@ -154,181 +154,163 @@ CREATE TABLE IF NOT EXISTS products (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول المخازن
-CREATE TABLE IF NOT EXISTS warehouses (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  is_active BOOLEAN DEFAULT TRUE,
-  name VARCHAR(200) NOT NULL,
-  location VARCHAR(200),
-  manager VARCHAR(100),
-  manager_id INT DEFAULT NULL,
-  type ENUM('Main', 'Branch', 'Transit') DEFAULT 'Main',
-  capacity DECIMAL(10,2) DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (manager_id) REFERENCES users(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS warehouses (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   is_active BOOLEAN DEFAULT TRUE,
+--   name VARCHAR(200) NOT NULL,
+--   location VARCHAR(200),
+--   manager VARCHAR(100),
+--   manager_id INT DEFAULT NULL,
+--   type ENUM('Main', 'Branch', 'Transit') DEFAULT 'Main',
+--   capacity DECIMAL(10,2) DEFAULT 0,
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--   FOREIGN KEY (manager_id) REFERENCES users(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE stock_movements (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT NOT NULL,
-    warehouse_id INT DEFAULT NULL,
-    movement_type ENUM('IN', 'OUT', 'TRANSFER', 'ADJUSTMENT') NOT NULL,
-    reference VARCHAR(50),                         -- e.g. INV-1001 or PO-2002
-    description VARCHAR(255),
-    quantity DECIMAL(12,2) NOT NULL,
-    unit_cost DECIMAL(12,2) DEFAULT 0.00,          -- Cost per unit for valuation
-    total_cost DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_cost) STORED,
-    movement_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    related_journal_id INT DEFAULT NULL,           -- Optional: link to accounting entry
-    created_by INT DEFAULT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE stock_movements (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     product_id INT NOT NULL,
+--     warehouse_id INT DEFAULT NULL,
+--     movement_type ENUM('IN', 'OUT', 'TRANSFER', 'ADJUSTMENT') NOT NULL,
+--     reference VARCHAR(50),                         -- e.g. INV-1001 or PO-2002
+--     description VARCHAR(255),
+--     quantity DECIMAL(12,2) NOT NULL,
+--     unit_cost DECIMAL(12,2) DEFAULT 0.00,          -- Cost per unit for valuation
+--     total_cost DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_cost) STORED,
+--     movement_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+--     related_journal_id INT DEFAULT NULL,           -- Optional: link to accounting entry
+--     created_by INT DEFAULT NULL,
+--     FOREIGN KEY (product_id) REFERENCES products(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- جدول المشتريات
-CREATE TABLE IF NOT EXISTS purchases (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  invoiceNumber VARCHAR(100),
-  supplierId INT NOT NULL,
-  totalAmount DECIMAL(15, 2) NOT NULL,
-  notes TEXT,
-  status ENUM('pending', 'received', 'cancelled') DEFAULT 'pending',
-  invoiceDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_status (status),
-  INDEX idx_invoiceDate (invoiceDate)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS purchases (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   invoiceNumber VARCHAR(100),
+--   supplierId INT NOT NULL,
+--   totalAmount DECIMAL(15, 2) NOT NULL,
+--   notes TEXT,
+--   status ENUM('pending', 'received', 'cancelled') DEFAULT 'pending',
+--   invoiceDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--   INDEX idx_status (status),
+--   INDEX idx_invoiceDate (invoiceDate)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول عناصر المشتريات
-CREATE TABLE IF NOT EXISTS purchase_items (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  purchaseId INT NOT NULL,
-  productId INT NOT NULL,
-  quantity INT NOT NULL,
-  unitPrice DECIMAL(15, 2) NOT NULL,
-  totalPrice DECIMAL(15, 2) NOT NULL,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (purchaseId) REFERENCES purchases(id) ON DELETE CASCADE,
-  FOREIGN KEY (productId) REFERENCES products(id) ON DELETE RESTRICT,
-  INDEX idx_purchaseId (purchaseId)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS purchase_items (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   purchaseId INT NOT NULL,
+--   productId INT NOT NULL,
+--   quantity INT NOT NULL,
+--   unitPrice DECIMAL(15, 2) NOT NULL,
+--   totalPrice DECIMAL(15, 2) NOT NULL,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   FOREIGN KEY (purchaseId) REFERENCES purchases(id) ON DELETE CASCADE,
+--   FOREIGN KEY (productId) REFERENCES products(id) ON DELETE RESTRICT,
+--   INDEX idx_purchaseId (purchaseId)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول المبيعات
-CREATE TABLE IF NOT EXISTS sales (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  invoiceNumber VARCHAR(100),
-  customerId INT NOT NULL,
-  totalAmount DECIMAL(15, 2) NOT NULL,
-  discount DECIMAL(15, 2) DEFAULT 0,
-  tax DECIMAL(15, 2) DEFAULT 0,
-  notes TEXT,
-  status ENUM('pending', 'paid', 'cancelled') DEFAULT 'pending',
-  invoiceDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_status (status),
-  INDEX idx_invoiceDate (invoiceDate)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS sales (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   invoiceNumber VARCHAR(100),
+--   customerId INT NOT NULL,
+--   totalAmount DECIMAL(15, 2) NOT NULL,
+--   discount DECIMAL(15, 2) DEFAULT 0,
+--   tax DECIMAL(15, 2) DEFAULT 0,
+--   notes TEXT,
+--   status ENUM('pending', 'paid', 'cancelled') DEFAULT 'pending',
+--   invoiceDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--   INDEX idx_status (status),
+--   INDEX idx_invoiceDate (invoiceDate)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول عناصر المبيعات
-CREATE TABLE IF NOT EXISTS sale_items (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  saleId INT NOT NULL,
-  productId INT NOT NULL,
-  quantity INT NOT NULL,
-  unitPrice DECIMAL(15, 2) NOT NULL,
-  totalPrice DECIMAL(15, 2) NOT NULL,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (saleId) REFERENCES sales(id) ON DELETE CASCADE,
-  FOREIGN KEY (productId) REFERENCES products(id) ON DELETE RESTRICT,
-  INDEX idx_saleId (saleId)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS sale_items (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   saleId INT NOT NULL,
+--   productId INT NOT NULL,
+--   quantity INT NOT NULL,
+--   unitPrice DECIMAL(15, 2) NOT NULL,
+--   totalPrice DECIMAL(15, 2) NOT NULL,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   FOREIGN KEY (saleId) REFERENCES sales(id) ON DELETE CASCADE,
+--   FOREIGN KEY (productId) REFERENCES products(id) ON DELETE RESTRICT,
+--   INDEX idx_saleId (saleId)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول المدفوعات
-CREATE TABLE IF NOT EXISTS payments (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  relatedType ENUM('purchase', 'sale') NOT NULL,
-  relatedId INT NOT NULL,
-  amount DECIMAL(15, 2) NOT NULL,
-  paymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  paymentMethod ENUM('cash', 'bank_transfer', 'check', 'credit_card') DEFAULT 'cash',
-  reference VARCHAR(100),
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_relatedId (relatedId),
-  INDEX idx_paymentDate (paymentDate)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS payments (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   relatedType ENUM('purchase', 'sale') NOT NULL,
+--   relatedId INT NOT NULL,
+--   amount DECIMAL(15, 2) NOT NULL,
+--   paymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   paymentMethod ENUM('cash', 'bank_transfer', 'check', 'credit_card') DEFAULT 'cash',
+--   reference VARCHAR(100),
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   INDEX idx_relatedId (relatedId),
+--   INDEX idx_paymentDate (paymentDate)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول حركات المخزون
-CREATE TABLE IF NOT EXISTS inventory_movements (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  productId INT NOT NULL,
-  warehouseId INT,
-  movementType ENUM('purchase', 'sale', 'adjustment', 'return') NOT NULL,
-  quantity INT NOT NULL,
-  referenceId INT,
-  notes TEXT,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (productId) REFERENCES products(id) ON DELETE RESTRICT,
-  FOREIGN KEY (warehouseId) REFERENCES warehouses(id) ON DELETE SET NULL,
-  INDEX idx_productId (productId),
-  INDEX idx_movementType (movementType)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS inventory_movements (
+--   id INT PRIMARY KEY AUTO_INCREMENT,
+--   productId INT NOT NULL,
+--   warehouseId INT,
+--   movementType ENUM('purchase', 'sale', 'adjustment', 'return') NOT NULL,
+--   quantity INT NOT NULL,
+--   referenceId INT,
+--   notes TEXT,
+--   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   FOREIGN KEY (productId) REFERENCES products(id) ON DELETE RESTRICT,
+--   FOREIGN KEY (warehouseId) REFERENCES warehouses(id) ON DELETE SET NULL,
+--   INDEX idx_productId (productId),
+--   INDEX idx_movementType (movementType)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- جدول الأدوار والصلاحيات
-CREATE TABLE IF NOT EXISTS roles (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(50) UNIQUE NOT NULL,
-  description TEXT,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- جدول صلاحيات الدور
-CREATE TABLE IF NOT EXISTS role_permissions (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  roleId INT NOT NULL,
-  permission VARCHAR(100) NOT NULL,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (roleId) REFERENCES roles(id) ON DELETE CASCADE,
-  UNIQUE KEY unique_role_permission (roleId, permission)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Purchases Module
-
-CREATE TABLE IF NOT EXISTS purchase_orders (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  supplier_id INT NOT NULL,
-  warehouse_id INT DEFAULT NULL,
-  reference_no VARCHAR(50),
-  purchase_date DATE NOT NULL,
-  due_date DATE DEFAULT NULL,
-  status ENUM('Draft','Received','Billed','Cancelled') DEFAULT 'Draft',
-  total_amount DECIMAL(15,2) DEFAULT 0.00,
-  total_tax DECIMAL(15,2) DEFAULT 0.00,
-  total_discount DECIMAL(15,2) DEFAULT 0.00,
-  net_amount DECIMAL(15,2) GENERATED ALWAYS AS (total_amount + total_tax - total_discount) STORED,
-  notes TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+-- CREATE TABLE IF NOT EXISTS purchase_orders (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   supplier_id INT NOT NULL,
+--   warehouse_id INT DEFAULT NULL,
+--   reference_no VARCHAR(50),
+--   purchase_date DATE NOT NULL,
+--   due_date DATE DEFAULT NULL,
+--   status ENUM('Draft','Received','Billed','Cancelled') DEFAULT 'Draft',
+--   total_amount DECIMAL(15,2) DEFAULT 0.00,
+--   total_tax DECIMAL(15,2) DEFAULT 0.00,
+--   total_discount DECIMAL(15,2) DEFAULT 0.00,
+--   net_amount DECIMAL(15,2) GENERATED ALWAYS AS (total_amount + total_tax - total_discount) STORED,
+--   notes TEXT,
+--   is_active BOOLEAN DEFAULT TRUE,
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
-  FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--   FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS purchase_lines (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  purchase_id INT NOT NULL,
-  product_id INT NOT NULL,
-  quantity DECIMAL(12,2) NOT NULL,
-  unit_price DECIMAL(15,2) NOT NULL,
-  discount DECIMAL(15,2) DEFAULT 0.00,
-  tax DECIMAL(15,2) DEFAULT 0.00,
-  total DECIMAL(15,2) GENERATED ALWAYS AS ((quantity * unit_price) - discount + tax) STORED,
+-- CREATE TABLE IF NOT EXISTS purchase_lines (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   purchase_id INT NOT NULL,
+--   product_id INT NOT NULL,
+--   quantity DECIMAL(12,2) NOT NULL,
+--   unit_price DECIMAL(15,2) NOT NULL,
+--   discount DECIMAL(15,2) DEFAULT 0.00,
+--   tax DECIMAL(15,2) DEFAULT 0.00,
+--   total DECIMAL(15,2) GENERATED ALWAYS AS ((quantity * unit_price) - discount + tax) STORED,
   
-  FOREIGN KEY (purchase_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
-  FOREIGN KEY (product_id) REFERENCES products(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--   FOREIGN KEY (purchase_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
+--   FOREIGN KEY (product_id) REFERENCES products(id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
 -- ==========================================
@@ -344,10 +326,6 @@ CREATE TABLE IF NOT EXISTS purchase_lines (
 -- ملاحظة: استبدل كلمة المرور المشفرة أعلاه بكلمة مرور محشفة الفعلية
 
 -- بيانات تجريبية لنظام محاسب برو
-
--- إدراج الأدوار الافتراضية
-INSERT INTO roles (name, description) VALUES 
-('admin', 'مسؤول النظام - صلاحيات كاملة');
 
 -- إنشاء حساب تجريبي
 INSERT INTO users (username, email, password, fullName, role) VALUES 
