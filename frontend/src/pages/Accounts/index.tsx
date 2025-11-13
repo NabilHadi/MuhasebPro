@@ -1,6 +1,5 @@
-import AccountsFilters from './AccountsFilters';
 import AccountsForm from './AccountsForm';
-import AccountsTable from './AccountsTable';
+import AccountTableRow from './AccountTableRow';
 import { useAccountsData, useAccountForm, useAccountFilters } from './hooks';
 
 export default function Accounts() {
@@ -71,17 +70,6 @@ export default function Accounts() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">الحسابات</h1>
-        <button
-          onClick={handleAddNew}
-          className="btn-primary flex items-center gap-2"
-        >
-          <span>➕</span>
-          <span>حساب جديد</span>
-        </button>
-      </div>
-
       {/* رسائل */}
       {error && (
         <div className="alert alert-danger mb-4">
@@ -111,30 +99,97 @@ export default function Accounts() {
         />
       )}
 
-      {/* جدول الحسابات */}
-      <AccountsFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-      />
-
-      {accounts.length === 0 ? (
-        <div className="card text-center py-8">
-          <p className="text-gray-500">لا توجد حسابات حتى الآن</p>
+      {/* صفحة الحسابات المدمجة */}
+      <div className="card">
+        {/* رأس القائمة */}
+        <div className="pb-2 border-b flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">الحسابات</h1>
+          <button
+            onClick={handleAddNew}
+            className="btn-primary flex items-center gap-2"
+          >
+            <span>➕</span>
+            <span>حساب جديد</span>
+          </button>
         </div>
-      ) : (
-        <AccountsTable
-          accounts={filteredAccounts}
-          loading={loading}
-          onEdit={handleEdit}
-          onToggleStatus={handleToggleStatus}
-          getTypeLabel={getTypeLabel}
-          getReportLabel={getReportLabel}
-          getBalanceLabel={getBalanceLabel}
-          getTypeBadgeColor={getTypeBadgeColor}
-        />
-      )}
+
+        {/* التصفية والبحث */}
+        <div className="px-6 py-3 border-b bg-gray-50">
+          <div className="flex flex-wrap items-center gap-6">
+            {/* Search Input */}
+            <div className="flex items-center gap-2 flex-1 min-w-64">
+              <label className="label-field[margin-bottom-0] whitespace-nowrap">البحث</label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="ابحث برقم الحساب أو الاسم..."
+                className="input-field flex-1"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex items-center gap-2">
+              <label className="label-field[margin-bottom-0] whitespace-nowrap">الحالة</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                className="input-field"
+              >
+                <option value="all">-- الكل --</option>
+                <option value="active">نشط</option>
+                <option value="inactive">معطل</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* الجدول */}
+        <div className="overflow-x-auto">
+          {accounts.length === 0 ? (
+            <div className="text-center py-8 p-6">
+              <p className="text-gray-500">لا توجد حسابات حتى الآن</p>
+            </div>
+          ) : loading ? (
+            <div className="text-center py-8 p-6">
+              <p className="text-gray-500">جاري التحميل...</p>
+            </div>
+          ) : filteredAccounts.length === 0 ? (
+            <div className="text-center py-8 p-6">
+              <p className="text-gray-500">لا يوجد حسابات تطابق معايير البحث</p>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">رقم الحساب</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">حساب الأب</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الاسم</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">النوع</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">المستوى</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">التقرير</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">نوع الرصيد</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAccounts.map((account) => (
+                  <AccountTableRow
+                    key={account.account_number}
+                    account={account}
+                    onEdit={handleEdit}
+                    onToggleStatus={handleToggleStatus}
+                    getTypeLabel={getTypeLabel}
+                    getReportLabel={getReportLabel}
+                    getBalanceLabel={getBalanceLabel}
+                    getTypeBadgeColor={getTypeBadgeColor}
+                  />
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
