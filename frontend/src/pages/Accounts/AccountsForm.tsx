@@ -9,8 +9,10 @@ interface AccountsFormProps {
   onCancel: () => void;
   mainTypeAccounts: Account[];
   accountTypes: AccountType[];
+  balanceTypes: any[];
   onParentAccountChange: (parentNumber: string) => void;
   getBalanceLabel: (typeId: number) => string;
+  isBalanceTypeEditable: boolean;
 }
 
 export const AccountsForm: React.FC<AccountsFormProps> = ({
@@ -21,8 +23,10 @@ export const AccountsForm: React.FC<AccountsFormProps> = ({
   onCancel,
   mainTypeAccounts,
   accountTypes,
+  balanceTypes,
   onParentAccountChange,
   getBalanceLabel,
+  isBalanceTypeEditable,
 }) => {
   return (
     <div className="card mb-8">
@@ -121,13 +125,35 @@ export const AccountsForm: React.FC<AccountsFormProps> = ({
             </select>
           </div>
 
-          {/* Balance Type (Auto-Inferred) */}
+          {/* Balance Type (Auto-Inferred or Editable for Foundational) */}
           <div className="form-group">
             <label className="label-field">نوع الرصيد</label>
-            <div className="input-field bg-gray-100 flex items-center">
-              {getBalanceLabel(formData.balance_type_id)}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">يتم استرجاعه من الحساب الأب</p>
+            {isBalanceTypeEditable ? (
+              <>
+                <select
+                  value={formData.balance_type_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, balance_type_id: parseInt(e.target.value) })
+                  }
+                  className="input-field"
+                  required
+                >
+                  {balanceTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name_ar}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">يمكنك تحديد نوع الرصيد للحساب الأساسي</p>
+              </>
+            ) : (
+              <>
+                <div className="input-field bg-gray-100 flex items-center">
+                  {getBalanceLabel(formData.balance_type_id)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">يتم استرجاعه من الحساب الأب</p>
+              </>
+            )}
           </div>
 
           {/* Step 7: Status */}

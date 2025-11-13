@@ -4,7 +4,7 @@ import { Account } from './types';
 interface AccountTableRowProps {
   account: Account;
   onEdit: (account: Account) => void;
-  onDelete: (accountNumber: string) => void;
+  onToggleStatus: (accountNumber: string) => void;
   getTypeLabel: (typeId: number) => string;
   getReportLabel: (typeId: number) => string;
   getBalanceLabel: (typeId: number) => string;
@@ -14,7 +14,7 @@ interface AccountTableRowProps {
 export const AccountTableRow: React.FC<AccountTableRowProps> = ({
   account,
   onEdit,
-  onDelete,
+  onToggleStatus,
   getTypeLabel,
   getReportLabel,
   getBalanceLabel,
@@ -65,12 +65,21 @@ export const AccountTableRow: React.FC<AccountTableRowProps> = ({
         >
           ✏️ تعديل
         </button>
-        <button
-          onClick={() => onDelete(account.account_number)}
-          className="inline-flex items-center px-3 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-md hover:bg-red-200 transition"
-        >
-          🗑️ تعطيل
-        </button>
+        {account.status === 'active' ? (
+          <button
+            onClick={() => onToggleStatus(account.account_number)}
+            className="inline-flex items-center px-3 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-md hover:bg-red-200 transition"
+          >
+            🗑️ تعطيل
+          </button>
+        ) : (
+          <button
+            onClick={() => onToggleStatus(account.account_number)}
+            className="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition"
+          >
+            ✓ تنشيط
+          </button>
+        )}
       </td>
     </tr>
   );

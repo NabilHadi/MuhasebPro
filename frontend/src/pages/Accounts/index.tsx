@@ -30,7 +30,7 @@ export default function Accounts() {
     handleAddNew: handleAddNewForm,
     handleEdit,
     handleSubmit: handleFormSubmit,
-    handleDelete: handleFormDelete,
+    handleToggleStatus: handleFormToggleStatus,
   } = useAccountForm();
 
   // إدارة التصفية والبحث
@@ -62,9 +62,12 @@ export default function Accounts() {
     await handleFormSubmit(e, fetchAccounts);
   };
 
-  const handleDelete = async (accountNumber: string) => {
-    await handleFormDelete(accountNumber, fetchAccounts);
+  const handleToggleStatus = async (accountNumber: string) => {
+    await handleFormToggleStatus(accountNumber, fetchAccounts);
   };
+
+  // تحديد ما إذا كان نوع الرصيد قابل للتعديل (للحسابات الأساسية فقط)
+  const isBalanceTypeEditable = !formData.parent_account_number;
 
   return (
     <div>
@@ -101,8 +104,10 @@ export default function Accounts() {
           onCancel={() => setShowForm(false)}
           mainTypeAccounts={mainTypeAccounts}
           accountTypes={accountTypes}
+          balanceTypes={balanceTypes}
           onParentAccountChange={handleParentAccountChange}
           getBalanceLabel={getBalanceLabel}
+          isBalanceTypeEditable={isBalanceTypeEditable}
         />
       )}
 
@@ -123,7 +128,7 @@ export default function Accounts() {
           accounts={filteredAccounts}
           loading={loading}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          onToggleStatus={handleToggleStatus}
           getTypeLabel={getTypeLabel}
           getReportLabel={getReportLabel}
           getBalanceLabel={getBalanceLabel}

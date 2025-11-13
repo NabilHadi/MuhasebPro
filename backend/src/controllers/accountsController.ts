@@ -25,7 +25,6 @@ export const getAllAccounts = async () => {
        LEFT JOIN account_types at ON a.account_type_id = at.id
        LEFT JOIN report_types rt ON a.report_type_id = rt.id
        LEFT JOIN balance_types bt ON a.balance_type_id = bt.id
-       WHERE a.status = 'active' 
        ORDER BY a.account_number ASC`
     );
     return accounts;

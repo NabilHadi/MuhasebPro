@@ -17,7 +17,7 @@ interface UseAccountFormReturn {
   handleAddNew: (onFetchAccounts: () => Promise<void>, onFetchMainTypeAccounts: () => Promise<void>) => void;
   handleEdit: (account: Account) => void;
   handleSubmit: (e: React.FormEvent, onFetchAccounts: () => Promise<void>) => Promise<void>;
-  handleDelete: (accountNumber: string, onFetchAccounts: () => Promise<void>) => Promise<void>;
+  handleToggleStatus: (accountNumber: string, onFetchAccounts: () => Promise<void>) => Promise<void>;
   resetForm: () => void;
 }
 
@@ -135,19 +135,31 @@ export const useAccountForm = (): UseAccountFormReturn => {
     }
   };
 
-  const handleDelete = async (accountNumber: string, onFetchAccounts: () => Promise<void>) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا الحساب؟')) {
+  const handleToggleStatus = async (accountNumber: string, onFetchAccounts: () => Promise<void>) => {
+    if (!window.confirm('هل أنت متأكد من تغيير حالة هذا الحساب؟')) {
       return;
     }
 
     try {
       setError('');
       setSuccess('');
-      await apiClient.patch(`/accounts/${accountNumber}/deactivate`);
-      setSuccess('تم تعطيل الحساب بنجاح');
+      
+      // Fetch the account to check its current status
+      const response = await apiClient.get(`/accounts/${accountNumber}`);
+      const account = response.data;
+      
+      // Toggle status based on current state
+      if (account.status === 'active') {
+        await apiClient.patch(`/accounts/${accountNumber}/deactivate`);
+        setSuccess('تم تعطيل الحساب بنجاح');
+      } else {
+        await apiClient.patch(`/accounts/${accountNumber}/activate`);
+        setSuccess('تم تنشيط الحساب بنجاح');
+      }
+      
       await onFetchAccounts();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'فشل تعطيل الحساب');
+      setError(err.response?.data?.message || 'فشل تحديث حالة الحساب');
     }
   };
 
@@ -174,7 +186,7 @@ export const useAccountForm = (): UseAccountFormReturn => {
     handleAddNew,
     handleEdit,
     handleSubmit,
-    handleDelete,
+    handleToggleStatus,
     resetForm,
   };
 };

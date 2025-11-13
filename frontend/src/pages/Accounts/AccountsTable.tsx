@@ -6,7 +6,7 @@ interface AccountsTableProps {
   accounts: Account[];
   loading: boolean;
   onEdit: (account: Account) => void;
-  onDelete: (accountNumber: string) => void;
+  onToggleStatus: (accountNumber: string) => void;
   getTypeLabel: (typeId: number) => string;
   getReportLabel: (typeId: number) => string;
   getBalanceLabel: (typeId: number) => string;
@@ -17,7 +17,7 @@ export const AccountsTable: React.FC<AccountsTableProps> = ({
   accounts,
   loading,
   onEdit,
-  onDelete,
+  onToggleStatus,
   getTypeLabel,
   getReportLabel,
   getBalanceLabel,
@@ -60,7 +60,7 @@ export const AccountsTable: React.FC<AccountsTableProps> = ({
               key={account.account_number}
               account={account}
               onEdit={onEdit}
-              onDelete={onDelete}
+              onToggleStatus={onToggleStatus}
               getTypeLabel={getTypeLabel}
               getReportLabel={getReportLabel}
               getBalanceLabel={getBalanceLabel}
