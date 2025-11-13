@@ -7,6 +7,14 @@ import {
   deactivateUnit,
   activateUnit,
 } from '../controllers/unitsOfMeasureController';
+import {
+  getAllCategories,
+  getCategoryById,
+  createCategory,
+  updateCategory,
+  deactivateCategory,
+  activateCategory,
+} from '../controllers/unitsOfMeasureCategoriesController';
 
 const router = Router();
 
@@ -19,8 +27,68 @@ const validateUnitId = (req: Request, res: Response, next: Function) => {
   next();
 };
 
-// المسارات
+// مسارات الفئات
+// الحصول على جميع الفئات
+router.get('/categories/list', async (req, res) => {
+  try {
+    await getAllCategories(req, res);
+  } catch (error) {
+    console.error('خطأ في المسار:', error);
+    res.status(500).json({ message: 'خطأ في السيرفر الداخلي' });
+  }
+});
 
+// إنشاء فئة جديدة
+router.post('/categories', async (req, res) => {
+  try {
+    await createCategory(req, res);
+  } catch (error) {
+    console.error('خطأ في المسار:', error);
+    res.status(500).json({ message: 'خطأ في السيرفر الداخلي' });
+  }
+});
+
+// الحصول على فئة محددة
+router.get('/categories/:id', validateUnitId, async (req, res) => {
+  try {
+    await getCategoryById(req, res);
+  } catch (error) {
+    console.error('خطأ في المسار:', error);
+    res.status(500).json({ message: 'خطأ في السيرفر الداخلي' });
+  }
+});
+
+// تحديث فئة
+router.put('/categories/:id', validateUnitId, async (req, res) => {
+  try {
+    await updateCategory(req, res);
+  } catch (error) {
+    console.error('خطأ في المسار:', error);
+    res.status(500).json({ message: 'خطأ في السيرفر الداخلي' });
+  }
+});
+
+// تعطيل فئة
+router.patch('/categories/:id/deactivate', validateUnitId, async (req, res) => {
+  try {
+    await deactivateCategory(req, res);
+  } catch (error) {
+    console.error('خطأ في المسار:', error);
+    res.status(500).json({ message: 'خطأ في السيرفر الداخلي' });
+  }
+});
+
+// تفعيل فئة
+router.patch('/categories/:id/activate', validateUnitId, async (req, res) => {
+  try {
+    await activateCategory(req, res);
+  } catch (error) {
+    console.error('خطأ في المسار:', error);
+    res.status(500).json({ message: 'خطأ في السيرفر الداخلي' });
+  }
+});
+
+// مسارات الوحدات
 // الحصول على جميع وحدات القياس
 router.get('/', async (req, res) => {
   try {

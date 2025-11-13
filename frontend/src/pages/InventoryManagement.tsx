@@ -28,14 +28,7 @@ export default function InventoryManagement() {
   };
 
   const handleOpenWarehouses = () => {
-    const tabId = `warehouses-${Date.now()}`;
-    addTab({
-      id: tabId,
-      title: 'المخازن',
-      path: '/warehouses',
-      icon: '🏢',
-    });
-    navigate('/warehouses');
+        // TODO: Add invoices logic later
   };
 
   const handleOpenUnits = () => {
@@ -47,6 +40,17 @@ export default function InventoryManagement() {
       icon: '📏',
     });
     navigate('/units-of-measure');
+  };
+
+  const handleOpenUnitsCategories = () => {
+    const tabId = `units-of-measure-categories-${Date.now()}`;
+    addTab({
+      id: tabId,
+      title: 'فئات وحدات القياس',
+      path: '/units-of-measure/categories',
+      icon: '🏷️📏',
+    });
+    navigate('/units-of-measure/categories');
   };
 
   return (
@@ -71,18 +75,9 @@ export default function InventoryManagement() {
           onClick={handleOpenCategories}
           className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
         >
-          <div className="text-4xl mb-3">🏷️</div>
+          <div className="text-4xl mb-3">📦🏷️</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">فئات المنتجات</h2>
           <p className="text-gray-600 text-sm">إدارة فئات وتصنيفات المنتجات</p>
-        </button>
-
-        <button
-          onClick={handleOpenWarehouses}
-          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
-        >
-          <div className="text-4xl mb-3">🏢</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">المخازن</h2>
-          <p className="text-gray-600 text-sm">إدارة المخازن</p>
         </button>
 
         <button
@@ -93,6 +88,26 @@ export default function InventoryManagement() {
           <h2 className="text-xl font-semibold text-gray-800 mb-2">وحدات القياس</h2>
           <p className="text-gray-600 text-sm">إدارة وحدات القياس والتحويلات</p>
         </button>
+
+        <button
+          onClick={handleOpenUnitsCategories}
+          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
+        >
+          <div className="text-4xl mb-3">📏🏷️</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">فئات وحدات القياس</h2>
+          <p className="text-gray-600 text-sm">إدارة فئات وحدات القياس</p>
+        </button>
+
+        <button
+          onClick={handleOpenWarehouses}
+          className="card hover:shadow-lg transition cursor-pointer p-6 text-center"
+        >
+          <div className="text-4xl mb-3">🏢</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">المخازن</h2>
+          <p className="text-gray-600 text-sm">إدارة المخازن</p>
+          <p className='text-black mt-2'>(قريبا)</p>
+        </button>
+
       </div>
     </div>
   );

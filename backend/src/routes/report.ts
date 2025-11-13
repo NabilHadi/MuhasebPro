@@ -20,7 +20,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 
     // عدد الحسابات النشطة
     const [accountCount]: any = await connection.execute(
-      'SELECT COUNT(*) as count FROM chart_of_accounts WHERE is_active = TRUE'
+      "SELECT COUNT(*) as count FROM accounts WHERE status = 'active'"
     );
 
     // عدد القيود المحاسبية

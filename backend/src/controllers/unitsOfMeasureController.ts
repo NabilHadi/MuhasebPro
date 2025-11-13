@@ -6,9 +6,12 @@ export const getAllUnits = async (req: Request, res: Response) => {
   try {
     const connection = await getConnection();
     const [units]: any = await connection.execute(
-      `SELECT id, name_ar, name_en, short_name, category, ratio_to_base, is_base, is_active, description, created_at
-       FROM units_of_measure
-       ORDER BY category ASC, name_ar ASC`
+      `SELECT u.id, u.name_ar, u.name_en, u.short_name, u.category_id, 
+              c.name_ar as category_name_ar, c.name_en as category_name_en,
+              u.ratio_to_base, u.is_base, u.is_active, u.description, u.created_at
+       FROM units_of_measure u
+       LEFT JOIN units_of_measure_categories c ON u.category_id = c.id
+       ORDER BY c.name_ar ASC, u.name_ar ASC`
     );
     connection.release();
     res.json(units);
@@ -25,9 +28,12 @@ export const getUnitById = async (req: Request, res: Response) => {
     const connection = await getConnection();
     
     const [unit]: any = await connection.execute(
-      `SELECT id, name_ar, name_en, short_name, category, ratio_to_base, is_base, is_active, description, created_at
-       FROM units_of_measure
-       WHERE id = ?`,
+      `SELECT u.id, u.name_ar, u.name_en, u.short_name, u.category_id, 
+              c.name_ar as category_name_ar, c.name_en as category_name_en,
+              u.ratio_to_base, u.is_base, u.is_active, u.description, u.created_at
+       FROM units_of_measure u
+       LEFT JOIN units_of_measure_categories c ON u.category_id = c.id
+       WHERE u.id = ?`,
       [id]
     );
     
@@ -47,7 +53,7 @@ export const getUnitById = async (req: Request, res: Response) => {
 // إنشاء وحدة قياس جديدة
 export const createUnit = async (req: Request, res: Response) => {
   try {
-    const { name_ar, name_en, short_name, category, ratio_to_base, is_base, description } = req.body;
+    const { name_ar, name_en, short_name, category_id, ratio_to_base, is_base, description } = req.body;
 
     if (!name_ar || !name_ar.trim()) {
       return res.status(400).json({ message: 'الاسم بالعربية مطلوب' });
@@ -71,10 +77,10 @@ export const createUnit = async (req: Request, res: Response) => {
     }
 
     // إذا كانت وحدة أساسية، تأكد من عدم وجود وحدة أساسية أخرى في نفس الفئة
-    if (is_base) {
+    if (is_base && category_id) {
       const [baseUnit]: any = await connection.execute(
-        'SELECT id FROM units_of_measure WHERE category = ? AND is_base = TRUE',
-        [category || 'General']
+        'SELECT id FROM units_of_measure WHERE category_id = ? AND is_base = TRUE',
+        [category_id]
       );
 
       if (baseUnit.length > 0) {
@@ -84,13 +90,13 @@ export const createUnit = async (req: Request, res: Response) => {
     }
 
     const [result]: any = await connection.execute(
-      `INSERT INTO units_of_measure (name_ar, name_en, short_name, category, ratio_to_base, is_base, is_active, description)
+      `INSERT INTO units_of_measure (name_ar, name_en, short_name, category_id, ratio_to_base, is_base, is_active, description)
        VALUES (?, ?, ?, ?, ?, ?, TRUE, ?)`,
       [
         name_ar.trim(),
         name_en || null,
         short_name.trim().toUpperCase(),
-        category || 'General',
+        category_id || null,
         ratio_to_base || 1.0,
         is_base || false,
         description || null
@@ -104,7 +110,7 @@ export const createUnit = async (req: Request, res: Response) => {
       name_ar,
       name_en,
       short_name: short_name.toUpperCase(),
-      category: category || 'General',
+      category_id,
       ratio_to_base: ratio_to_base || 1.0,
       is_base: is_base || false,
       is_active: true,
@@ -121,7 +127,7 @@ export const createUnit = async (req: Request, res: Response) => {
 export const updateUnit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name_ar, name_en, short_name, category, ratio_to_base, is_base, description } = req.body;
+    const { name_ar, name_en, short_name, category_id, ratio_to_base, is_base, description } = req.body;
 
     if (!name_ar || !name_ar.trim()) {
       return res.status(400).json({ message: 'الاسم بالعربية مطلوب' });
@@ -135,7 +141,7 @@ export const updateUnit = async (req: Request, res: Response) => {
 
     // تحقق من وجود الوحدة
     const [existing]: any = await connection.execute(
-      'SELECT id, category FROM units_of_measure WHERE id = ?',
+      'SELECT id, category_id FROM units_of_measure WHERE id = ?',
       [id]
     );
 
@@ -156,10 +162,10 @@ export const updateUnit = async (req: Request, res: Response) => {
     }
 
     // إذا كانت وحدة أساسية، تأكد من عدم وجود وحدة أساسية أخرى في نفس الفئة
-    if (is_base && category !== existing[0].category) {
+    if (is_base && category_id && category_id !== existing[0].category_id) {
       const [baseUnit]: any = await connection.execute(
-        'SELECT id FROM units_of_measure WHERE category = ? AND is_base = TRUE AND id != ?',
-        [category || 'General', id]
+        'SELECT id FROM units_of_measure WHERE category_id = ? AND is_base = TRUE AND id != ?',
+        [category_id, id]
       );
 
       if (baseUnit.length > 0) {
@@ -170,13 +176,13 @@ export const updateUnit = async (req: Request, res: Response) => {
 
     await connection.execute(
       `UPDATE units_of_measure 
-       SET name_ar = ?, name_en = ?, short_name = ?, category = ?, ratio_to_base = ?, is_base = ?, description = ?
+       SET name_ar = ?, name_en = ?, short_name = ?, category_id = ?, ratio_to_base = ?, is_base = ?, description = ?
        WHERE id = ?`,
       [
         name_ar.trim(),
         name_en || null,
         short_name.trim().toUpperCase(),
-        category || 'General',
+        category_id || null,
         ratio_to_base || 1.0,
         is_base || false,
         description || null,
@@ -191,7 +197,7 @@ export const updateUnit = async (req: Request, res: Response) => {
       name_ar,
       name_en,
       short_name: short_name.toUpperCase(),
-      category: category || 'General',
+      category_id,
       ratio_to_base: ratio_to_base || 1.0,
       is_base: is_base || false,
       description,

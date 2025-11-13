@@ -6,6 +6,28 @@ SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 SET COLLATION_CONNECTION = utf8mb4_unicode_ci;
 
+-- جدول أنواع التقارير
+CREATE TABLE IF NOT EXISTS report_types (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  name_ar VARCHAR(150) NOT NULL,
+  name_en VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- جدول أنواع الحسابات
+CREATE TABLE IF NOT EXISTS account_types (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name_ar VARCHAR(100) NOT NULL,
+  name_en VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- جدول أنواع الأرصدة
+CREATE TABLE IF NOT EXISTS balance_types (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name_ar VARCHAR(100) NOT NULL,
+  name_en VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- جدول الحسابات
 CREATE TABLE IF NOT EXISTS accounts (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -26,46 +48,6 @@ CREATE TABLE IF NOT EXISTS accounts (
   FOREIGN KEY (parent_account_number) REFERENCES accounts(account_number),
   INDEX idx_parent_account (parent_account_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-
--- جدول أنواع التقارير
-CREATE TABLE IF NOT EXISTS report_types (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  code VARCHAR(20) NOT NULL UNIQUE,
-  name_ar VARCHAR(150) NOT NULL,
-  name_en VARCHAR(150) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO report_types (code, name_ar, name_en)
-VALUES
-('BAL', 'الميزانية العمومية', 'Balance Sheet'),
-('PL', 'الأرباح والخسائر', 'Profit and Loss');
-
--- جدول أنواع الحسابات
-CREATE TABLE IF NOT EXISTS account_types (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name_ar VARCHAR(100) NOT NULL,
-  name_en VARCHAR(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO account_types (name_ar, name_en)
-VALUES 
-('أساسي', 'Main'),
-('فرعي', 'Sub');
-
--- جدول أنواع الأرصدة
-CREATE TABLE IF NOT EXISTS balance_types (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name_ar VARCHAR(100) NOT NULL,
-  name_en VARCHAR(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO balance_types (name_ar, name_en)
-VALUES
-('مدين', 'Debit'),
-('دائن', 'Credit');
-
 
 -- جدول المستخدمين
 CREATE TABLE IF NOT EXISTS users (
@@ -112,37 +94,35 @@ CREATE TABLE IF NOT EXISTS journal_entries (
 
 
 
-CREATE TABLE IF NOT EXISTS units_of_measure (
+CREATE TABLE IF NOT EXISTS units_of_measure_categories (
   id INT PRIMARY KEY AUTO_INCREMENT,
-  name_ar VARCHAR(100) NOT NULL,             -- Arabic name (e.g. "قطعة", "كرتون", "لتر")
-  name_en VARCHAR(100),                      -- English name (optional)
-  short_name VARCHAR(20),                    -- Abbreviation (e.g. "pcs", "ctn", "L")
-  category VARCHAR(100) DEFAULT 'General',   -- For grouping (e.g. Weight, Length, Volume)
-  ratio_to_base DECIMAL(15,6) DEFAULT 1.000000,  -- Conversion factor to base unit (e.g. 1 box = 12 pcs)
-  is_base BOOLEAN DEFAULT FALSE,             -- Marks the base unit in that category
-  is_active BOOLEAN DEFAULT TRUE,            -- Soft delete flag
+  name_ar VARCHAR(100) NOT NULL,       -- Arabic name (e.g. الوزن، الحجم)
+  name_en VARCHAR(100),                -- English name
   description TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS units_of_measure (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  
+  name_ar VARCHAR(100) NOT NULL,           -- Arabic name (قطعة، كرتون...)
+  name_en VARCHAR(100),                    -- English name
+  short_name VARCHAR(20),                  -- Abbreviation (pcs, ctn, kg...)
 
-CREATE TABLE IF NOT EXISTS products (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  product_code VARCHAR(50) UNIQUE,
-  product_name_ar VARCHAR(255) NOT NULL,
-  product_name_en VARCHAR(255),
-  category_id INT DEFAULT NULL,
-  unit_id INT DEFAULT NULL,
-  product_type ENUM('Stockable','Service') DEFAULT 'Stockable',
-  reorder_level DECIMAL(12,2) DEFAULT 0.00,
-  is_active BOOLEAN DEFAULT TRUE,
+  category_id INT DEFAULT NULL,            -- FK → units_of_measure_categories(id)
+
+  ratio_to_base DECIMAL(15,6) DEFAULT 1.000000,  
+  is_base BOOLEAN DEFAULT FALSE,           
+  is_active BOOLEAN DEFAULT TRUE,          
   description TEXT,
+
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
-  FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL,
-  FOREIGN KEY (unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL
+
+  CONSTRAINT fk_uom_category 
+    FOREIGN KEY (category_id) REFERENCES units_of_measure_categories(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `product_categories` (
@@ -155,6 +135,23 @@ CREATE TABLE `product_categories` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_code VARCHAR(50) UNIQUE,
+  product_name_ar VARCHAR(255) NOT NULL,
+  product_name_en VARCHAR(255),
+  category_id INT DEFAULT NULL,
+  unit_id INT DEFAULT NULL,
+  product_type ENUM('Stockable','Service') DEFAULT 'Stockable',
+  is_active BOOLEAN DEFAULT TRUE,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL,
+  FOREIGN KEY (unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- جدول المخازن
 CREATE TABLE IF NOT EXISTS warehouses (
@@ -200,7 +197,6 @@ CREATE TABLE IF NOT EXISTS purchases (
   invoiceDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (supplierId) REFERENCES suppliers(id) ON DELETE RESTRICT,
   INDEX idx_status (status),
   INDEX idx_invoiceDate (invoiceDate)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -232,7 +228,6 @@ CREATE TABLE IF NOT EXISTS sales (
   invoiceDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (customerId) REFERENCES customers(id) ON DELETE RESTRICT,
   INDEX idx_status (status),
   INDEX idx_invoiceDate (invoiceDate)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -318,7 +313,6 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
-  FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
   FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -336,57 +330,173 @@ CREATE TABLE IF NOT EXISTS purchase_lines (
   FOREIGN KEY (product_id) REFERENCES products(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+-- ==========================================
+
+-- ملاحظة: استبدل كلمة المرور المشفرة أعلاه بكلمة مرور محشفة الفعلية
+
+-- بيانات تجريبية لنظام محاسب برو
+
 -- إدراج الأدوار الافتراضية
 INSERT INTO roles (name, description) VALUES 
-('admin', 'مسؤول النظام - صلاحيات كاملة'),
-('accountant', 'محاسب - إدارة الحسابات والفواتير'),
-('sales', 'موظف مبيعات - إنشاء فواتير المبيعات'),
-('warehouse', 'أمين المخزن - إدارة المخزون');
+('admin', 'مسؤول النظام - صلاحيات كاملة');
 
 -- إنشاء حساب تجريبي
 INSERT INTO users (username, email, password, fullName, role) VALUES 
 ('admin', 'admin@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'مسؤول النظام', 'admin');
 
--- ملاحظة: استبدل كلمة المرور المشفرة أعلاه بكلمة مرور محشفة الفعلية
 
--- بيانات تجريبية لنظام محاسب برو
--- ==========================================
--- إدراج مستخدمين تجريبيين
-INSERT INTO users (username, email, password, fullName, role) VALUES 
-('accountant', 'accountant@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'محاسب النظام', 'accountant');
-('sales', 'sales@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'موظف المبيعات', 'sales');
-('warehouse', 'warehouse@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'أمين المخزن', 'warehouse');
--- ملاحظة: استبدل كلمة المرور المشفرة أعلاه بكلمة مرور محشفة الفعلية
--- إدراج بيانات الشركة
-INSERT INTO company (name, commercialRegister, taxId, phone, email, address, city, country) VALUES 
-('شركة النور للتجارة', '1234567890', 'SA1234567890000', '+966123456789', 'info@alnoor.com', 'شارع الملك فهد', 'الرياض', 'السعودية');
--- إدراج موردين تجريبيين
-INSERT INTO suppliers (name, email, phone, address, city, country, taxId, paymentTerms) VALUES 
-('مصنع النور للمنتجات', 'contact@alnoorfactory.com', '+966112233445', 'المنطقة الصناعية، الرياض', 'الرياض', 'السعودية', 'SA9876543210000', '30 يوم');
-('شركة الجودة للواردات', 'contact@aljawdahimports.com', '+966554433221', 'المنطقة الحرة، جدة', 'جدة', 'السعودية', 'SA1234567890000', '45 يوم');
--- إدراج عملاء تجريبيين
-INSERT INTO customers (name, email, phone, address, city, country, taxId, creditLimit) VALUES 
-('محل السوق المركزي', 'contact@centralsouq.com', '+966667788990', 'شارع السوق، الرياض', 'الرياض', 'السعودية', 'SA1122334455000', '10000');
-('متجر الشرق الإلكتروني', 'contact@sharqstore.com', '+966778899001', 'شارع الشرق، جدة', 'جدة', 'السعودية', 'SA9988776655000', '15000');
--- إدراج مخازن تجريبية
-INSERT INTO warehouses (name, location, manager, capacity) VALUES 
-('المخزن الرئيسي', 'المنطقة الصناعية، الرياض', 'أحمد علي', 5000),
-('مخزن الفرع', 'المنطقة الحرة، جدة', 'سارة محمد', 3000);
--- إدراج منتجات تجريبية
-INSERT INTO products (name, sku, description, category, buyingPrice, sellingPrice, quantity, minimumStock, maximumStock) VALUES 
-('مكيف هواء 2.5 طن', 'AC-2500', 'مكيف هواء بارد', 'أجهزة كهربائية', 2500.00, 3500.00, 15, 5, 50),
-('ثلاجة 600 لتر', 'REF-600', 'ثلاجة عالية السعة', 'أجهزة مطبخ', 4000.00, 5500.00, 8, 3, 30),
-('غسالة 8 كيلو', 'WASH-8', 'غسالة أوتوماتيكية', 'أجهزة مطبخ', 1800.00, 2500.00, 2, 4, 40);
 -- إدراج أنواع وحدات القياس
-INSERT INTO units_of_measure (name_ar, name_en, short_name, category, ratio_to_base, is_base) VALUES 
-('قطعة', 'Piece', 'pcs', 'General', 1.000000, TRUE),
-('كرتون', 'Carton', 'ctn', 'General', 12.000000, FALSE),
-('لتر', 'Liter', 'L', 'Volume', 1.000000, TRUE),
-('ملليلتر', 'Milliliter', 'mL', 'Volume', 0.001000, FALSE);
--- إدراج فئات المنتجات
-INSERT INTO product_categories (category_name_ar, category_name_en, description) VALUES 
-('أجهزة كهربائية', 'Electronics', 'منتجات وأجهزة كهربائية متنوعة'),
-('أجهزة مطبخ', 'Kitchen Appliances', 'أجهزة وأدوات للمطبخ والمنزل');
+INSERT INTO units_of_measure_categories 
+(id, name_ar, name_en, description, is_active)
+VALUES
+(1, 'الوزن', 'Weight', 'وحدات قياس الوزن مثل جرام وكيلو جرام', TRUE),
+(2, 'الحجم', 'Volume', 'وحدات قياس السوائل مثل لتر ومليلتر', TRUE),
+(3, 'الطول', 'Length', 'وحدات قياس المسافة مثل متر وسنتيمتر', TRUE),
+(4, 'الكمية', 'Quantity', 'وحدات العد مثل قطعة وكرتون وعلبة', TRUE),
+(5, 'المنطقة', 'Area', 'وحدات قياس المساحة مثل متر مربع', TRUE),
+(6, 'الوحدات الجمركية', 'Customs Units', 'وحدات تستخدم لأغراض الجمارك والفواتير الدولية', TRUE),
+(7, 'أخرى', 'Other', 'فئات غير مصنفة', TRUE);
+
+-- إدراج وحدات قياس تجريبية
+INSERT INTO units_of_measure 
+(id, name_ar, name_en, short_name, category_id, ratio_to_base, is_base, is_active, description)
+VALUES
+
+-- QUANTITY (Base: قطعة pcs)
+(1, 'قطعة', 'Piece', 'pcs', 4, 1.000000, TRUE, TRUE, 'الوحدة الأساسية للعد'),
+(2, 'علبة', 'Box', 'box', 4, 12.000000, FALSE, TRUE, 'علبة تحتوي على 12 قطعة'),
+(3, 'كرتون', 'Carton', 'ctn', 4, 24.000000, FALSE, TRUE, 'كرتون يحتوي على 24 قطعة'),
+(4, 'درزن', 'Dozen', 'doz', 4, 12.000000, FALSE, TRUE, 'درزن يحتوي على 12 قطعة'),
+(5, 'حبة', 'Unit', 'unit', 4, 1.000000, FALSE, TRUE, 'مرادف لقطعة'),
+
+-- WEIGHT (Base: غرام g)
+(6, 'غرام', 'Gram', 'g', 1, 1.000000, TRUE, TRUE, 'الوزن الأساسي'),
+(7, 'كيلوغرام', 'Kilogram', 'kg', 1, 1000.000000, FALSE, TRUE, '1 كغم = 1000 غرام'),
+
+-- VOLUME (Base: مليلتر ml)
+(8, 'مليلتر', 'Milliliter', 'ml', 2, 1.000000, TRUE, TRUE, 'الحجم الأساسي'),
+(9, 'لتر', 'Liter', 'L', 2, 1000.000000, FALSE, TRUE, '1 لتر = 1000 مليلتر'),
+
+-- LENGTH (Base: سنتيمتر cm)
+(10, 'سنتيمتر', 'Centimeter', 'cm', 3, 1.000000, TRUE, TRUE, 'وحدة الطول الأساسية'),
+(11, 'متر', 'Meter', 'm', 3, 100.000000, FALSE, TRUE, '1 متر = 100 سم'),
+(12, 'كيلومتر', 'Kilometer', 'km', 3, 100000.000000, FALSE, TRUE, '1 كم = 100000 سم'),
+
+-- AREA (Base: متر مربع m²)
+(13, 'متر مربع', 'Square Meter', 'm²', 5, 1.000000, TRUE, TRUE, 'الوحدة الأساسية للمساحة'),
+(14, 'سنتيمتر مربع', 'Square Centimeter', 'cm²', 5, 0.0001, FALSE, TRUE, '1 سم² = 0.0001 م²'),
+
+-- CUSTOMS UNITS
+(15, 'وحدة جمركية', 'Custom Unit', 'cu', 6, 1.000000, TRUE, TRUE, 'وحدة لأغراض الجمارك'),
+
+-- OTHER
+(16, 'خدمة', 'Service', 'srv', 7, 1.000000, TRUE, TRUE, 'وحدة قياس للخدمات (لا تحتاج تحويل)');
+
+INSERT INTO product_categories 
+(id, category_name_ar, category_name_en, description, is_active)
+VALUES
+(1, 'إلكترونيات', 'Electronics', 'أجهزة إلكترونية مثل الهواتف، الحواسيب، الملحقات', 1),
+(2, 'أجهزة كهربائية', 'Home Appliances', 'أجهزة كهربائية منزلية مثل الغسالات والثلاجات', 1),
+(3, 'مواد غذائية', 'Food & Groceries', 'مواد غذائية معلبة وطازجة واستهلاكية', 1),
+(4, 'مستلزمات مكتبية', 'Office Supplies', 'ورق، أقلام، أحبار، أدوات مكتبية', 1),
+(5, 'أثاث', 'Furniture', 'أثاث مكتبي ومنزلي مثل الطاولات والكراسي', 1),
+(6, 'ملابس', 'Clothing', 'ملابس رجالية، نسائية، وأطفال', 1),
+(7, 'مجوهرات', 'Jewelry', 'ذهب، فضة، إكسسوارات فاخرة', 1),
+(8, 'مستحضرات تجميل', 'Cosmetics', 'منتجات التجميل والعناية بالبشرة والشعر', 1),
+(9, 'أدوية', 'Pharmaceuticals', 'أدوية ومستلزمات طبية وصحية', 1),
+(10, 'قطع غيار سيارات', 'Auto Parts', 'قطع غيار واكسسوارات المركبات', 1),
+(11, 'منظفات ومستلزمات منزلية', 'Cleaning & Household', 'منظفات، مطهرات، ومنتجات العناية بالمنزل', 1),
+(12, 'ألعاب', 'Toys', 'ألعاب أطفال وتعليمية', 1),
+(13, 'خدمات', 'Services', 'خدمات تكميلية غير مرتبطة بمخزون مادي', 1),
+(14, 'معدات صناعية', 'Industrial Equipment', 'معدات وأدوات صناعية', 1),
+(15, 'مواد بناء', 'Construction Materials', 'مواد بناء، دهانات، إسمنت، حديد', 1),
+(16, 'منتجات رقمية', 'Digital Products', 'برامج ورخص إلكترونية ومنتجات رقمية', 1),
+(17, 'سجاد وأرضيات', 'Carpets & Flooring', 'سجاد، موكيت، باركيه، وفينيل', 1),
+(18, 'مستلزمات مطاعم', 'Restaurant Supplies', 'مستلزمات مطابخ ومطاعم ومقاهي', 1),
+(19, 'مستلزمات زراعية', 'Agricultural Supplies', 'بذور، أسمدة، معدات زراعية', 1),
+(20, 'أجهزة الشبكات', 'Networking Devices', 'راوترات، سويتشات، معدات شبكات', 1);
+
+INSERT INTO products 
+(id, product_code, product_name_ar, product_name_en, category_id, unit_id, product_type, is_active, description)
+VALUES
+
+-- ELECTRONICS (category_id = 1)
+(1, 'ELEC-001', 'هاتف ذكي سامسونج', 'Samsung Smartphone', 1, 1, 'Stockable', 1, 'هاتف ذكي بشاشة لمس'),
+(2, 'ELEC-002', 'حاسوب محمول لينوفو', 'Lenovo Laptop', 1, 1, 'Stockable', 1, 'حاسوب محمول للأعمال'),
+(3, 'ELEC-003', 'سماعات بلوتوث', 'Bluetooth Headphones', 1, 1, 'Stockable', 1, 'سماعات لاسلكية'),
+
+-- HOME APPLIANCES (category_id = 2)
+(4, 'HOME-001', 'غسالة ملابس', 'Washing Machine', 2, 1, 'Stockable', 1, 'غسالة كهربائية'),
+(5, 'HOME-002', 'ثلاجة 14 قدم', 'Refrigerator 14ft', 2, 1, 'Stockable', 1, 'ثلاجة منزلية'),
+
+-- FOOD & GROCERIES (category_id = 3)
+(6, 'FOOD-001', 'سكر كيلو', 'Sugar 1kg', 3, 7, 'Stockable', 1, 'سكر أبيض ناعم'),
+(7, 'FOOD-002', 'أرز بسمتي 5 كيلو', 'Basmati Rice 5kg', 3, 7, 'Stockable', 1, 'أرز عالي الجودة'),
+(8, 'FOOD-003', 'ماء عبوة 330 مل', 'Water Bottle 330ml', 3, 9, 'Stockable', 1, 'ماء شرب معبأ'),
+
+-- OFFICE SUPPLIES (category_id = 4)
+(9, 'OFF-001', 'دفتر 100 ورقة', 'Notebook 100 pages', 4, 1, 'Stockable', 1, 'دفتر للكتابة'),
+(10, 'OFF-002', 'حبرة طابعة HP', 'HP Printer Ink', 4, 1, 'Stockable', 1, 'حبرة طابعة أصلية'),
+(11, 'OFF-003', 'قلم حبر أزرق', 'Blue Ink Pen', 4, 5, 'Stockable', 1, 'قلم حبر كتابة'),
+
+-- FURNITURE (category_id = 5)
+(12, 'FURN-001', 'كرسي مكتب', 'Office Chair', 5, 1, 'Stockable', 1, 'كرسي مريح'),
+(13, 'FURN-002', 'طاولة عمل', 'Work Desk', 5, 1, 'Stockable', 1, 'طاولة خشبية للمكتب'),
+
+-- CLOTHING (category_id = 6)
+(14, 'CLOT-001', 'قميص رجالي', 'Men Shirt', 6, 1, 'Stockable', 1, 'قميص قطن'),
+(15, 'CLOT-002', 'بنطال جينز', 'Jeans Pants', 6, 1, 'Stockable', 1, 'بنطال جينز عالي الجودة'),
+
+-- COSMETICS (category_id = 8)
+(16, 'COS-001', 'عطر نسائي', 'Women Perfume', 8, 8, 'Stockable', 1, 'عطر أنيق'),
+(17, 'COS-002', 'شامبو 500 مل', 'Shampoo 500ml', 8, 9, 'Stockable', 1, 'شامبو للشعر'),
+
+-- PHARMACEUTICALS (category_id = 9)
+(18, 'MED-001', 'باراسيتامول 500 مج', 'Paracetamol 500mg', 9, 1, 'Stockable', 1, 'مسكن آلام'),
+
+-- AUTO PARTS (category_id = 10)
+(19, 'AUTO-001', 'فلتر زيت', 'Oil Filter', 10, 1, 'Stockable', 1, 'فلتر محرك'),
+(20, 'AUTO-002', 'بطارية سيارة', 'Car Battery', 10, 1, 'Stockable', 1, 'بطارية عالية الجودة'),
+
+-- CLEANING PRODUCTS (category_id = 11)
+(21, 'CLEAN-001', 'كلور 3 لتر', 'Chlorine 3L', 11, 9, 'Stockable', 1, 'مطهر قوي'),
+(22, 'CLEAN-002', 'مناديل معطرة', 'Wet Wipes', 11, 1, 'Stockable', 1, 'مناديل مطهرة'),
+
+-- TOYS (category_id = 12)
+(23, 'TOY-001', 'لعبة سيارات', 'Toy Car', 12, 1, 'Stockable', 1, 'لعبة أطفال'),
+
+-- SERVICES (category_id = 13) — product_type = Service
+(24, 'SRV-001', 'خدمة صيانة كمبيوتر', 'Computer Maintenance Service', 13, NULL, 'Service', 1, 'خدمة إصلاح وصيانة أجهزة'),
+(25, 'SRV-002', 'تصميم موقع إلكتروني', 'Website Design Service', 13, NULL, 'Service', 1, 'خدمة تصميم المواقع'),
+
+-- INDUSTRIAL EQUIPMENT (category_id = 14)
+(26, 'IND-001', 'مثقاب كهربائي', 'Electric Drill', 14, 1, 'Stockable', 1, 'عدة كهربائية'),
+(27, 'IND-002', 'مطرقة', 'Hammer', 14, 1, 'Stockable', 1, 'مطرقة معدنية'),
+
+-- CONSTRUCTION MATERIALS (category_id = 15)
+(28, 'CONS-001', 'أسمنت كيس 50kg', 'Cement 50kg Bag', 15, 7, 'Stockable', 1, 'أسمنت البناء'),
+(29, 'CONS-002', 'طلاء أبيض', 'White Paint', 15, 9, 'Stockable', 1, 'دهان داخلي'),
+
+-- DIGITAL PRODUCTS (category_id = 16)
+(30, 'DIG-001', 'رخصة ويندوز', 'Windows License', 16, NULL, 'Service', 1, 'رخصة برامج رقمية'),
+
+-- NETWORKING DEVICES (category_id = 20)
+(31, 'NET-001', 'راوتر واي فاي', 'WiFi Router', 20, 1, 'Stockable', 1, 'راوتر لاسلكي'),
+(32, 'NET-002', 'سويتش شبكات 8 منافذ', '8-Port Network Switch', 20, 1, 'Stockable', 1, 'سويتش قوي للشبكات');
+
+-- ==========================================
+-- ==========================================
+-- ==========================================
+
 -- إدراج أنواع الحسابات
 INSERT INTO account_types (name_ar, name_en) VALUES 
 ('رئيسي', 'Main'),
@@ -399,19 +509,45 @@ INSERT INTO report_types (code, name_ar, name_en) VALUES
 INSERT INTO balance_types (name_ar, name_en) VALUES
 ('مدين', 'Debit'),
 ('دائن', 'Credit');
+
 -- إدراج حسابات محاسبية تجريبية
-INSERT INTO accounts (account_number, parent_account_number, name_ar, name_en, account_type_id, report_type_id, balance_type_id, account_level, status) VALUES 
-('1', NULL, 'الأصول', 'Assets', 1, 1, 1, 1, 'active'),
-('11', '1', 'النقدية والبنوك', 'Cash and Banks', 1, 1, 1, 2, 'active'),
-('111', '11', 'النقدية', 'Cash', 1, 1, 1, 3, 'active'),
-('112', '11', 'البنك الأهلي', 'National Bank', 2, 1, 1, 3, 'active'),
-('2', NULL, 'الخصوم', 'Liabilities', 1, 1, 2, 1, 'active'),
-('21', '2', 'الحسابات الدائنة', 'Accounts Payable', 1, 1, 2, 2, 'active'),
-('211', '21', 'موردين محليين', 'Local Suppliers', 2, 1, 2, 3, 'active'),
-('3', NULL, 'الإيرادات', 'Revenue', 1, 2, 2, 1, 'active'),
-('31', '3', 'مبيعات المنتجات', 'Product Sales', 2, 2, 2, 2, 'active'),
-('4', NULL, 'المصروفات', 'Expenses', 1, 2, 1, 1, 'active'),
-('41', '4', 'مصروفات التشغيل', 'Operating Expenses', 2, 2, 1, 2, 'active');
+INSERT INTO accounts 
+(id, account_number, parent_account_number, name_ar, name_en, account_type_id, report_type_id, balance_type_id, account_level, status)
+VALUES
+(1, '1', NULL, 'الأصول', 'Assets', 1, 1, 1, 1, 'active'),
+(2, '2', NULL, 'الخصوم', 'Liabilities', 1, 1, 2, 1, 'active'),
+(3, '3', NULL, 'المصروفات', 'Expenses', 1, 2, 1, 1, 'active'),
+(4, '4', NULL, 'الإيرادات', 'Revenues', 1, 1, 2, 1, 'active'),
+
+(11, '11', '1', 'الأصول المتداولة', 'Current Assets', 1, 1, 1, 2, 'active'),
+(12, '111', '11', 'الصناديق', 'Cash Accounts', 1, 1, 1, 3, 'active'),
+(13, '1111', '111', 'صندوق الادارة', NULL, 1, 1, 1, 4, 'active'),
+(15, '1111001', '1111', 'صندوق الريال السعودي', NULL, 2, 1, 1, 5, 'active'),
+
+(16, '21', '2', 'الخصوم المتداولة', NULL, 1, 1, 2, 2, 'active'),
+(17, '22', '2', 'الخصوم غير المتداولة', NULL, 1, 1, 2, 2, 'active'),
+(18, '23', '2', 'حقوق الملكية', NULL, 1, 1, 2, 2, 'active'),
+
+(19, '31', '3', 'تكلفة النشاط', NULL, 1, 1, 1, 2, 'active'),
+(20, '32', '3', 'مصروفات النشاط', NULL, 1, 1, 1, 2, 'active'),
+
+(21, '41', '4', 'ايرادات النشاط', NULL, 1, 1, 2, 2, 'active'),
+(22, '411', '41', 'ايرادات المبيعات', NULL, 1, 1, 2, 3, 'active'),
+
+(23, '12', '1', 'الأصول غير المتداولة', 'Non-Current Assets', 1, 1, 1, 2, 'active'),
+(24, '121', '12', 'الممتلكات والمعدات', 'Property & Equipment', 1, 1, 1, 3, 'active'),
+(25, '1211', '121', 'الأثاث', 'Furniture', 1, 1, 1, 4, 'active'),
+(26, '1212', '121', 'أجهزة الكمبيوتر', 'Computers', 1, 1, 1, 4, 'active'),
+
+(27, '24', '2', 'القروض قصيرة الأجل', 'Short-term Loans', 1, 1, 2, 2, 'active'),
+(28, '25', '2', 'القروض طويلة الأجل', 'Long-term Loans', 1, 1, 2, 2, 'active'),
+
+(29, '33', '3', 'مصروفات إدارية', 'Administrative Expenses', 1, 2, 1, 2, 'active'),
+(30, '331', '33', 'رواتب الموظفين', 'Salaries', 1, 2, 1, 3, 'active'),
+(31, '332', '33', 'مصاريف إيجار', 'Rent Expense', 1, 2, 1, 3, 'active'),
+
+(32, '42', '4', 'ايرادات أخرى', 'Other Revenues', 1, 1, 2, 2, 'active'),
+(33, '421', '42', 'ايرادات خدمات', 'Service Revenue', 1, 1, 2, 3, 'active');
 
 
 

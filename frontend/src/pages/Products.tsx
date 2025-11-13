@@ -8,12 +8,23 @@ interface ProductCategory {
   is_active: boolean;
 }
 
-interface UnitOfMeasure {
+interface Account {
   id: number;
-  name_ar: string;
-  name_en?: string;
-  short_name: string;
-  is_active: boolean;
+  account_code?: string;
+  account_number?: string;
+  account_name_ar: string;
+  account_type?: string;
+}
+
+interface StockMovement {
+  id: number;
+  product_id: number;
+  movement_type: 'IN' | 'OUT' | 'TRANSFER' | 'ADJUSTMENT';
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  movement_date: string;
+  reference?: string;
 }
 
 interface Product {
@@ -32,6 +43,14 @@ interface Product {
   unit_name_ar?: string;
   unit_name_en?: string;
   short_name?: string;
+  quantity_on_hand?: number;
+  cost_price?: number;
+  sale_price?: number;
+  unit_of_measure?: string;
+  track_inventory?: boolean;
+  inventory_account_id?: number | null;
+  income_account_id?: number | null;
+  expense_account_id?: number | null;
 }
 
 export default function Products() {
@@ -47,7 +66,7 @@ export default function Products() {
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('');
-  const [formData, setFormData] = useState<Partial<Product> & { quantity_on_hand: number }>({
+  const [formData, setFormData] = useState<Partial<Product>>({
     product_code: '',
     product_name_ar: '',
     product_name_en: '',
@@ -128,7 +147,14 @@ export default function Products() {
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
-    setFormData(product);
+    setFormData({
+      ...product,
+      quantity_on_hand: product.quantity_on_hand ?? 0,
+      cost_price: product.cost_price ?? 0,
+      sale_price: product.sale_price ?? 0,
+      unit_of_measure: product.unit_of_measure ?? 'وحدة',
+      track_inventory: product.track_inventory ?? true,
+    });
     setShowForm(true);
   };
 
@@ -195,7 +221,8 @@ export default function Products() {
     return matchesSearch && matchesType;
   });
 
-  const isLowStock = (product: Product) => product.quantity_on_hand < product.reorder_level && product.reorder_level > 0;
+  const isLowStock = (product: Product) => 
+    (product.quantity_on_hand ?? 0) < product.reorder_level && product.reorder_level > 0;
 
   return (
     <div>
@@ -596,10 +623,10 @@ export default function Products() {
                       </span>
                     </td>
                     <td className="px-6 py-3 text-sm text-left">
-                      {parseFloat(String(product.quantity_on_hand)).toFixed(2)} {product.unit_of_measure}
+                      {parseFloat(String(product.quantity_on_hand ?? 0)).toFixed(2)} {product.unit_of_measure || 'وحدة'}
                     </td>
-                    <td className="px-6 py-3 text-sm text-left">{parseFloat(String(product.cost_price)).toFixed(2)}</td>
-                    <td className="px-6 py-3 text-sm text-left">{parseFloat(String(product.sale_price)).toFixed(2)}</td>
+                    <td className="px-6 py-3 text-sm text-left">{parseFloat(String(product.cost_price ?? 0)).toFixed(2)}</td>
+                    <td className="px-6 py-3 text-sm text-left">{parseFloat(String(product.sale_price ?? 0)).toFixed(2)}</td>
                     <td className="px-6 py-3 text-center space-x-2">
                       <button
                         onClick={() => handleViewHistory(product.id)}

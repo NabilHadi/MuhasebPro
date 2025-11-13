@@ -141,26 +141,7 @@ export default function Dashboard() {
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Journal Summary */}
-        <div className="card">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">📊 ملخص القيود (آخر 30 يوم)</h2>
-          <div className="space-y-4">
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">إجمالي الدين</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(stats?.totalDebit || 0)}</p>
-            </div>
-            <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">إجمالي الدائن</p>
-              <p className="text-2xl font-bold text-red-600">{formatCurrency(stats?.totalCredit || 0)}</p>
-            </div>
-            <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">الفرق</p>
-              <p className={`text-2xl font-bold ${Math.abs((stats?.totalDebit || 0) - (stats?.totalCredit || 0)) > 0 ? 'text-gray-600' : 'text-green-600'}`}>
-                {formatCurrency(Math.abs((stats?.totalDebit || 0) - (stats?.totalCredit || 0)))}
-              </p>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Quick Actions & System Status */}
         <div className="space-y-6">
@@ -204,29 +185,6 @@ export default function Dashboard() {
                 <span>📝</span>
                 <span>القيود</span>
               </button>
-            </div>
-          </div>
-
-          {/* System Status */}
-          <div className="card">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">📊 حالة النظام</h2>
-            <div className="space-y-3">
-              <div className="flex-between">
-                <span className="text-gray-600">حالة الاتصال</span>
-                <span className="badge-success">متصل 🟢</span>
-              </div>
-              <div className="flex-between">
-                <span className="text-gray-600">قاعدة البيانات</span>
-                <span className="badge-success">نشط ✅</span>
-              </div>
-              <div className="flex-between">
-                <span className="text-gray-600">إجمالي المنتجات</span>
-                <span className="text-sm text-gray-500">{stats?.productCount || 0} منتج</span>
-              </div>
-              <div className="flex-between">
-                <span className="text-gray-600">إجمالي القيود</span>
-                <span className="text-sm text-gray-500">{stats?.journalCount || 0} قيد</span>
-              </div>
             </div>
           </div>
         </div>

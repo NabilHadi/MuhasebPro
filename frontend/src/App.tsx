@@ -15,6 +15,7 @@ import ProductCategories from './pages/ProductCategories';
 import Warehouses from './pages/Warehouses';
 import Customers from './pages/Customers';
 import UnitsOfMeasure from './pages/UnitsOfMeasure';
+import UnitsOfMeasureCategories from './pages/UnitsOfMeasure/categories';
 import FoundationalAccounts from './pages/Accounts/Foundational';
 
 function App() {
@@ -46,10 +47,11 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="product-categories" element={<ProductCategories />} />
           <Route path="units-of-measure" element={<UnitsOfMeasure />} />
+          <Route path="units-of-measure/categories" element={<UnitsOfMeasureCategories />} />
           <Route path="warehouses" element={<Warehouses />} />
-          <Route path="foundational-accounts" element={<FoundationalAccounts />} />
           <Route path="customers" element={<Customers />} />
           <Route path="accounts" element={<Accounts />} />
+          <Route path="accounts/foundational" element={<FoundationalAccounts />} />
           <Route path="journal-entries" element={<JournalEntries />} />
         </Route>
       </Routes>

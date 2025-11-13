@@ -10,10 +10,10 @@ export default function AccountsManagement() {
     addTab({
       id: tabId,
       title: 'حسابات التأسيس',
-      path: '/foundational-accounts',
+      path: '/accounts/foundational',
       icon: '🏦',
     });
-    navigate('/foundational-accounts');
+    navigate('/accounts/foundational');
   };
 
   const handleOpenAccounts = () => {
