@@ -70,7 +70,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
   onClose,
 }) => {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3">
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-3 max-w-md">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
