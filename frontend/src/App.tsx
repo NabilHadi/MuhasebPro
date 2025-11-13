@@ -16,6 +16,7 @@ import Customers from './pages/Customers';
 import UnitsOfMeasure from './pages/UnitsOfMeasure';
 import UnitsOfMeasureCategories from './pages/UnitsOfMeasure/categories';
 import FoundationalAccounts from './pages/Accounts/Foundational';
+import NotFound from './pages/NotFound';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -51,7 +52,9 @@ function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="accounts/foundational" element={<FoundationalAccounts />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
