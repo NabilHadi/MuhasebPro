@@ -10,7 +10,7 @@ import Accounts from './pages/Accounts';
 import Layout from './components/Layout';
 import SalesManagement from './pages/SalesManagement';
 import Products from './pages/Products';
-import ProductCategories from './pages/ProductCategories';
+import ProductsCategories from './pages/Products/categories';
 import Warehouses from './pages/Warehouses';
 import Customers from './pages/Customers';
 import UnitsOfMeasure from './pages/UnitsOfMeasure';
@@ -44,7 +44,7 @@ function App() {
           <Route path="accounts-management" element={<AccountsManagement />} />
           <Route path="sales-management" element={<SalesManagement />} />
           <Route path="products" element={<Products />} />
-          <Route path="product-categories" element={<ProductCategories />} />
+          <Route path="products/categories" element={<ProductsCategories />} />
           <Route path="units-of-measure" element={<UnitsOfMeasure />} />
           <Route path="units-of-measure/categories" element={<UnitsOfMeasureCategories />} />
           <Route path="warehouses" element={<Warehouses />} />
