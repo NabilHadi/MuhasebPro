@@ -1,31 +1,18 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 
-interface Account {
-  id: number;
-  account_code: string;
-  account_name_ar: string;
-  account_type: string;
-}
-
-interface StockMovement {
-  id: number;
-  product_id: number;
-  movement_type: 'IN' | 'OUT' | 'ADJUSTMENT';
-  quantity: number;
-  unit_cost: number;
-  total_cost: number;
-  reference?: string;
-  description?: string;
-  movement_date: string;
-  related_journal_id?: number;
-}
-
 interface ProductCategory {
   id: number;
   category_name_ar: string;
   category_name_en?: string;
-  description?: string;
+  is_active: boolean;
+}
+
+interface UnitOfMeasure {
+  id: number;
+  name_ar: string;
+  name_en?: string;
+  short_name: string;
   is_active: boolean;
 }
 
@@ -34,20 +21,17 @@ interface Product {
   product_code: string;
   product_name_ar: string;
   product_name_en?: string;
-  quantity_on_hand: number;
-  cost_price: number;
-  sale_price: number;
-  product_type: 'Stockable' | 'Service' | 'Consumable';
+  category_id?: number | null;
+  unit_id?: number | null;
+  product_type: 'Stockable' | 'Service';
   reorder_level: number;
-  category_id?: number;
-  unit_of_measure?: string;
-  track_inventory: boolean;
-  warehouse_id?: number;
-  income_account_id?: number;
-  expense_account_id?: number;
-  inventory_account_id?: number;
   is_active: boolean;
   description?: string;
+  category_name_ar?: string;
+  category_name_en?: string;
+  unit_name_ar?: string;
+  unit_name_en?: string;
+  short_name?: string;
 }
 
 export default function Products() {

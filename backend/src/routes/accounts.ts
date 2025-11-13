@@ -3,6 +3,14 @@ import * as accountsController from '../controllers/accountsController';
 
 const router = Router();
 
+// Middleware to validate account number
+const validateAccountNumber = (req: Request, res: Response, next: Function) => {
+  if (!req.params.accountNumber || typeof req.params.accountNumber !== 'string') {
+    return res.status(400).json({ message: 'رقم الحساب غير صحيح' });
+  }
+  next();
+};
+
 // الحصول على جميع الحسابات
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -14,10 +22,10 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// الحصول على حساب واحد
-router.get('/:id', async (req: Request, res: Response) => {
+// الحصول على حساب واحد بناءً على رقم الحساب
+router.get('/:accountNumber', validateAccountNumber, async (req: Request, res: Response) => {
   try {
-    const account = await accountsController.getAccountById(req.params.id);
+    const account = await accountsController.getAccountById(req.params.accountNumber);
     res.json(account);
   } catch (error: any) {
     if (error.message.includes('غير موجود')) {
@@ -34,7 +42,7 @@ router.post('/', async (req: Request, res: Response) => {
     const result = await accountsController.createAccount(req.body);
     res.status(201).json(result);
   } catch (error: any) {
-    if (error.message.includes('مطلوبة') || error.message.includes('مستخدم')) {
+    if (error.message.includes('مطلوبة') || error.message.includes('مستخدم') || error.message.includes('موجود')) {
       return res.status(400).json({ message: error.message });
     }
     console.error('خطأ في إضافة الحساب:', error);
@@ -43,12 +51,12 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // تحديث حساب
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:accountNumber', validateAccountNumber, async (req: Request, res: Response) => {
   try {
-    const result = await accountsController.updateAccount(req.params.id, req.body);
+    const result = await accountsController.updateAccount(req.params.accountNumber, req.body);
     res.json(result);
   } catch (error: any) {
-    if (error.message.includes('مطلوبة') || error.message.includes('مستخدم') || error.message.includes('غير موجود')) {
+    if (error.message.includes('مطلوبة') || error.message.includes('مستخدم') || error.message.includes('موجود') || error.message.includes('غير موجود')) {
       const statusCode = error.message.includes('غير موجود') ? 404 : 400;
       return res.status(statusCode).json({ message: error.message });
     }
@@ -57,21 +65,35 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// حذف حساب (تعطيل الحساب)
-router.delete('/:id', async (req: Request, res: Response) => {
+// تعطيل حساب
+router.patch('/:accountNumber/deactivate', validateAccountNumber, async (req: Request, res: Response) => {
   try {
-    const result = await accountsController.deleteAccount(req.params.id);
+    const result = await accountsController.deactivateAccount(req.params.accountNumber);
     res.json(result);
   } catch (error: any) {
     if (error.message.includes('غير موجود')) {
       return res.status(404).json({ message: error.message });
     }
-    console.error('خطأ في حذف الحساب:', error);
+    console.error('خطأ في تعطيل الحساب:', error);
     res.status(500).json({ message: error.message || 'خطأ في السيرفر' });
   }
 });
 
-// الحصول على الحسابات الرئيسية فقط (group accounts)
+// تفعيل حساب
+router.patch('/:accountNumber/activate', validateAccountNumber, async (req: Request, res: Response) => {
+  try {
+    const result = await accountsController.activateAccount(req.params.accountNumber);
+    res.json(result);
+  } catch (error: any) {
+    if (error.message.includes('غير موجود')) {
+      return res.status(404).json({ message: error.message });
+    }
+    console.error('خطأ في تفعيل الحساب:', error);
+    res.status(500).json({ message: error.message || 'خطأ في السيرفر' });
+  }
+});
+
+// الحصول على الحسابات الرئيسية فقط (Parent accounts)
 router.get('/parent/list', async (req: Request, res: Response) => {
   try {
     const accounts = await accountsController.getParentAccounts();

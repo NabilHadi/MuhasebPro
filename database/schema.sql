@@ -6,6 +6,67 @@ SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 SET COLLATION_CONNECTION = utf8mb4_unicode_ci;
 
+-- جدول الحسابات
+CREATE TABLE IF NOT EXISTS accounts (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  account_number VARCHAR(50) NOT NULL UNIQUE,
+  parent_account_number VARCHAR(50) DEFAULT NULL,
+  name_ar VARCHAR(200) NOT NULL,
+  name_en VARCHAR(200),
+  account_type_id INT NOT NULL,
+  report_type_id INT NOT NULL,
+  balance_type_id INT NOT NULL,
+  account_level INT NOT NULL DEFAULT 1,
+  status ENUM('active', 'inactive') DEFAULT 'active',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (account_type_id) REFERENCES account_types(id),
+  FOREIGN KEY (report_type_id) REFERENCES report_types(id),
+  FOREIGN KEY (balance_type_id) REFERENCES balance_types(id),
+  FOREIGN KEY (parent_account_number) REFERENCES accounts(account_number),
+  INDEX idx_parent_account (parent_account_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+-- جدول أنواع التقارير
+CREATE TABLE IF NOT EXISTS report_types (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  name_ar VARCHAR(150) NOT NULL,
+  name_en VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO report_types (code, name_ar, name_en)
+VALUES
+('BAL', 'الميزانية العمومية', 'Balance Sheet'),
+('PL', 'الأرباح والخسائر', 'Profit and Loss');
+
+-- جدول أنواع الحسابات
+CREATE TABLE IF NOT EXISTS account_types (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name_ar VARCHAR(100) NOT NULL,
+  name_en VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO account_types (name_ar, name_en)
+VALUES 
+('أساسي', 'Main'),
+('فرعي', 'Sub');
+
+-- جدول أنواع الأرصدة
+CREATE TABLE IF NOT EXISTS balance_types (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name_ar VARCHAR(100) NOT NULL,
+  name_en VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO balance_types (name_ar, name_en)
+VALUES
+('مدين', 'Debit'),
+('دائن', 'Credit');
+
+
 -- جدول المستخدمين
 CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -36,25 +97,6 @@ CREATE TABLE IF NOT EXISTS company (
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- جدول الحسابات (Chart of Accounts)
-CREATE TABLE IF NOT EXISTS chart_of_accounts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    account_code VARCHAR(20) UNIQUE,
-    account_name_ar VARCHAR(255) NOT NULL,
-    account_name_en VARCHAR(255),
-    account_type ENUM('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') NOT NULL,
-    normal_side ENUM('مدين', 'دائن') NOT NULL,
-    parent_id INT DEFAULT NULL,
-    is_group BOOLEAN DEFAULT FALSE,
-    is_active BOOLEAN DEFAULT TRUE,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (parent_id) REFERENCES chart_of_accounts(id) ON DELETE SET NULL,
-    INDEX idx_code (account_code),
-    INDEX idx_type (account_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- جدول القيود المحاسبية (Journal Entries)
 CREATE TABLE IF NOT EXISTS journal_entries (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,61 +110,7 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- جدول تفاصيل القيود (Journal Lines)
-CREATE TABLE IF NOT EXISTS journal_lines (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    journal_entry_id INT NOT NULL,
-    account_id INT NOT NULL,
-    debit DECIMAL(12,2) DEFAULT 0,
-    credit DECIMAL(12,2) DEFAULT 0,
-    FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE,
-    FOREIGN KEY (account_id) REFERENCES chart_of_accounts(id) ON DELETE RESTRICT,
-    INDEX idx_account (account_id),
-    INDEX idx_entry (journal_entry_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
--- جدول الموردين
-CREATE TABLE IF NOT EXISTS suppliers (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  is_active BOOLEAN DEFAULT TRUE,
-  name VARCHAR(200) NOT NULL,
-  email VARCHAR(100),
-  phone VARCHAR(20),
-  address TEXT,
-  city VARCHAR(50),
-  country VARCHAR(50),
-  tax_id VARCHAR(100),
-  payment_terms VARCHAR(100),
-  opening_balance DECIMAL(15, 2) DEFAULT 0,
-  account_payable_id INT DEFAULT NULL,
-  created_by INT DEFAULT NULL,
-  updated_by INT DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_name (name),
-  FOREIGN KEY (account_payable_id) REFERENCES chart_of_accounts(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- جدول العملاء
-CREATE TABLE IF NOT EXISTS customers (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  is_active BOOLEAN DEFAULT TRUE,
-  name VARCHAR(200) NOT NULL,
-  email VARCHAR(100),
-  phone VARCHAR(20),
-  address TEXT,
-  city VARCHAR(50),
-  country VARCHAR(50),
-  tax_id VARCHAR(100),
-  credit_limit DECIMAL(15, 2) DEFAULT 0,
-  opening_balance DECIMAL(15, 2) DEFAULT 0,
-  account_receivable_id INT DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_name (name),
-  FOREIGN KEY (account_receivable_id) REFERENCES chart_of_accounts(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS units_of_measure (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -361,35 +349,69 @@ INSERT INTO users (username, email, password, fullName, role) VALUES
 
 -- ملاحظة: استبدل كلمة المرور المشفرة أعلاه بكلمة مرور محشفة الفعلية
 
-INSERT INTO chart_of_accounts (account_code, account_name_ar, account_type, normal_side, is_group, parent_id)
-VALUES
--- الأصول
-('1000', 'الأصول', 'Asset', 'مدين', TRUE, NULL),
-('1001', 'الصندوق', 'Asset', 'مدين', FALSE, 1),
-('1002', 'البنك', 'Asset', 'مدين', FALSE, 1),
-('1003', 'العملاء', 'Asset', 'مدين', FALSE, 1),
-('1004', 'المخزون', 'Asset', 'مدين', FALSE, 1),
+-- بيانات تجريبية لنظام محاسب برو
+-- ==========================================
+-- إدراج مستخدمين تجريبيين
+INSERT INTO users (username, email, password, fullName, role) VALUES 
+('accountant', 'accountant@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'محاسب النظام', 'accountant');
+('sales', 'sales@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'موظف المبيعات', 'sales');
+('warehouse', 'warehouse@accounterp.local', '$2b$10$mh8lQ7KG/U6mPHzQY20rKOxV7fquqmdVrkNdHdn8eCgFPyIjPrOEK', 'أمين المخزن', 'warehouse');
+-- ملاحظة: استبدل كلمة المرور المشفرة أعلاه بكلمة مرور محشفة الفعلية
+-- إدراج بيانات الشركة
+INSERT INTO company (name, commercialRegister, taxId, phone, email, address, city, country) VALUES 
+('شركة النور للتجارة', '1234567890', 'SA1234567890000', '+966123456789', 'info@alnoor.com', 'شارع الملك فهد', 'الرياض', 'السعودية');
+-- إدراج موردين تجريبيين
+INSERT INTO suppliers (name, email, phone, address, city, country, taxId, paymentTerms) VALUES 
+('مصنع النور للمنتجات', 'contact@alnoorfactory.com', '+966112233445', 'المنطقة الصناعية، الرياض', 'الرياض', 'السعودية', 'SA9876543210000', '30 يوم');
+('شركة الجودة للواردات', 'contact@aljawdahimports.com', '+966554433221', 'المنطقة الحرة، جدة', 'جدة', 'السعودية', 'SA1234567890000', '45 يوم');
+-- إدراج عملاء تجريبيين
+INSERT INTO customers (name, email, phone, address, city, country, taxId, creditLimit) VALUES 
+('محل السوق المركزي', 'contact@centralsouq.com', '+966667788990', 'شارع السوق، الرياض', 'الرياض', 'السعودية', 'SA1122334455000', '10000');
+('متجر الشرق الإلكتروني', 'contact@sharqstore.com', '+966778899001', 'شارع الشرق، جدة', 'جدة', 'السعودية', 'SA9988776655000', '15000');
+-- إدراج مخازن تجريبية
+INSERT INTO warehouses (name, location, manager, capacity) VALUES 
+('المخزن الرئيسي', 'المنطقة الصناعية، الرياض', 'أحمد علي', 5000),
+('مخزن الفرع', 'المنطقة الحرة، جدة', 'سارة محمد', 3000);
+-- إدراج منتجات تجريبية
+INSERT INTO products (name, sku, description, category, buyingPrice, sellingPrice, quantity, minimumStock, maximumStock) VALUES 
+('مكيف هواء 2.5 طن', 'AC-2500', 'مكيف هواء بارد', 'أجهزة كهربائية', 2500.00, 3500.00, 15, 5, 50),
+('ثلاجة 600 لتر', 'REF-600', 'ثلاجة عالية السعة', 'أجهزة مطبخ', 4000.00, 5500.00, 8, 3, 30),
+('غسالة 8 كيلو', 'WASH-8', 'غسالة أوتوماتيكية', 'أجهزة مطبخ', 1800.00, 2500.00, 2, 4, 40);
+-- إدراج أنواع وحدات القياس
+INSERT INTO units_of_measure (name_ar, name_en, short_name, category, ratio_to_base, is_base) VALUES 
+('قطعة', 'Piece', 'pcs', 'General', 1.000000, TRUE),
+('كرتون', 'Carton', 'ctn', 'General', 12.000000, FALSE),
+('لتر', 'Liter', 'L', 'Volume', 1.000000, TRUE),
+('ملليلتر', 'Milliliter', 'mL', 'Volume', 0.001000, FALSE);
+-- إدراج فئات المنتجات
+INSERT INTO product_categories (category_name_ar, category_name_en, description) VALUES 
+('أجهزة كهربائية', 'Electronics', 'منتجات وأجهزة كهربائية متنوعة'),
+('أجهزة مطبخ', 'Kitchen Appliances', 'أجهزة وأدوات للمطبخ والمنزل');
+-- إدراج أنواع الحسابات
+INSERT INTO account_types (name_ar, name_en) VALUES 
+('أساسي', 'Main'),
+('فرعي', 'Sub');
+-- إدراج أنواع التقارير
+INSERT INTO report_types (code, name_ar, name_en) VALUES 
+('BAL', 'الميزانية العمومية', 'Balance Sheet'),
+('PL', 'الأرباح والخسائر', 'Profit and Loss');
+-- إدراج أنواع الأرصدة
+INSERT INTO balance_types (name_ar, name_en) VALUES
+('مدين', 'Debit'),
+('دائن', 'Credit');
+-- إدراج حسابات محاسبية تجريبية
+INSERT INTO accounts (account_number, parent_account_number, name_ar, name_en, account_type_id, report_type_id, balance_type_id, account_level, status) VALUES 
+('1', NULL, 'الأصول', 'Assets', 1, 1, 1, 1, 'active'),
+('11', '1', 'النقدية والبنوك', 'Cash and Banks', 1, 1, 1, 2, 'active'),
+('111', '11', 'النقدية', 'Cash', 1, 1, 1, 3, 'active'),
+('112', '11', 'البنك الأهلي', 'National Bank', 2, 1, 1, 3, 'active'),
+('2', NULL, 'الخصوم', 'Liabilities', 1, 1, 2, 1, 'active'),
+('21', '2', 'الحسابات الدائنة', 'Accounts Payable', 1, 1, 2, 2, 'active'),
+('211', '21', 'موردين محليين', 'Local Suppliers', 2, 1, 2, 3, 'active'),
+('3', NULL, 'الإيرادات', 'Revenue', 1, 2, 2, 1, 'active'),
+('31', '3', 'مبيعات المنتجات', 'Product Sales', 2, 2, 2, 2, 'active'),
+('4', NULL, 'المصروفات', 'Expenses', 1, 2, 1, 1, 'active'),
+('41', '4', 'مصروفات التشغيل', 'Operating Expenses', 2, 2, 1, 2, 'active');
 
--- الخصوم
-('2000', 'الخصوم', 'Liability', 'دائن', TRUE, NULL),
-('2001', 'الموردين', 'Liability', 'دائن', FALSE, 6),
-('2002', 'الضرائب المستحقة', 'Liability', 'دائن', FALSE, 6),
 
--- حقوق الملكية
-('3000', 'حقوق الملكية', 'Equity', 'دائن', TRUE, NULL),
-('3001', 'رأس المال', 'Equity', 'دائن', FALSE, 9),
-('3002', 'الأرباح المحتجزة', 'Equity', 'دائن', FALSE, 9),
 
--- الإيرادات
-('4000', 'الإيرادات', 'Revenue', 'دائن', TRUE, NULL),
-('4001', 'إيرادات المبيعات', 'Revenue', 'دائن', FALSE, 13),
-('4002', 'إيرادات الخدمات', 'Revenue', 'دائن', FALSE, 13),
-
--- المصروفات
-('5000', 'المصروفات', 'Expense', 'مدين', TRUE, NULL),
-('5001', 'مصروف الإيجار', 'Expense', 'مدين', FALSE, 16),
-('5002', 'مصروف الرواتب', 'Expense', 'مدين', FALSE, 16),
-('5003', 'مصروف الكهرباء والمياه', 'Expense', 'مدين', FALSE, 16),
-('5004', 'مصروف اللوازم المكتبية', 'Expense', 'مدين', FALSE, 16),
-('5005', 'مصروف الصيانة', 'Expense', 'مدين', FALSE, 16),
-('5006', 'مصروف الإنترنت والاتصالات', 'Expense', 'مدين', FALSE, 16);

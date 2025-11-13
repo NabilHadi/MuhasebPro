@@ -1,11 +1,17 @@
 import { getConnection } from '../config/database';
-import * as stockMovementsController from './stockMovementsController';
 
 export const getAllProducts = async () => {
   const connection = await getConnection();
   try {
     const [products]: any = await connection.execute(
-      'SELECT * FROM products WHERE is_active = TRUE ORDER BY product_code ASC'
+      `SELECT p.*, 
+              pc.category_name_ar, pc.category_name_en,
+              u.name_ar as unit_name_ar, u.name_en as unit_name_en, u.short_name
+       FROM products p
+       LEFT JOIN product_categories pc ON p.category_id = pc.id
+       LEFT JOIN units_of_measure u ON p.unit_id = u.id
+       WHERE p.is_active = TRUE 
+       ORDER BY p.product_code ASC`
     );
     return products;
   } finally {
@@ -17,7 +23,13 @@ export const getProductById = async (id: string | number) => {
   const connection = await getConnection();
   try {
     const [products]: any = await connection.execute(
-      'SELECT * FROM products WHERE id = ?',
+      `SELECT p.*, 
+              pc.category_name_ar, pc.category_name_en,
+              u.name_ar as unit_name_ar, u.name_en as unit_name_en, u.short_name
+       FROM products p
+       LEFT JOIN product_categories pc ON p.category_id = pc.id
+       LEFT JOIN units_of_measure u ON p.unit_id = u.id
+       WHERE p.id = ?`,
       [id]
     );
 
@@ -36,17 +48,9 @@ export const createProduct = async (data: {
   product_name_ar: string;
   product_name_en?: string;
   category_id?: number | null;
-  unit_of_measure?: string;
-  product_type?: 'Stockable' | 'Service' | 'Consumable';
-  track_inventory?: boolean;
-  quantity_on_hand?: number;
-  cost_price?: number;
-  sale_price?: number;
+  unit_id?: number | null;
+  product_type?: 'Stockable' | 'Service';
   reorder_level?: number;
-  warehouse_id?: number | null;
-  income_account_id?: number | null;
-  expense_account_id?: number | null;
-  inventory_account_id?: number | null;
   description?: string;
 }) => {
   const {
@@ -54,17 +58,9 @@ export const createProduct = async (data: {
     product_name_ar,
     product_name_en,
     category_id,
-    unit_of_measure,
-    product_type,
-    track_inventory,
-    quantity_on_hand = 0,
-    cost_price,
-    sale_price,
-    reorder_level,
-    warehouse_id,
-    income_account_id,
-    expense_account_id,
-    inventory_account_id,
+    unit_id,
+    product_type = 'Stockable',
+    reorder_level = 0,
     description,
   } = data;
 
@@ -85,58 +81,47 @@ export const createProduct = async (data: {
       throw new Error('رمز المنتج مستخدم بالفعل');
     }
 
+    // Validate category if provided
+    if (category_id) {
+      const [categoryCheck]: any = await connection.execute(
+        'SELECT id FROM product_categories WHERE id = ? AND is_active = TRUE',
+        [category_id]
+      );
+      if (categoryCheck.length === 0) {
+        throw new Error('الفئة المحددة غير موجودة');
+      }
+    }
+
+    // Validate unit if provided
+    if (unit_id) {
+      const [unitCheck]: any = await connection.execute(
+        'SELECT id FROM units_of_measure WHERE id = ? AND is_active = TRUE',
+        [unit_id]
+      );
+      if (unitCheck.length === 0) {
+        throw new Error('وحدة القياس المحددة غير موجودة');
+      }
+    }
+
     const result: any = await connection.execute(
       `INSERT INTO products (
-        product_code, product_name_ar, product_name_en, category_id, unit_of_measure,
-        product_type, track_inventory, quantity_on_hand, cost_price, sale_price, reorder_level,
-        warehouse_id, income_account_id, expense_account_id, inventory_account_id,
-        description, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        product_code, product_name_ar, product_name_en, category_id, unit_id,
+        product_type, reorder_level, description, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         product_code,
         product_name_ar,
         product_name_en || null,
         category_id || null,
-        unit_of_measure || 'وحدة',
-        product_type || 'Stockable',
-        track_inventory !== undefined ? track_inventory : true,
-        quantity_on_hand || 0,
-        cost_price || 0,
-        sale_price || 0,
-        reorder_level || 0,
-        warehouse_id || null,
-        income_account_id || null,
-        expense_account_id || null,
-        inventory_account_id || null,
+        unit_id || null,
+        product_type,
+        reorder_level,
         description || null,
         true,
       ]
     );
 
     const productId = result[0].insertId;
-
-    // If quantity_on_hand > 0, create stock movement and journal entry
-    if (quantity_on_hand > 0 && product_type === 'Stockable' && inventory_account_id) {
-      try {
-        await stockMovementsController.createStockMovement({
-          product_id: productId,
-          warehouse_id: warehouse_id || undefined,
-          movement_type: 'IN',
-          reference: `OPEN-${product_code}`,
-          description: `رصيد افتتاحي - ${product_name_ar}`,
-          quantity: quantity_on_hand,
-          unit_cost: cost_price || 0,
-          movement_date: new Date().toISOString().split('T')[0],
-          autoCreateJournal: true,
-          inventory_account_id,
-          adjustment_account_id: undefined,
-        });
-      } catch (error: any) {
-        console.error('خطأ في إنشاء حركة المخزون الافتتاحية:', error);
-        // Continue even if journal creation fails
-      }
-    }
-
     return { id: productId, message: 'تم إضافة المنتج بنجاح' };
   } finally {
     connection.release();
@@ -150,17 +135,9 @@ export const updateProduct = async (
     product_name_ar: string;
     product_name_en?: string;
     category_id?: number | null;
-    unit_of_measure?: string;
-    product_type?: 'Stockable' | 'Service' | 'Consumable';
-    track_inventory?: boolean;
-    quantity_on_hand?: number;
-    cost_price?: number;
-    sale_price?: number;
+    unit_id?: number | null;
+    product_type?: 'Stockable' | 'Service';
     reorder_level?: number;
-    warehouse_id?: number | null;
-    income_account_id?: number | null;
-    expense_account_id?: number | null;
-    inventory_account_id?: number | null;
     is_active?: boolean;
     description?: string;
   }
@@ -170,17 +147,9 @@ export const updateProduct = async (
     product_name_ar,
     product_name_en,
     category_id,
-    unit_of_measure,
-    product_type,
-    track_inventory,
-    quantity_on_hand,
-    cost_price,
-    sale_price,
+    unit_id,
+    product_type = 'Stockable',
     reorder_level,
-    warehouse_id,
-    income_account_id,
-    expense_account_id,
-    inventory_account_id,
     is_active,
     description,
   } = data;
@@ -216,60 +185,46 @@ export const updateProduct = async (
       }
     }
 
-    // Handle quantity adjustment if quantity_on_hand changed
-    const quantityDiff = (quantity_on_hand !== undefined ? quantity_on_hand : currentProduct.quantity_on_hand) - currentProduct.quantity_on_hand;
+    // Validate category if provided
+    if (category_id) {
+      const [categoryCheck]: any = await connection.execute(
+        'SELECT id FROM product_categories WHERE id = ? AND is_active = TRUE',
+        [category_id]
+      );
+      if (categoryCheck.length === 0) {
+        throw new Error('الفئة المحددة غير موجودة');
+      }
+    }
+
+    // Validate unit if provided
+    if (unit_id) {
+      const [unitCheck]: any = await connection.execute(
+        'SELECT id FROM units_of_measure WHERE id = ? AND is_active = TRUE',
+        [unit_id]
+      );
+      if (unitCheck.length === 0) {
+        throw new Error('وحدة القياس المحددة غير موجودة');
+      }
+    }
 
     await connection.execute(
       `UPDATE products SET
         product_code = ?, product_name_ar = ?, product_name_en = ?, category_id = ?,
-        unit_of_measure = ?, product_type = ?, track_inventory = ?, quantity_on_hand = ?,
-        cost_price = ?, sale_price = ?, reorder_level = ?, warehouse_id = ?,
-        income_account_id = ?, expense_account_id = ?, inventory_account_id = ?,
-        is_active = ?, description = ?
+        unit_id = ?, product_type = ?, reorder_level = ?, is_active = ?, description = ?
       WHERE id = ?`,
       [
         product_code,
         product_name_ar,
         product_name_en || null,
         category_id || null,
-        unit_of_measure || 'وحدة',
-        product_type || 'Stockable',
-        track_inventory !== undefined ? track_inventory : true,
-        quantity_on_hand !== undefined ? quantity_on_hand : currentProduct.quantity_on_hand,
-        cost_price !== undefined ? cost_price : currentProduct.cost_price,
-        sale_price !== undefined ? sale_price : currentProduct.sale_price,
+        unit_id || null,
+        product_type,
         reorder_level !== undefined ? reorder_level : currentProduct.reorder_level,
-        warehouse_id !== undefined ? warehouse_id : currentProduct.warehouse_id,
-        income_account_id !== undefined ? income_account_id : currentProduct.income_account_id,
-        expense_account_id !== undefined ? expense_account_id : currentProduct.expense_account_id,
-        inventory_account_id !== undefined ? inventory_account_id : currentProduct.inventory_account_id,
         is_active !== undefined ? is_active : currentProduct.is_active,
         description || currentProduct.description,
         id,
       ]
     );
-
-    // If quantity changed, create adjustment stock movement and journal
-    if (quantityDiff !== 0 && currentProduct.product_type === 'Stockable' && inventory_account_id !== undefined) {
-      try {
-        await stockMovementsController.createStockMovement({
-          product_id: parseInt(id.toString()),
-          warehouse_id: warehouse_id !== undefined ? warehouse_id : currentProduct.warehouse_id,
-          movement_type: 'ADJUSTMENT',
-          reference: `ADJ-${product_code}`,
-          description: `تعديل مخزون - ${product_name_ar}`,
-          quantity: quantityDiff,
-          unit_cost: cost_price !== undefined ? cost_price : currentProduct.cost_price,
-          movement_date: new Date().toISOString().split('T')[0],
-          autoCreateJournal: true,
-          inventory_account_id: inventory_account_id !== undefined ? inventory_account_id : currentProduct.inventory_account_id,
-          adjustment_account_id: expense_account_id !== undefined ? expense_account_id : currentProduct.expense_account_id,
-        });
-      } catch (error: any) {
-        console.error('خطأ في إنشاء حركة المخزون:', error);
-        // Continue even if journal creation fails
-      }
-    }
 
     return { message: 'تم تحديث المنتج بنجاح' };
   } finally {
