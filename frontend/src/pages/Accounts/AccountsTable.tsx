@@ -1,6 +1,5 @@
-import React from 'react';
+import DataTable, { TableColumn, TableAction } from '../../components/DataTable';
 import { Account } from './types';
-import AccountTableRow from './AccountTableRow';
 
 interface AccountsTableProps {
   accounts: Account[];
@@ -23,51 +22,75 @@ export const AccountsTable: React.FC<AccountsTableProps> = ({
   getBalanceLabel,
   getTypeBadgeColor,
 }) => {
-  if (loading) {
-    return (
-      <div className="text-center py-8 p-6">
-        <p className="text-gray-500">جاري التحميل...</p>
-      </div>
-    );
-  }
+  const columns: TableColumn<Account>[] = [
+    {
+      key: 'account_number',
+      label: 'رقم الحساب',
+    },
+    {
+      key: 'parent_account_number',
+      label: 'حساب الأب',
+      render: (parent) => parent || '--',
+    },
+    {
+      key: 'name_ar',
+      label: 'الاسم',
+      render: (_, account) => (
+        <div>
+          <p>{account.name_ar}</p>
+          {account.name_en && <p className="text-sm text-gray-600">{account.name_en}</p>}
+        </div>
+      ),
+    },
+    {
+      key: 'account_type_id',
+      label: 'النوع',
+      render: (typeId) => (
+        <span className={`px-2 py-1 rounded text-xs font-semibold ${getTypeBadgeColor(typeId)}`}>
+          {getTypeLabel(typeId)}
+        </span>
+      ),
+    },
+    {
+      key: 'account_level',
+      label: 'المستوى',
+    },
+    {
+      key: 'report_type_id',
+      label: 'التقرير',
+      render: (typeId) => getReportLabel(typeId),
+    },
+    {
+      key: 'balance_type_id',
+      label: 'نوع الرصيد',
+      render: (typeId) => getBalanceLabel(typeId),
+    },
+  ];
 
-  if (accounts.length === 0) {
-    return (
-      <div className="text-center py-8 p-6">
-        <p className="text-gray-500">لا يوجد حسابات تطابق معايير البحث</p>
-      </div>
-    );
-  }
+  const actions: TableAction<Account>[] = [
+    {
+      label: 'تعديل',
+      onClick: onEdit,
+      className: 'px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition',
+    },
+    {
+      label: (account) => account.status === 'active' ? 'تعطيل' : 'تفعيل',
+      onClick: (account) => onToggleStatus(account.account_number),
+      className: (account) =>
+        account.status === 'active'
+          ? 'px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition'
+          : 'px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition',
+    },
+  ];
 
   return (
-    <table className="w-full">
-      <thead className="bg-gray-50 border-b">
-        <tr className=''>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">رقم الحساب</th>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">حساب الأب</th>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">الاسم</th>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">النوع</th>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">المستوى</th>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">التقرير</th>
-          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">نوع الرصيد</th>
-          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold text-gray-700">الإجراءات</th>
-        </tr>
-      </thead>
-      <tbody>
-        {accounts.map((account) => (
-          <AccountTableRow
-            key={account.account_number}
-            account={account}
-            onEdit={onEdit}
-            onToggleStatus={onToggleStatus}
-            getTypeLabel={getTypeLabel}
-            getReportLabel={getReportLabel}
-            getBalanceLabel={getBalanceLabel}
-            getTypeBadgeColor={getTypeBadgeColor}
-          />
-        ))}
-      </tbody>
-    </table>
+    <DataTable
+      data={accounts}
+      columns={columns}
+      actions={actions}
+      loading={loading}
+      emptyMessage="لا يوجد حسابات تطابق معايير البحث"
+    />
   );
 };
 

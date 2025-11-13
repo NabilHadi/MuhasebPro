@@ -1,3 +1,4 @@
+import DataTable, { TableColumn, TableAction } from '../../../../components/DataTable';
 import { Product, ProductCategory } from '../../types';
 
 interface ProductsTableProps {
@@ -45,56 +46,61 @@ export default function ProductsTable({
     );
   };
 
-  if (loading) {
-    return <div className="text-center py-8">جاري التحميل...</div>;
-  }
+  const columns: TableColumn<Product>[] = [
+    {
+      key: 'product_code',
+      label: 'الرمز',
+      align: 'right',
+    },
+    {
+      key: 'product_name_ar',
+      label: 'الاسم',
+      render: (_, product) => (
+        <div>
+          <div>{product.product_name_ar}</div>
+          {product.product_name_en && <div className="text-xs text-gray-500">{product.product_name_en}</div>}
+        </div>
+      ),
+    },
+    {
+      key: 'category_id',
+      label: 'الفئة',
+      render: (categoryId) => getCategoryName(categoryId),
+    },
+    {
+      key: 'product_type',
+      label: 'النوع',
+      render: (type) => getTypeBadge(type),
+    },
+    {
+      key: 'is_active',
+      label: 'الحالة',
+      render: (isActive) => getStatusBadge(isActive),
+    },
+  ];
 
-  if (products.length === 0) {
-    return <div className="text-center py-8 text-gray-500">لا توجد منتجات</div>;
-  }
+  const actions: TableAction<Product>[] = [
+    {
+      label: 'تعديل',
+      icon: '✏️',
+      onClick: onEdit,
+      className: 'px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600',
+    },
+    {
+      label: 'حذف',
+      icon: '🗑️',
+      onClick: (product) => onDelete(product.id),
+      className: 'px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600',
+    },
+  ];
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            <th className="px-6 py-3 text-right text-sm font-semibold">الرمز</th>
-            <th className="px-6 py-3 text-right text-sm font-semibold">الاسم</th>
-            <th className="px-6 py-3 text-right text-sm font-semibold">الفئة</th>
-            <th className="px-6 py-3 text-right text-sm font-semibold">النوع</th>
-            <th className="px-6 py-3 text-right text-sm font-semibold">الحالة</th>
-            <th className="px-6 py-3 text-center text-sm font-semibold">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id} className="border-b hover:bg-gray-50">
-              <td className="px-6 py-3 text-sm font-mono">{product.product_code}</td>
-              <td className="px-6 py-3 text-sm">
-                <div>{product.product_name_ar}</div>
-                {product.product_name_en && <div className="text-xs text-gray-500">{product.product_name_en}</div>}
-              </td>
-              <td className="px-6 py-3 text-sm">{getCategoryName(product.category_id)}</td>
-              <td className="px-6 py-3 text-sm">{getTypeBadge(product.product_type)}</td>
-              <td className="px-6 py-3 text-sm">{getStatusBadge(product.is_active)}</td>
-              <td className="px-6 py-3 text-center space-x-2">
-                <button
-                  onClick={() => onEdit(product)}
-                  className="inline-block px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
-                >
-                  ✏️ تعديل
-                </button>
-                <button
-                  onClick={() => onDelete(product.id)}
-                  className="inline-block px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                >
-                  🗑️ حذف
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      data={products}
+      columns={columns}
+      actions={actions}
+      loading={loading}
+      emptyMessage="لا توجد منتجات"
+    />
   );
 }
