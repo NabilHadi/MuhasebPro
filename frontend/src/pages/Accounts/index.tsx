@@ -1,8 +1,14 @@
+import React, { useEffect } from 'react';
 import AccountsForm from './AccountsForm';
 import AccountsTable from './AccountsTable';
+import ToastContainer from '../../components/Toast';
 import { useAccountsData, useAccountForm, useAccountFilters } from './hooks';
+import { useToast } from '../../hooks/useToast';
 
 export default function Accounts() {
+  // Toast notifications
+  const { toasts, removeToast, showSuccess, showError } = useToast();
+
   // جلب البيانات
   const {
     accounts,
@@ -48,6 +54,19 @@ export default function Accounts() {
   // دمج الأخطاء
   const error = dataError || formError;
 
+  // عرض الرسائل كـ toasts
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
+
+  useEffect(() => {
+    if (success) {
+      showSuccess(success);
+    }
+  }, [success, showSuccess]);
+
   // دوال معالجة الأحداث
   const handleParentAccountChange = (parentNumber: string) => {
     handleParentChange(parentNumber, mainTypeAccounts);
@@ -70,18 +89,6 @@ export default function Accounts() {
 
   return (
     <div>
-      {/* رسائل */}
-      {error && (
-        <div className="alert alert-danger mb-4">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="alert alert-success mb-4">
-          {success}
-        </div>
-      )}
-
       {/* نموذج الإضافة/التعديل */}
       {showForm && (
         <AccountsForm
@@ -164,6 +171,9 @@ export default function Accounts() {
           )}
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
