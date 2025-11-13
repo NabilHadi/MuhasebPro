@@ -1,4 +1,5 @@
 import React from 'react';
+import { FilterBar, FilterDefinition } from '../../components/FilterBar';
 
 interface AccountsFiltersProps {
   searchTerm: string;
@@ -15,44 +16,37 @@ export const AccountsFilters: React.FC<AccountsFiltersProps> = ({
   setStatusFilter,
   onAddNew,
 }) => {
+  const filters: FilterDefinition[] = [
+    {
+      id: 'search',
+      type: 'text',
+      label: 'البحث',
+      placeholder: 'ابحث برقم الحساب أو الاسم بالعربية أو الإنجليزية',
+      value: searchTerm,
+      onChange: setSearchTerm,
+    },
+    {
+      id: 'status',
+      type: 'enum',
+      label: 'الحالة',
+      value: statusFilter,
+      onChange: (val) => setStatusFilter(val as 'all' | 'active' | 'inactive'),
+      options: [
+        { label: '-- الكل --', value: 'all' },
+        { label: 'نشط', value: 'active' },
+        { label: 'معطل', value: 'inactive' },
+      ],
+    },
+  ];
+
   return (
-    <div className="flex items-center gap-3 mb-3">
-      <div className="flex flex-wrap items-center">
-        {onAddNew && (
-          <button
-            onClick={onAddNew}
-            className="btn-primary flex items-center gap-2"
-          >
-            <span>➕</span>
-            <span>حساب جديد</span>
-          </button>
-        )}
-      </div>
-
-      {/* Search Input */}
-      <div className="flex-1">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="ابحث برقم الحساب أو الاسم بالعربية أو الإنجليزية"
-          className="input-field"
-        />
-      </div>
-
-      {/* Status Filter */}
-      <div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-          className="input-field"
-        >
-          <option value="all">-- الكل --</option>
-          <option value="active">نشط</option>
-          <option value="inactive">معطل</option>
-        </select>
-      </div>
-    </div>
+    <FilterBar
+      filters={filters}
+      onAddClick={onAddNew || (() => { })}
+      addButtonLabel="حساب جديد"
+      layout="flex"
+      containerClassName="gap-3"
+    />
   );
 };
 

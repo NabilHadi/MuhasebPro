@@ -1,3 +1,5 @@
+import { FilterBar, FilterDefinition } from '../../../../components/FilterBar';
+
 interface CategorySearchProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
@@ -9,22 +11,24 @@ export default function CategorySearch({
   onSearchChange,
   onAddClick,
 }: CategorySearchProps) {
+  const filters: FilterDefinition[] = [
+    {
+      id: 'search',
+      type: 'text',
+      label: 'البحث',
+      placeholder: 'ابحث عن الفئات...',
+      value: searchTerm,
+      onChange: onSearchChange,
+    },
+  ];
+
   return (
-    <div className="flex items-center gap-2 my-4">
-      <button
-        onClick={onAddClick}
-        className="btn-primary flex items-center gap-2"
-      >
-        <span>➕</span>
-        <span>إضافة فئة جديدة</span>
-      </button>
-      <input
-        type="text"
-        placeholder="ابحث عن الفئات..."
-        value={searchTerm}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+    <FilterBar
+      filters={filters}
+      onAddClick={onAddClick}
+      addButtonLabel="إضافة فئة جديدة"
+      layout="flex"
+      containerClassName="gap-2 my-4"
+    />
   );
 }
