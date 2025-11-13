@@ -1,7 +1,9 @@
 import React from 'react';
+import Modal from '../../components/Modal';
 import { FormData, AccountType, Account } from './types';
 
 interface AccountsFormProps {
+  isOpen: boolean;
   formData: FormData;
   setFormData: (data: FormData) => void;
   editingNumber: string | null;
@@ -16,6 +18,7 @@ interface AccountsFormProps {
 }
 
 export const AccountsForm: React.FC<AccountsFormProps> = ({
+  isOpen,
   formData,
   setFormData,
   editingNumber,
@@ -29,13 +32,13 @@ export const AccountsForm: React.FC<AccountsFormProps> = ({
   isBalanceTypeEditable,
 }) => {
   return (
-    <div className="card mb-8">
-      <div className="card-header">
-        <h2 className="text-xl font-semibold">
-          {editingNumber ? 'تعديل الحساب' : 'إضافة حساب جديد'}
-        </h2>
-      </div>
-      <form onSubmit={onSubmit} className="p-6 space-y-4">
+    <Modal
+      isOpen={isOpen}
+      title={editingNumber ? 'تعديل الحساب' : 'إضافة حساب جديد'}
+      onClose={onCancel}
+      size="lg"
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Step 1: Parent Account Selection */}
           <div className="form-group md:col-span-2">
@@ -203,7 +206,7 @@ export const AccountsForm: React.FC<AccountsFormProps> = ({
           </button>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 };
 

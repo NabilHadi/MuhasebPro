@@ -95,21 +95,20 @@ export default function Accounts() {
   return (
     <div>
       {/* نموذج الإضافة/التعديل */}
-      {showForm && (
-        <AccountsForm
-          formData={formData}
-          setFormData={setFormData}
-          editingNumber={editingNumber}
-          onSubmit={handleSubmit}
-          onCancel={() => setShowForm(false)}
-          mainTypeAccounts={mainTypeAccounts}
-          accountTypes={accountTypes}
-          balanceTypes={balanceTypes}
-          onParentAccountChange={handleParentAccountChange}
-          getBalanceLabel={getBalanceLabel}
-          isBalanceTypeEditable={isBalanceTypeEditable}
-        />
-      )}
+      <AccountsForm
+        isOpen={showForm}
+        formData={formData}
+        setFormData={setFormData}
+        editingNumber={editingNumber}
+        onSubmit={handleSubmit}
+        onCancel={() => setShowForm(false)}
+        mainTypeAccounts={mainTypeAccounts}
+        accountTypes={accountTypes}
+        balanceTypes={balanceTypes}
+        onParentAccountChange={handleParentAccountChange}
+        getBalanceLabel={getBalanceLabel}
+        isBalanceTypeEditable={isBalanceTypeEditable}
+      />
 
       {/* صفحة الحسابات المدمجة */}
       <div className="card">
