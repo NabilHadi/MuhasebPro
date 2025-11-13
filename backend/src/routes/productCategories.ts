@@ -26,9 +26,10 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Create new category
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { category_name_ar, category_name_en, description } = req.body;
+    const { category_number, category_name_ar, category_name_en, description } = req.body;
 
     const result = await productCategoriesController.createProductCategory({
+      category_number,
       category_name_ar,
       category_name_en,
       description,
@@ -43,9 +44,10 @@ router.post('/', async (req: Request, res: Response) => {
 // Update category
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { category_name_ar, category_name_en, description, is_active } = req.body;
+    const { category_number, category_name_ar, category_name_en, description, is_active } = req.body;
 
     const result = await productCategoriesController.updateProductCategory(req.params.id, {
+      category_number,
       category_name_ar,
       category_name_en,
       description,

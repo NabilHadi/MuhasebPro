@@ -3,6 +3,7 @@ import apiClient from '../services/api';
 
 interface ProductCategory {
   id: number;
+  category_number: number;
   category_name_ar: string;
   category_name_en: string;
   description: string;
@@ -12,6 +13,7 @@ interface ProductCategory {
 }
 
 interface FormData {
+  category_number: number;
   category_name_ar: string;
   category_name_en: string;
   description: string;
@@ -26,6 +28,7 @@ const ProductCategories = () => {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState<FormData>({
+    category_number: 0,
     category_name_ar: '',
     category_name_en: '',
     description: '',
@@ -73,7 +76,7 @@ const ProductCategories = () => {
       }
 
       // Reset form and refresh list
-      setFormData({ category_name_ar: '', category_name_en: '', description: '' });
+      setFormData({ category_number: 0, category_name_ar: '', category_name_en: '', description: '' });
       setEditingId(null);
       setIsFormVisible(false);
       fetchCategories();
@@ -85,6 +88,7 @@ const ProductCategories = () => {
   // Handle edit
   const handleEdit = (category: ProductCategory) => {
     setFormData({
+      category_number: category.category_number,
       category_name_ar: category.category_name_ar,
       category_name_en: category.category_name_en,
       description: category.description,
@@ -108,7 +112,7 @@ const ProductCategories = () => {
 
   // Handle cancel
   const handleCancel = () => {
-    setFormData({ category_name_ar: '', category_name_en: '', description: '' });
+    setFormData({ category_number: 0, category_name_ar: '', category_name_en: '', description: '' });
     setEditingId(null);
     setIsFormVisible(false);
     setError('');
@@ -155,6 +159,21 @@ const ProductCategories = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                رقم الفئة *
+              </label>
+              <input
+                type="number"
+                name="category_number"
+                value={formData.category_number}
+                onChange={handleInputChange}
+                placeholder="مثال: 1"
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 اسم الفئة بالعربية *
@@ -231,6 +250,7 @@ const ProductCategories = () => {
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-200">
+                <th className="border border-gray-300 px-4 py-2 text-right">رقم الفئة</th>
                 <th className="border border-gray-300 px-4 py-2 text-right">الاسم (عربي)</th>
                 <th className="border border-gray-300 px-4 py-2 text-right">الاسم (إنجليزي)</th>
                 <th className="border border-gray-300 px-4 py-2 text-right">الوصف</th>
@@ -241,13 +261,14 @@ const ProductCategories = () => {
             <tbody>
               {filteredCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="border border-gray-300 px-4 py-4 text-center text-gray-600">
+                  <td colSpan={6} className="border border-gray-300 px-4 py-4 text-center text-gray-600">
                     لا توجد فئات
                   </td>
                 </tr>
               ) : (
                 filteredCategories.map((category) => (
                   <tr key={category.id} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-2">{category.category_number}</td>
                     <td className="border border-gray-300 px-4 py-2">{category.category_name_ar}</td>
                     <td className="border border-gray-300 px-4 py-2">{category.category_name_en}</td>
                     <td className="border border-gray-300 px-4 py-2 truncate">{category.description}</td>

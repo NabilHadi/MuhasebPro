@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS units_of_measure (
 
 CREATE TABLE `product_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `category_number` int NOT NULL UNIQUE,
   `category_name_ar` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `category_name_en` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
@@ -134,7 +135,32 @@ CREATE TABLE `product_categories` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO product_categories 
+(id, category_number, category_name_ar, category_name_en, description, is_active)
+VALUES
+(1, 1, 'إلكترونيات', 'Electronics', 'أجهزة إلكترونية مثل الهواتف، الحواسيب، الملحقات', 1),
+(2, 2, 'أجهزة كهربائية', 'Home Appliances', 'أجهزة كهربائية منزلية مثل الغسالات والثلاجات', 1),
+(3, 3, 'مواد غذائية', 'Food & Groceries', 'مواد غذائية معلبة وطازجة واستهلاكية', 1),
+(4, 4, 'مستلزمات مكتبية', 'Office Supplies', 'ورق، أقلام، أحبار، أدوات مكتبية', 1),
+(5, 5, 'أثاث', 'Furniture', 'أثاث مكتبي ومنزلي مثل الطاولات والكراسي', 1),
+(6, 6, 'ملابس', 'Clothing', 'ملابس رجالية، نسائية، وأطفال', 1),
+(7, 7, 'مجوهرات', 'Jewelry', 'ذهب، فضة، إكسسوارات فاخرة', 1),
+(8, 8, 'مستحضرات تجميل', 'Cosmetics', 'منتجات التجميل والعناية بالبشرة والشعر', 1),
+(9, 9, 'أدوية', 'Pharmaceuticals', 'أدوية ومستلزمات طبية وصحية', 1),
+(10, 10, 'قطع غيار سيارات', 'Auto Parts', 'قطع غيار واكسسوارات المركبات', 1),
+(11, 11, 'منظفات ومستلزمات منزلية', 'Cleaning & Household', 'منظفات، مطهرات، ومنتجات العناية بالمنزل', 1),
+(12, 12, 'ألعاب', 'Toys', 'ألعاب أطفال وتعليمية', 1),
+(13, 13, 'خدمات', 'Services', 'خدمات تكميلية غير مرتبطة بمخزون مادي', 1),
+(14, 14, 'معدات صناعية', 'Industrial Equipment', 'معدات وأدوات صناعية', 1),
+(15, 15, 'مواد بناء', 'Construction Materials', 'مواد بناء، دهانات، إسمنت، حديد', 1),
+(16, 16, 'منتجات رقمية', 'Digital Products', 'برامج ورخص إلكترونية ومنتجات رقمية', 1),
+(17, 17, 'سجاد وأرضيات', 'Carpets & Flooring', 'سجاد، موكيت، باركيه، وفينيل', 1),
+(18, 18, 'مستلزمات مطاعم', 'Restaurant Supplies', 'مستلزمات مطابخ ومطاعم ومقاهي', 1),
+(19, 19, 'مستلزمات زراعية', 'Agricultural Supplies', 'بذور، أسمدة، معدات زراعية', 1),
+(20, 20, 'أجهزة الشبكات', 'Networking Devices', 'راوترات، سويتشات، معدات شبكات', 1);
+
 
 CREATE TABLE IF NOT EXISTS products (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -378,30 +404,6 @@ VALUES
 
 -- OTHER
 (16, 'خدمة', 'Service', 'srv', 7, 1.000000, TRUE, TRUE, 'وحدة قياس للخدمات (لا تحتاج تحويل)');
-
-INSERT INTO product_categories 
-(id, category_name_ar, category_name_en, description, is_active)
-VALUES
-(1, 'إلكترونيات', 'Electronics', 'أجهزة إلكترونية مثل الهواتف، الحواسيب، الملحقات', 1),
-(2, 'أجهزة كهربائية', 'Home Appliances', 'أجهزة كهربائية منزلية مثل الغسالات والثلاجات', 1),
-(3, 'مواد غذائية', 'Food & Groceries', 'مواد غذائية معلبة وطازجة واستهلاكية', 1),
-(4, 'مستلزمات مكتبية', 'Office Supplies', 'ورق، أقلام، أحبار، أدوات مكتبية', 1),
-(5, 'أثاث', 'Furniture', 'أثاث مكتبي ومنزلي مثل الطاولات والكراسي', 1),
-(6, 'ملابس', 'Clothing', 'ملابس رجالية، نسائية، وأطفال', 1),
-(7, 'مجوهرات', 'Jewelry', 'ذهب، فضة، إكسسوارات فاخرة', 1),
-(8, 'مستحضرات تجميل', 'Cosmetics', 'منتجات التجميل والعناية بالبشرة والشعر', 1),
-(9, 'أدوية', 'Pharmaceuticals', 'أدوية ومستلزمات طبية وصحية', 1),
-(10, 'قطع غيار سيارات', 'Auto Parts', 'قطع غيار واكسسوارات المركبات', 1),
-(11, 'منظفات ومستلزمات منزلية', 'Cleaning & Household', 'منظفات، مطهرات، ومنتجات العناية بالمنزل', 1),
-(12, 'ألعاب', 'Toys', 'ألعاب أطفال وتعليمية', 1),
-(13, 'خدمات', 'Services', 'خدمات تكميلية غير مرتبطة بمخزون مادي', 1),
-(14, 'معدات صناعية', 'Industrial Equipment', 'معدات وأدوات صناعية', 1),
-(15, 'مواد بناء', 'Construction Materials', 'مواد بناء، دهانات، إسمنت، حديد', 1),
-(16, 'منتجات رقمية', 'Digital Products', 'برامج ورخص إلكترونية ومنتجات رقمية', 1),
-(17, 'سجاد وأرضيات', 'Carpets & Flooring', 'سجاد، موكيت، باركيه، وفينيل', 1),
-(18, 'مستلزمات مطاعم', 'Restaurant Supplies', 'مستلزمات مطابخ ومطاعم ومقاهي', 1),
-(19, 'مستلزمات زراعية', 'Agricultural Supplies', 'بذور، أسمدة، معدات زراعية', 1),
-(20, 'أجهزة الشبكات', 'Networking Devices', 'راوترات، سويتشات، معدات شبكات', 1);
 
 INSERT INTO products 
 (id, product_code, product_name_ar, product_name_en, category_id, unit_id, product_type, is_active, description)

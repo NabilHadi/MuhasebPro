@@ -34,7 +34,7 @@ export default function InventoryManagement() {
       description: 'إدارة فئات وتصنيفات المنتجات',
       path: '/product-categories',
       tabTitle: 'فئات المنتجات',
-      isDisabled: true,
+      isDisabled: false,
     },
     {
       id: 'warehouses',

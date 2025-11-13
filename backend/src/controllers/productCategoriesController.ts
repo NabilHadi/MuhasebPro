@@ -4,7 +4,7 @@ export const getAllProductCategories = async () => {
   const connection = await getConnection();
   try {
     const [categories]: any = await connection.execute(
-      'SELECT * FROM product_categories WHERE is_active = TRUE ORDER BY category_name_ar ASC'
+      'SELECT * FROM product_categories WHERE is_active = TRUE ORDER BY category_number ASC'
     );
     return categories;
   } finally {
@@ -31,33 +31,47 @@ export const getProductCategoryById = async (id: string | number) => {
 };
 
 export const createProductCategory = async (data: {
+  category_number: number;
   category_name_ar: string;
   category_name_en?: string;
   description?: string;
 }) => {
-  const { category_name_ar, category_name_en, description } = data;
+  const { category_number, category_name_ar, category_name_en, description } = data;
 
   // Validation
+  if (!category_number) {
+    throw new Error('رقم الفئة مطلوب');
+  }
   if (!category_name_ar) {
     throw new Error('اسم الفئة بالعربية مطلوب');
   }
 
   const connection = await getConnection();
   try {
+    // Check if category number already exists
+    const [existingNumber]: any = await connection.execute(
+      'SELECT id FROM product_categories WHERE category_number = ?',
+      [category_number]
+    );
+
+    if (existingNumber.length > 0) {
+      throw new Error('رقم الفئة مستخدم بالفعل');
+    }
+
     // Check if category name already exists
-    const [existing]: any = await connection.execute(
+    const [existingName]: any = await connection.execute(
       'SELECT id FROM product_categories WHERE category_name_ar = ?',
       [category_name_ar]
     );
 
-    if (existing.length > 0) {
+    if (existingName.length > 0) {
       throw new Error('اسم الفئة مستخدم بالفعل');
     }
 
     const result: any = await connection.execute(
-      `INSERT INTO product_categories (category_name_ar, category_name_en, description, is_active)
-       VALUES (?, ?, ?, ?)`,
-      [category_name_ar, category_name_en || null, description || null, true]
+      `INSERT INTO product_categories (category_number, category_name_ar, category_name_en, description, is_active)
+       VALUES (?, ?, ?, ?, ?)`,
+      [category_number, category_name_ar, category_name_en || null, description || null, true]
     );
 
     return { id: result[0].insertId, message: 'تم إضافة الفئة بنجاح' };
@@ -69,13 +83,14 @@ export const createProductCategory = async (data: {
 export const updateProductCategory = async (
   id: string | number,
   data: {
+    category_number?: number;
     category_name_ar: string;
     category_name_en?: string;
     description?: string;
     is_active?: boolean;
   }
 ) => {
-  const { category_name_ar, category_name_en, description, is_active } = data;
+  const { category_number, category_name_ar, category_name_en, description, is_active } = data;
 
   // Validation
   if (!category_name_ar) {
@@ -94,6 +109,18 @@ export const updateProductCategory = async (
       throw new Error('الفئة غير موجودة');
     }
 
+    // Check if category number is unique (if changed and provided)
+    if (category_number && category_number !== category[0].category_number) {
+      const [existingNumber]: any = await connection.execute(
+        'SELECT id FROM product_categories WHERE category_number = ? AND id != ?',
+        [category_number, id]
+      );
+
+      if (existingNumber.length > 0) {
+        throw new Error('رقم الفئة مستخدم بالفعل');
+      }
+    }
+
     // Check if category name is unique (if changed)
     if (category_name_ar !== category[0].category_name_ar) {
       const [existing]: any = await connection.execute(
@@ -108,9 +135,10 @@ export const updateProductCategory = async (
 
     await connection.execute(
       `UPDATE product_categories SET
-        category_name_ar = ?, category_name_en = ?, description = ?, is_active = ?
+        category_number = ?, category_name_ar = ?, category_name_en = ?, description = ?, is_active = ?
       WHERE id = ?`,
       [
+        category_number || category[0].category_number,
         category_name_ar,
         category_name_en || null,
         description || null,
