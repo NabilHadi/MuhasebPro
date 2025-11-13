@@ -64,9 +64,8 @@ export const AccountsForm: React.FC<AccountsFormProps> = ({
               type="text"
               value={formData.account_number}
               onChange={(e) => setFormData({ ...formData, account_number: e.target.value.toUpperCase() })}
-              disabled={!!editingNumber}
               placeholder="مثال: 1000"
-              className="input-field disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="input-field"
               required
             />
             <p className="text-xs text-gray-500 mt-1">يتم اقتراح رقم الحساب تلقائياً، ويمكنك تعديله</p>

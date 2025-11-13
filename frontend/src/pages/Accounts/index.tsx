@@ -112,21 +112,18 @@ export default function Accounts() {
 
       {/* صفحة الحسابات المدمجة */}
       <div className="card">
-        {/* رأس القائمة */}
-        <div className="pb-2 border-b flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">الحسابات</h1>
-          <button
+        {/* التصفية والبحث */}
+        <div className="px-2 py-2 border-b bg-gray-50">
+          <div className="flex flex-wrap items-center gap-6">
+
+            <button
             onClick={handleAddNew}
             className="btn-primary flex items-center gap-2"
           >
             <span>➕</span>
             <span>حساب جديد</span>
           </button>
-        </div>
 
-        {/* التصفية والبحث */}
-        <div className="px-2 py-2 border-b bg-gray-50">
-          <div className="flex flex-wrap items-center gap-6">
             {/* Search Input */}
             <div className="flex items-center gap-2 flex-1 min-w-64">
               <label className="label-field[margin-bottom-0] whitespace-nowrap">البحث</label>
