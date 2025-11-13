@@ -389,7 +389,7 @@ INSERT INTO product_categories (category_name_ar, category_name_en, description)
 ('أجهزة مطبخ', 'Kitchen Appliances', 'أجهزة وأدوات للمطبخ والمنزل');
 -- إدراج أنواع الحسابات
 INSERT INTO account_types (name_ar, name_en) VALUES 
-('أساسي', 'Main'),
+('رئيسي', 'Main'),
 ('فرعي', 'Sub');
 -- إدراج أنواع التقارير
 INSERT INTO report_types (code, name_ar, name_en) VALUES 

@@ -59,7 +59,7 @@ export const useAccountsData = (): UseAccountsDataReturn => {
   const fetchAccountTypes = async () => {
     try {
       const mockTypes: AccountType[] = [
-        { id: 1, name_ar: 'أساسي', name_en: 'Main' },
+        { id: 1, name_ar: 'رئيسي', name_en: 'Main' },
         { id: 2, name_ar: 'فرعي', name_en: 'Sub' },
       ];
       setAccountTypes(mockTypes);

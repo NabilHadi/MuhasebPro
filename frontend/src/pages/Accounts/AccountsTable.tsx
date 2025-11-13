@@ -42,15 +42,15 @@ export const AccountsTable: React.FC<AccountsTableProps> = ({
   return (
     <table className="w-full">
       <thead className="bg-gray-50 border-b">
-        <tr>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">رقم الحساب</th>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">حساب الأب</th>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">الاسم</th>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">النوع</th>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">المستوى</th>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">التقرير</th>
-          <th className="px-2 py-2 text-right text-sm font-semibold text-gray-700">نوع الرصيد</th>
-          <th className="px-2 py-2 text-center text-sm font-semibold text-gray-700">الإجراءات</th>
+        <tr className=''>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">رقم الحساب</th>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">حساب الأب</th>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">الاسم</th>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">النوع</th>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">المستوى</th>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">التقرير</th>
+          <th className="border border-gray-300 px-2 py-2 text-right text-sm font-semibold text-gray-700">نوع الرصيد</th>
+          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold text-gray-700">الإجراءات</th>
         </tr>
       </thead>
       <tbody>
