@@ -17,7 +17,7 @@ interface UseAccountFormReturn {
   handleAddNew: (onFetchAccounts: () => Promise<void>, onFetchMainTypeAccounts: () => Promise<void>) => void;
   handleEdit: (account: Account) => void;
   handleSubmit: (e: React.FormEvent, onFetchAccounts: () => Promise<void>) => Promise<void>;
-  handleToggleStatus: (accountNumber: string, onFetchAccounts: () => Promise<void>) => Promise<void>;
+  handleToggleStatus: (accountNumber: string, onFetchAccounts: () => Promise<void>, onConfirm: (opts: any) => Promise<boolean>) => Promise<void>;
   resetForm: () => void;
 }
 
@@ -135,8 +135,16 @@ export const useAccountForm = (): UseAccountFormReturn => {
     }
   };
 
-  const handleToggleStatus = async (accountNumber: string, onFetchAccounts: () => Promise<void>) => {
-    if (!window.confirm('هل أنت متأكد من تغيير حالة هذا الحساب؟')) {
+  const handleToggleStatus = async (accountNumber: string, onFetchAccounts: () => Promise<void>, onConfirm: (opts: any) => Promise<boolean>) => {
+    const confirmed = await onConfirm({
+      title: 'تغيير حالة الحساب',
+      message: 'هل أنت متأكد من رغبتك في تغيير حالة هذا الحساب؟',
+      confirmText: 'تغيير',
+      cancelText: 'إلغاء',
+      isDangerous: true,
+    });
+
+    if (!confirmed) {
       return;
     }
 

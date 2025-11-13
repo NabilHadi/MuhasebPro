@@ -2,12 +2,17 @@ import React, { useEffect } from 'react';
 import AccountsForm from './AccountsForm';
 import AccountsTable from './AccountsTable';
 import ToastContainer from '../../components/Toast';
+import ConfirmModal from '../../components/ConfirmModal';
 import { useAccountsData, useAccountForm, useAccountFilters } from './hooks';
 import { useToast } from '../../hooks/useToast';
+import { useConfirmModal } from '../../hooks/useConfirmModal';
 
 export default function Accounts() {
   // Toast notifications
   const { toasts, removeToast, showSuccess, showError } = useToast();
+  
+  // Confirmation modal
+  const { isOpen, options, isLoading, confirm, handleConfirm, handleCancel } = useConfirmModal();
 
   // جلب البيانات
   const {
@@ -81,7 +86,7 @@ export default function Accounts() {
   };
 
   const handleToggleStatus = async (accountNumber: string) => {
-    await handleFormToggleStatus(accountNumber, fetchAccounts);
+    await handleFormToggleStatus(accountNumber, fetchAccounts, confirm);
   };
 
   // تحديد ما إذا كان نوع الرصيد قابل للتعديل (للحسابات الأساسية فقط)
@@ -174,6 +179,19 @@ export default function Accounts() {
 
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isOpen}
+        title={options.title}
+        message={options.message}
+        confirmText={options.confirmText}
+        cancelText={options.cancelText}
+        isDangerous={options.isDangerous}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
