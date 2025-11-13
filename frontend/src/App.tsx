@@ -15,7 +15,7 @@ import ProductCategories from './pages/ProductCategories';
 import Warehouses from './pages/Warehouses';
 import Customers from './pages/Customers';
 import UnitsOfMeasure from './pages/UnitsOfMeasure';
-import FoundationalAccounts from './pages/FoundationalAccounts';
+import FoundationalAccounts from './pages/Accounts/Foundational';
 
 function App() {
   const { isAuthenticated } = useAuthStore();

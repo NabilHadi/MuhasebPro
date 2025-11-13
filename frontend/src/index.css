@@ -2,23 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@layer utilities {
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-}
-
 * {
   direction: rtl;
   text-align: right;
@@ -69,6 +52,10 @@ body {
 
 /* ==================== CARDS & CONTAINERS ==================== */
 .card {
+  @apply bg-white rounded-lg shadow p-6;
+}
+
+.card-small-padding {
   @apply bg-white rounded-lg shadow p-2;
 }
 

@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
-import AccountsForm from './AccountsForm';
-import AccountsTable from './AccountsTable';
-import ToastContainer from '../../components/Toast';
-import ConfirmModal from '../../components/ConfirmModal';
-import { useAccountsData, useAccountForm, useAccountFilters } from './hooks';
-import { useToast } from '../../hooks/useToast';
-import { useConfirmModal } from '../../hooks/useConfirmModal';
+import AccountsForm from '../AccountsForm';
+import AccountsTable from '../AccountsTable';
+import ToastContainer from '../../../components/Toast';
+import ConfirmModal from '../../../components/ConfirmModal';
+import { useAccountsData, useAccountForm, useAccountFilters } from '../hooks';
+import { useToast } from '../../../hooks/useToast';
+import { useConfirmModal } from '../../../hooks/useConfirmModal';
 
-export default function Accounts() {
+export default function FoundationalAccounts() {
   // Toast notifications
   const { toasts, removeToast, showSuccess, showError } = useToast();
   
@@ -43,6 +43,11 @@ export default function Accounts() {
     handleToggleStatus: handleFormToggleStatus,
   } = useAccountForm();
 
+  // Filter to show only foundational accounts (no parent)
+  const foundationalAccounts = accounts.filter(
+    (account) => !account.parent_account_number
+  );
+
   // إدارة التصفية والبحث
   const {
     searchTerm,
@@ -54,7 +59,7 @@ export default function Accounts() {
     getReportLabel,
     getBalanceLabel,
     getTypeBadgeColor,
-  } = useAccountFilters(accounts, { accountTypes, reportTypes, balanceTypes });
+  } = useAccountFilters(foundationalAccounts, { accountTypes, reportTypes, balanceTypes });
 
   // دمج الأخطاء
   const error = dataError || formError;
@@ -110,8 +115,13 @@ export default function Accounts() {
         isBalanceTypeEditable={isBalanceTypeEditable}
       />
 
-      {/* صفحة الحسابات المدمجة */}
-      <div className="card-small-padding">
+      {/* صفحة الحسابات التأسيسية المدمجة */}
+      <div className="card">
+        {/* رأس القائمة */}
+        <div className="pb-2 border-b flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">الحسابات التأسيسية</h1>
+        </div>
+
         {/* التصفية والبحث */}
         <div className="px-2 py-2 border-b bg-gray-50">
           <div className="flex flex-wrap items-center gap-6">
@@ -121,12 +131,12 @@ export default function Accounts() {
             className="btn-primary flex items-center gap-2"
           >
             <span>➕</span>
-            <span>حساب جديد</span>
+            <span>حساب تأسيسي جديد</span>
           </button>
 
             {/* Search Input */}
             <div className="flex items-center gap-2 flex-1 min-w-64">
-              <label className="label-field[margin-bottom-0] whitespace-nowrap">البحث</label>
+              <label className="whitespace-nowrap">البحث</label>
               <input
                 type="text"
                 value={searchTerm}
@@ -138,7 +148,7 @@ export default function Accounts() {
 
             {/* Status Filter */}
             <div className="flex items-center gap-2">
-              <label className="label-field[margin-bottom-0] whitespace-nowrap">الحالة</label>
+              <label className="whitespace-nowrap">الحالة</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
@@ -154,9 +164,9 @@ export default function Accounts() {
 
         {/* الجدول */}
         <div className="overflow-x-auto">
-          {accounts.length === 0 ? (
+          {foundationalAccounts.length === 0 ? (
             <div className="text-center py-8 p-6">
-              <p className="text-gray-500">لا توجد حسابات حتى الآن</p>
+              <p className="text-gray-500">لا توجد حسابات تأسيسية حتى الآن</p>
             </div>
           ) : (
             <AccountsTable
