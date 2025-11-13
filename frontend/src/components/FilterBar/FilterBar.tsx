@@ -13,18 +13,15 @@ export default function FilterBar({
   const isGrid = layout === 'grid';
   const containerClass = isGrid
     ? `${containerClassName} grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(filters.length, 4)} gap-4`
-    : `${containerClassName} flex gap-4 flex-wrap items-end`;
+    : `${containerClassName} flex gap-4 flex-wrap items-center`;
 
   return (
-    <div className={`card mb-6 p-4 ${className}`}>
-      <div className="flex flex-wrap items-center gap-4 mb-4">
-        <button onClick={onAddClick} className="btn-primary flex items-center gap-2">
+    <div className={`mb-2 p-2 ${className}`}>
+      <div className={containerClass}>
+        <button onClick={onAddClick} className="btn-primary flex items-center gap-2 h-fit">
           <span>{addButtonIcon}</span>
           <span>{addButtonLabel}</span>
         </button>
-      </div>
-
-      <div className={containerClass}>
         {filters.map((filter) => (
           <FilterField
             key={filter.id}

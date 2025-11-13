@@ -19,6 +19,7 @@ export default function CategorySearch({
       placeholder: 'البحث عن فئة...',
       value: searchTerm,
       onChange: onSearchChange,
+      grow: true,
     },
   ];
 

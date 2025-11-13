@@ -131,11 +131,7 @@ export default function Products() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">إدارة المنتجات</h1>
-      </div>
+    <div className='card-small-padding'>
 
       {/* Product Form Modal */}
       <ProductForm
@@ -164,18 +160,13 @@ export default function Products() {
       />
 
       {/* Products Table */}
-      <div className="card">
-        <div className="card-header">
-          <h2 className="text-lg font-semibold">المنتجات ({products.filteredProducts.length})</h2>
-        </div>
-        <ProductsTable
-          products={products.filteredProducts}
-          categories={categories}
-          loading={products.loading}
-          onEdit={handleEditProduct}
-          onDelete={handleDeleteProduct}
-        />
-      </div>
+      <ProductsTable
+        products={products.filteredProducts}
+        categories={categories}
+        loading={products.loading}
+        onEdit={handleEditProduct}
+        onDelete={handleDeleteProduct}
+      />
 
       {/* Global Components */}
       <ToastContainer toasts={toasts} onClose={removeToast} />

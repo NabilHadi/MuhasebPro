@@ -8,8 +8,9 @@ interface FilterFieldProps {
 }
 
 export default function FilterField({ filter, showLabel = true }: FilterFieldProps) {
+  const growClass = filter.grow ? 'flex-1' : '';
   return (
-    <div className={`form-group ${filter.className || ''}`}>
+    <div className={`${growClass} ${filter.className || ''}`}>
       {showLabel && filter.label && (
         <label className="label-field">{filter.label}</label>
       )}

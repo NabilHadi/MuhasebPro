@@ -24,6 +24,7 @@ export const AccountsFilters: React.FC<AccountsFiltersProps> = ({
       placeholder: 'ابحث برقم الحساب أو الاسم بالعربية أو الإنجليزية',
       value: searchTerm,
       onChange: setSearchTerm,
+      grow: true,
     },
     {
       id: 'status',

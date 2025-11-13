@@ -30,6 +30,7 @@ export default function UnitFilters({
       placeholder: 'ابحث بالاسم أو الاختصار...',
       value: searchTerm,
       onChange: onSearchChange,
+      grow: true,
     },
     {
       id: 'category',

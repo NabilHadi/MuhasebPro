@@ -34,6 +34,7 @@ export default function ProductFilters({
       placeholder: 'ابحث برمز أو اسم المنتج...',
       value: searchTerm,
       onChange: onSearchChange,
+      grow: true,
     },
     {
       id: 'type',
@@ -80,7 +81,7 @@ export default function ProductFilters({
       filters={filters}
       onAddClick={onAddClick}
       addButtonLabel="منتج جديد"
-      layout="grid"
+      layout="flex"
     />
   );
 }

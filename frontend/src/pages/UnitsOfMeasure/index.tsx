@@ -48,7 +48,7 @@ export default function UnitsOfMeasurePage() {
       <div className="card-small-padding">
 
         {/* Filters */}
-        <div className='my-4'>
+        <div className='my-2'>
           <UnitFilters
             searchTerm={units.unitSearchTerm}
             categoryFilter={units.unitCategoryFilter}

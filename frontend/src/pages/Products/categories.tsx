@@ -96,12 +96,7 @@ export default function Categories() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">فئات المنتجات</h1>
-        <p className="text-gray-600">إدارة فئات المنتجات في النظام</p>
-      </div>
+    <div className='card-small-padding'>
 
       {/* Category Form Modal */}
       <CategoryForm
@@ -121,17 +116,12 @@ export default function Categories() {
       />
 
       {/* Categories Table */}
-      <div className="card">
-        <div className="card-header">
-          <h2 className="text-lg font-semibold">الفئات ({categories.filteredCategories.length})</h2>
-        </div>
-        <CategoriesTable
-          categories={categories.filteredCategories}
-          loading={categories.loading}
-          onEdit={handleEditCategory}
-          onDelete={handleDeleteCategory}
-        />
-      </div>
+      <CategoriesTable
+        categories={categories.filteredCategories}
+        loading={categories.loading}
+        onEdit={handleEditCategory}
+        onDelete={handleDeleteCategory}
+      />
 
       {/* Global Components */}
       <ToastContainer toasts={toasts} onClose={removeToast} />

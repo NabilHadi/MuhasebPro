@@ -15,6 +15,7 @@ export interface FilterDefinition {
   options?: FilterOption[];
   className?: string;
   disabled?: boolean;
+  grow?: boolean; // Make field flex-grow (for text fields in flex layout)
 }
 
 export interface FilterBarProps {
