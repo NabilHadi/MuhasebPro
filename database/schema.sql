@@ -190,6 +190,72 @@ CREATE TABLE IF NOT EXISTS products (
   FOREIGN KEY (unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS customers (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+
+  code VARCHAR(50),
+  name_ar VARCHAR(200) NOT NULL,
+  name_en VARCHAR(200),
+  phone VARCHAR(50),
+  email VARCHAR(100),
+  address TEXT,
+  tax_number VARCHAR(100),
+
+  is_active BOOLEAN DEFAULT TRUE,
+
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed data for customers table
+INSERT INTO customers
+(id, code, name_ar, name_en, phone, email, address, tax_number, is_active, createdAt, updatedAt)
+VALUES
+(1, 'CUST-001', 'شركة النور للتجارة', 'Al Noor Trading Co.', '0501234567', 'info@alnoor.example.com', 'الرياض - شارع العليا، مبنى 12', 'TAX-10001', TRUE, '2025-01-10 09:12:00', '2025-01-10 09:12:00'),
+(2, 'CUST-002', 'مؤسسة الريان', 'Al Rayan Establishment', '0502345678', 'contact@alrayan.example.com', 'جدة - حي الروضة، عمارة 5', 'TAX-10002', TRUE, '2025-02-05 11:00:00', '2025-02-05 11:00:00'),
+(3, 'CUST-003', 'المستودع الكبير', 'Big Warehouse', '0503456789', 'sales@bigwarehouse.example.com', 'الدمام - المنطقة الصناعية', 'TAX-10003', TRUE, '2025-03-12 14:30:00', '2025-03-12 14:30:00'),
+(4, 'CUST-004', 'محلات السعادة', 'Al Saada Stores', '0504567890', 'hello@alsaada.example.com', 'الخبر - شارع الملك فهد', 'TAX-10004', TRUE, '2025-04-01 08:45:00', '2025-04-01 08:45:00'),
+(5, 'CUST-005', 'شركة التقنيات الحديثة', 'Modern Tech Ltd.', '0505678901', 'support@modtech.example.com', 'الرياض - طريق الملك عبدالعزيز، مبنى 8', 'TAX-10005', TRUE, '2025-04-20 10:15:00', '2025-04-20 10:15:00'),
+(6, 'CUST-006', 'ورشة الأحلام', 'Dreams Workshop', '0506789012', 'contact@dreams.example.com', 'مكة - حي العزيزية، شارع 7', 'TAX-10006', TRUE, '2025-05-07 16:20:00', '2025-05-07 16:20:00'),
+(7, 'CUST-007', 'مكتبة المدن', 'Cities Bookstore', '0507890123', 'info@citiesbooks.example.com', 'الرياض - حي النخيل، شارع التجارة', 'TAX-10007', TRUE, '2025-06-11 09:00:00', '2025-06-11 09:00:00'),
+(8, 'CUST-008', 'شركة الأغذية الطيبة', 'Tayyib Foods Co.', '0508901234', 'orders@tayyibfoods.example.com', 'جدة - المنطقة التجارية، برج B', 'TAX-10008', TRUE, '2025-07-02 12:10:00', '2025-07-02 12:10:00'),
+(9, 'CUST-009', 'مؤسسة النخبة', 'Elite Establishment', '0509012345', 'admin@elite.example.com', 'الدمام - شارع البحر، مبنى 3', 'TAX-10009', FALSE, '2025-07-30 15:40:00', '2025-07-30 15:40:00'),
+(10, 'CUST-010', 'حلويات المدينة', 'Al Madina Sweets', '0510123456', 'sales@almadina.example.com', 'الرياض - حي العليا، شارع القصر', 'TAX-10010', TRUE, '2025-08-15 10:05:00', '2025-08-15 10:05:00'),
+(11, 'CUST-011', 'موزع المعدات', 'Equip Distributor', '0511234567', 'info@equipdist.example.com', 'جدة - منطقة المخازن', 'TAX-10011', TRUE, '2025-09-01 09:30:00', '2025-09-01 09:30:00'),
+(12, 'CUST-012', 'عيادة الأمل', 'Al Amal Clinic', '0512345678', 'appointments@alamal.example.com', 'الخبر - حي الصناعية، شارع 4', 'TAX-10012', TRUE, '2025-09-18 08:00:00', '2025-09-18 08:00:00'),
+(13, 'CUST-013', 'مركز التقنية', 'Tech Center', '0513456789', 'support@techcenter.example.com', 'الرياض - حي السليمانية، مبنى 21', 'TAX-10013', TRUE, '2025-10-03 13:25:00', '2025-10-03 13:25:00'),
+(14, 'CUST-014', 'مطاعم الشذا', 'Al Shatha Restaurants', '0514567890', 'bookings@alshatha.example.com', 'مكة - شارع الحج التجاري', 'TAX-10014', TRUE, '2025-10-20 18:45:00', '2025-10-20 18:45:00'),
+(15, 'CUST-015', 'مؤسسة الأمان', 'Al Aman Co.', '0515678901', 'contact@alaman.example.com', 'الرياض - حي المروج، شارع 12', 'TAX-10015', FALSE, '2025-11-05 11:11:00', '2025-11-05 11:11:00');
+
+
+CREATE TABLE IF NOT EXISTS invoices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  invoice_number VARCHAR(50) NOT NULL UNIQUE,   -- رقم التسلسل
+  payment_method VARCHAR(50) DEFAULT NULL,      -- طريقة الدفع
+  company_id INT DEFAULT NULL,                  -- الشركة (مرجع companies.id)
+  warehouse_id INT DEFAULT NULL,                -- المخزن (مرجع warehouses.id)
+  is_posted BOOLEAN DEFAULT FALSE,              -- انزال المستند
+  tax_number VARCHAR(100) DEFAULT NULL,         -- الرقم الضريبي
+  mobile VARCHAR(50) DEFAULT NULL,              -- رقم الجوال
+  document_number VARCHAR(50) DEFAULT NULL,     -- رقم المستند
+  invoice_date DATE NOT NULL,                   -- التاريخ
+  supply_date DATE DEFAULT NULL,                -- تاريخ التوريد
+  branch_id INT DEFAULT NULL,                   -- الفرع (مرجع branches.id)
+  account_id INT DEFAULT NULL,                  -- رقم الحساب (مرجع accounts.id)
+  employee_id INT DEFAULT NULL,                 -- الموظف (مرجع employees.id)
+  customer_id INT DEFAULT NULL,                 -- مرجع العميل (customers.id)
+  customer_name_ar VARCHAR(200) DEFAULT NULL,   -- اسم العميل (نسخة نصية)
+  address TEXT DEFAULT NULL,                    -- العنوان
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  -- الفهارس الشائعة
+  INDEX (invoice_date),
+  INDEX (payment_method),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- جدول المخازن
 -- CREATE TABLE IF NOT EXISTS warehouses (
 --   id INT PRIMARY KEY AUTO_INCREMENT,

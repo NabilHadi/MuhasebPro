@@ -36,7 +36,6 @@ export const useProducts = ({ onSuccess, onError, onConfirm }: UseProductsParams
     const matchesSearch =
       product.product_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.product_name_ar.toLowerCase().includes(searchTerm.toLowerCase());
-    console.log("typeFilter:", typeFilter);
     const matchesType = typeFilter === '' || product.product_type === typeFilter;
     const matchesCategory = categoryFilter === "" || product.category_id === categoryFilter;
     const matchesStatus =

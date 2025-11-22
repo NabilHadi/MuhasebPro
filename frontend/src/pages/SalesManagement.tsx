@@ -11,7 +11,6 @@ export default function SalesManagement() {
       description: 'إدارة الفواتير والمبيعات',
       path: '/invoices',
       tabTitle: 'الفواتير',
-      isDisabled: true,
     },
     {
       id: 'customers',
@@ -25,7 +24,7 @@ export default function SalesManagement() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-800">إدارة المبيعات</h1>

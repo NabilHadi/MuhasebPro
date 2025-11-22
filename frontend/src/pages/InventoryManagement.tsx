@@ -48,7 +48,7 @@ export default function InventoryManagement() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-800">إدارة المخزون</h1>

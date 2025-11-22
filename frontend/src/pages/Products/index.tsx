@@ -63,7 +63,6 @@ export default function Products() {
     }
   };
 
-  console.log(products)
 
   const fetchUnits = async () => {
     try {

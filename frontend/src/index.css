@@ -206,7 +206,7 @@ body {
 }
 
 .tab {
-  @apply flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-600 border-b-2 border-transparent cursor-pointer transition-all hover:text-gray-800 whitespace-nowrap;
+  @apply flex items-center gap-1 px-2 py-1 text-sm font-medium text-gray-600 border-b-2 border-transparent cursor-pointer transition-all hover:text-gray-800 whitespace-nowrap;
   min-width: fit-content;
   max-width: 200px;
 }

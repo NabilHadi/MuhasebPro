@@ -10,7 +10,6 @@ export default function SelectField({ filter }: SelectFieldProps) {
       value={filter.value || ''}
       onChange={(e) => {
         const value = e.target.value;
-        console.log(value);
         // Handle both string and number values
         filter.onChange(value === "" ? "" : isNaN(Number(value)) ? value : Number(value));
       }}

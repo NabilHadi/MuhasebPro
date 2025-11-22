@@ -54,7 +54,6 @@ export default function ProductFilters({
       label: 'الفئة',
       value: categoryFilter || '',
       onChange: (val) => {
-        console.log(val)
         return onCategoryFilterChange(val ? parseInt(val) : "");
       },
       options: [
