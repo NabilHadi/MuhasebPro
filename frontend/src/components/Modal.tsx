@@ -37,7 +37,7 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
+        <div className="flex justify-between items-center p-2 border-b border-gray-200 sticky top-0 bg-white">
           <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
           {showCloseButton && (
             <button
@@ -50,7 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="py-3 px-6">
           {children}
         </div>
       </div>

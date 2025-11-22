@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Modal from '../../../../components/Modal';
 import { ProductFormData, ProductCategory, Unit } from '../../types';
 
@@ -30,18 +30,27 @@ export default function ProductForm({
     onSubmit();
   };
 
+  const FormField = useCallback(
+    ({ label, children }: { label: string; children: React.ReactNode }) => (
+      <div className="flex items-center gap-4">
+        <label className="w-32 flex-shrink-0 font-semibold">{label}</label>
+        <div className="flex-1">{children}</div>
+      </div>
+    ),
+    []
+  );
+
   return (
     <Modal
       isOpen={isOpen}
-      title={isEditing ? 'تعديل المنتج' : 'إضافة منتج جديد'}
+      title={isEditing ? 'تعديل صنف' : 'إضافة صنف جديد'}
       onClose={onCancel}
-      size="lg"
+      size="xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* رمز المنتج */}
-          <div className="form-group">
-            <label className="label-field">رمز المنتج *</label>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="flex flex-col gap-3">
+          {/* رقم الصنف */}
+          <FormField label="رقم الصنف *">
             <input
               type="text"
               value={product.product_code || ''}
@@ -51,11 +60,10 @@ export default function ProductForm({
               required
               disabled={isEditing}
             />
-          </div>
+          </FormField>
 
-          {/* الاسم بالعربية */}
-          <div className="form-group">
-            <label className="label-field">الاسم بالعربية *</label>
+          {/* الاسم العربي */}
+          <FormField label="الاسم العربي *">
             <input
               type="text"
               value={product.product_name_ar || ''}
@@ -64,11 +72,10 @@ export default function ProductForm({
               placeholder="مثال: منتج بالعربية"
               required
             />
-          </div>
+          </FormField>
 
-          {/* الاسم بالإنجليزية */}
-          <div className="form-group">
-            <label className="label-field">الاسم بالإنجليزية</label>
+          {/* الاسم الانجليزي */}
+          <FormField label="الاسم الاجنبي">
             <input
               type="text"
               value={product.product_name_en || ''}
@@ -76,42 +83,131 @@ export default function ProductForm({
               className="input-field"
               placeholder="Example: Product Name"
             />
+          </FormField>
+
+          <div className='flex gap-2'>
+            {/* تكلفة الصنف */}
+            <FormField label="تكلفة الصنف">
+              <input
+                type="number"
+                step="0.01"
+                value={product.cost || 0}
+                onChange={(e) => onFormChange('cost', parseFloat(e.target.value) || 0)}
+                className="input-field"
+                placeholder="0.00"
+              />
+            </FormField>
+            {/* نسبة الارباح */}
+            <FormField label="نسبة الارباح (%)">
+              <input
+                type="number"
+                step="0.01"
+                value={product.profit_ratio || 0}
+                onChange={(e) => onFormChange('profit_ratio', parseFloat(e.target.value) || 0)}
+                className="input-field"
+                placeholder="0.00"
+              />
+            </FormField>
           </div>
 
-          {/* نوع المنتج */}
-          <div className="form-group">
-            <label className="label-field">نوع المنتج *</label>
-            <select
-              value={product.product_type || 'Stockable'}
-              onChange={(e) => onFormChange('product_type', e.target.value as 'Stockable' | 'Service')}
-              className="input-field"
-              required
-            >
-              <option value="Stockable">مخزون</option>
-              <option value="Service">خدمة</option>
-            </select>
-          </div>
 
-          {/* الفئة */}
-          <div className="form-group">
-            <label className="label-field">فئة المنتج</label>
+
+          {/* سعر البيع */}
+          <FormField label="سعر البيع">
+            <input
+              type="number"
+              step="0.01"
+              value={product.selling_price || 0}
+              onChange={(e) => onFormChange('selling_price', parseFloat(e.target.value) || 0)}
+              className="input-field"
+              placeholder="0.00"
+            />
+          </FormField>
+
+          {/* القسم الاساسي */}
+          <FormField label="القسم الاساسي">
             <select
-              value={product.category_id || ''}
-              onChange={(e) => onFormChange('category_id', e.target.value ? parseInt(e.target.value) : null)}
+              value={product.main_category_id || ''}
+              onChange={(e) => onFormChange('main_category_id', e.target.value ? parseInt(e.target.value) : null)}
               className="input-field"
             >
-              <option value="">-- اختر فئة --</option>
+              <option value="">-- اختر قسم --</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.category_name_ar}
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
 
-          {/* وحدة القياس */}
-          <div className="form-group">
-            <label className="label-field">وحدة القياس</label>
+          {/* مجموعة الصنف */}
+          <FormField label="مجموعة الصنف">
+            <input
+              type="text"
+              value={product.product_group || ''}
+              onChange={(e) => onFormChange('product_group', e.target.value)}
+              className="input-field"
+              placeholder="مثال: مجموعة أ"
+            />
+          </FormField>
+
+          {/* التصنيف الأول */}
+          <FormField label="التصنيف الأول">
+            <input
+              type="text"
+              value={product.classification_1 || ''}
+              onChange={(e) => onFormChange('classification_1', e.target.value)}
+              className="input-field"
+              placeholder="التصنيف الأول"
+            />
+          </FormField>
+
+          {/* التصنيف الثاني */}
+          <FormField label="التصنيف الثاني">
+            <input
+              type="text"
+              value={product.classification_2 || ''}
+              onChange={(e) => onFormChange('classification_2', e.target.value)}
+              className="input-field"
+              placeholder="التصنيف الثاني"
+            />
+          </FormField>
+
+          {/* التصنيف الثالث */}
+          <FormField label="التصنيف الثالث">
+            <input
+              type="text"
+              value={product.classification_3 || ''}
+              onChange={(e) => onFormChange('classification_3', e.target.value)}
+              className="input-field"
+              placeholder="التصنيف الثالث"
+            />
+          </FormField>
+
+          {/* التصنيف الرابع */}
+          <FormField label="التصنيف الرابع">
+            <input
+              type="text"
+              value={product.classification_4 || ''}
+              onChange={(e) => onFormChange('classification_4', e.target.value)}
+              className="input-field"
+              placeholder="التصنيف الرابع"
+            />
+          </FormField>
+
+          {/* التصنيف الخامس */}
+          <FormField label="التصنيف الخامس">
+            <input
+              type="text"
+              value={product.classification_5 || ''}
+              onChange={(e) => onFormChange('classification_5', e.target.value)}
+              className="input-field"
+              placeholder="التصنيف الخامس"
+            />
+          </FormField>
+
+          {/* وحدة الصنف */}
+          <FormField label="وحدة الصنف">
             <select
               value={product.unit_id || ''}
               onChange={(e) => onFormChange('unit_id', e.target.value ? parseInt(e.target.value) : null)}
@@ -124,41 +220,29 @@ export default function ProductForm({
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* نشط */}
-          <div className="form-group">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={product.is_active !== false}
-                onChange={(e) => onFormChange('is_active', e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span>نشط</span>
-            </label>
-          </div>
+          </FormField>
         </div>
 
-        {/* الوصف */}
-        <div className="form-group">
-          <label className="label-field">الوصف</label>
-          <textarea
-            value={product.description || ''}
-            onChange={(e) => onFormChange('description', e.target.value)}
-            className="input-field"
-            placeholder="وصف المنتج..."
-            rows={3}
-          />
-        </div>
+        {/* الوصف - كامل العرض
+        <div className="pt-2 border-t">
+          <FormField label="الوصف">
+            <textarea
+              value={product.description || ''}
+              onChange={(e) => onFormChange('description', e.target.value)}
+              className="input-field"
+              placeholder="وصف المنتج..."
+              rows={3}
+            />
+          </FormField>
+        </div> */}
 
         {/* الأزرار */}
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2 justify-center pt-4 border-t">
           <button type="button" onClick={onCancel} className="btn-secondary" disabled={isLoading}>
             إلغاء
           </button>
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? 'جاري...' : isEditing ? 'تحديث' : 'إضافة'}
+            {isLoading ? 'جاري...' : isEditing ? 'تحديث' : 'حفظ البيانات'}
           </button>
         </div>
       </form>

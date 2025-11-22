@@ -13,8 +13,8 @@ export const useProducts = ({ onSuccess, onError, onConfirm }: UseProductsParams
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
-  const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<number | "">("");
+  const [statusFilter, setStatusFilter] = useState<'' | 'active' | 'inactive'>('');
 
   // Fetch products
   const fetchProducts = async () => {
@@ -36,10 +36,11 @@ export const useProducts = ({ onSuccess, onError, onConfirm }: UseProductsParams
     const matchesSearch =
       product.product_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.product_name_ar.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = !typeFilter || product.product_type === typeFilter;
-    const matchesCategory = categoryFilter === null || product.category_id === categoryFilter;
+    console.log("typeFilter:", typeFilter);
+    const matchesType = typeFilter === '' || product.product_type === typeFilter;
+    const matchesCategory = categoryFilter === "" || product.category_id === categoryFilter;
     const matchesStatus =
-      statusFilter === 'all' ||
+      statusFilter === '' ||
       (statusFilter === 'active' && product.is_active) ||
       (statusFilter === 'inactive' && !product.is_active);
 

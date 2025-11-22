@@ -63,6 +63,36 @@ export default function ProductsTable({
       ),
     },
     {
+      key: 'cost',
+      label: 'التكلفة',
+      render: (cost) => {
+        return cost ? Number(cost).toFixed(2) : '--'
+      },
+      align: 'center',
+    },
+    {
+      key: 'profit_ratio',
+      label: 'نسبة الربح %',
+      render: (ratio) => ratio ? Number(ratio).toFixed(2) : '--',
+      align: 'center',
+    },
+    {
+      key: 'selling_price',
+      label: 'سعر البيع',
+      render: (price) => price ? Number(price).toFixed(2) : '--',
+      align: 'center',
+    },
+    {
+      key: 'product_group',
+      label: 'المجموعة',
+      render: (group) => group || '--',
+    },
+    {
+      key: 'classification_1',
+      label: 'التصنيف 1',
+      render: (classification) => classification || '--',
+    },
+    {
       key: 'category_id',
       label: 'الفئة',
       render: (categoryId) => getCategoryName(categoryId),

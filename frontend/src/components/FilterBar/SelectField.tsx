@@ -10,8 +10,9 @@ export default function SelectField({ filter }: SelectFieldProps) {
       value={filter.value || ''}
       onChange={(e) => {
         const value = e.target.value;
+        console.log(value);
         // Handle both string and number values
-        filter.onChange(value === '' ? 'all' : isNaN(Number(value)) ? value : Number(value));
+        filter.onChange(value === "" ? "" : isNaN(Number(value)) ? value : Number(value));
       }}
       disabled={filter.disabled}
       className={filter.className || 'input-field'}

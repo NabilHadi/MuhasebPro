@@ -23,6 +23,16 @@ export interface Product {
   product_code: string;
   product_name_ar: string;
   product_name_en?: string;
+  cost?: number;
+  profit_ratio?: number;
+  selling_price?: number;
+  main_category_id?: number | null;
+  product_group?: string | null;
+  classification_1?: string | null;
+  classification_2?: string | null;
+  classification_3?: string | null;
+  classification_4?: string | null;
+  classification_5?: string | null;
   category_id?: number | null;
   unit_id?: number | null;
   product_type: 'Stockable' | 'Service';
@@ -32,7 +42,11 @@ export interface Product {
   updated_at: string;
   // Joined data
   category_name_ar?: string;
+  category_name_en?: string;
+  main_category_name_ar?: string;
+  main_category_name_en?: string;
   unit_name_ar?: string;
+  unit_name_en?: string;
   short_name?: string;
 }
 
@@ -40,6 +54,16 @@ export interface ProductFormData {
   product_code: string;
   product_name_ar: string;
   product_name_en: string;
+  cost: number;
+  profit_ratio: number;
+  selling_price: number;
+  main_category_id: number | null;
+  product_group: string | null;
+  classification_1: string | null;
+  classification_2: string | null;
+  classification_3: string | null;
+  classification_4: string | null;
+  classification_5: string | null;
   category_id: number | null;
   unit_id: number | null;
   product_type: 'Stockable' | 'Service';

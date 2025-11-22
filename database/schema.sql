@@ -164,17 +164,28 @@ VALUES
 
 CREATE TABLE IF NOT EXISTS products (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  product_code VARCHAR(50) UNIQUE,
-  product_name_ar VARCHAR(255) NOT NULL,
-  product_name_en VARCHAR(255),
-  category_id INT DEFAULT NULL,
-  unit_id INT DEFAULT NULL,
+  product_code VARCHAR(50) UNIQUE NOT NULL,           -- رقم الصنف
+  product_name_ar VARCHAR(255) NOT NULL,              -- الاسم العربي
+  product_name_en VARCHAR(255),                       -- الاسم الانجليزي
+  cost DECIMAL(15,2) DEFAULT 0.00,                    -- تكلفة الصنف
+  profit_ratio DECIMAL(5,2) DEFAULT 0.00,             -- نسبة الارباح (%)
+  selling_price DECIMAL(15,2) DEFAULT 0.00,           -- سعر البيع
+  main_category_id INT DEFAULT NULL,                  -- القسم الاساسي
+  product_group VARCHAR(100) DEFAULT NULL,            -- مجموعة الصنف
+  classification_1 VARCHAR(100) DEFAULT NULL,         -- التصنيف الاول
+  classification_2 VARCHAR(100) DEFAULT NULL,         -- التصنيف الثاني
+  classification_3 VARCHAR(100) DEFAULT NULL,         -- التصنيف الثالث
+  classification_4 VARCHAR(100) DEFAULT NULL,         -- التصنيف الرابع
+  classification_5 VARCHAR(100) DEFAULT NULL,         -- التصنيف الخامس
+  unit_id INT DEFAULT NULL,                           -- وحدة الصنف
   product_type ENUM('Stockable','Service') DEFAULT 'Stockable',
+  category_id INT DEFAULT NULL,                       -- الفئة القديمة (للتوافقية)
   is_active BOOLEAN DEFAULT TRUE,
   description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
+  FOREIGN KEY (main_category_id) REFERENCES product_categories(id) ON DELETE SET NULL,
   FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL,
   FOREIGN KEY (unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -406,72 +417,72 @@ VALUES
 (16, 'خدمة', 'Service', 'srv', 7, 1.000000, TRUE, TRUE, 'وحدة قياس للخدمات (لا تحتاج تحويل)');
 
 INSERT INTO products 
-(id, product_code, product_name_ar, product_name_en, category_id, unit_id, product_type, is_active, description)
+(id, product_code, product_name_ar, product_name_en, cost, profit_ratio, selling_price, main_category_id, product_group, classification_1, classification_2, classification_3, classification_4, classification_5, unit_id, product_type, category_id, is_active, description)
 VALUES
 
 -- ELECTRONICS (category_id = 1)
-(1, 'ELEC-001', 'هاتف ذكي سامسونج', 'Samsung Smartphone', 1, 1, 'Stockable', 1, 'هاتف ذكي بشاشة لمس'),
-(2, 'ELEC-002', 'حاسوب محمول لينوفو', 'Lenovo Laptop', 1, 1, 'Stockable', 1, 'حاسوب محمول للأعمال'),
-(3, 'ELEC-003', 'سماعات بلوتوث', 'Bluetooth Headphones', 1, 1, 'Stockable', 1, 'سماعات لاسلكية'),
+(1, 'ELEC-001', 'هاتف ذكي سامسونج', 'Samsung Smartphone', 1500.00, 30.00, 1950.00, 1, 'هواتف ذكية', 'الهواتف', 'سامسونج', NULL, NULL, NULL, 1, 'Stockable', 1, 1, 'هاتف ذكي بشاشة لمس'),
+(2, 'ELEC-002', 'حاسوب محمول لينوفو', 'Lenovo Laptop', 3000.00, 25.00, 3750.00, 1, 'أجهزة كمبيوتر', 'الحواسيب', 'لينوفو', NULL, NULL, NULL, 1, 'Stockable', 1, 1, 'حاسوب محمول للأعمال'),
+(3, 'ELEC-003', 'سماعات بلوتوث', 'Bluetooth Headphones', 250.00, 35.00, 337.50, 1, 'الملحقات', 'السماعات', 'بلوتوث', NULL, NULL, NULL, 1, 'Stockable', 1, 1, 'سماعات لاسلكية'),
 
 -- HOME APPLIANCES (category_id = 2)
-(4, 'HOME-001', 'غسالة ملابس', 'Washing Machine', 2, 1, 'Stockable', 1, 'غسالة كهربائية'),
-(5, 'HOME-002', 'ثلاجة 14 قدم', 'Refrigerator 14ft', 2, 1, 'Stockable', 1, 'ثلاجة منزلية'),
+(4, 'HOME-001', 'غسالة ملابس', 'Washing Machine', 2500.00, 20.00, 3000.00, 2, 'أجهزة غسيل', 'الغسالات', 'اوتوماتيك', NULL, NULL, NULL, 1, 'Stockable', 2, 1, 'غسالة كهربائية'),
+(5, 'HOME-002', 'ثلاجة 14 قدم', 'Refrigerator 14ft', 3500.00, 18.00, 4130.00, 2, 'أجهزة تبريد', 'الثلاجات', 'كبيرة', NULL, NULL, NULL, 1, 'Stockable', 2, 1, 'ثلاجة منزلية'),
 
 -- FOOD & GROCERIES (category_id = 3)
-(6, 'FOOD-001', 'سكر كيلو', 'Sugar 1kg', 3, 7, 'Stockable', 1, 'سكر أبيض ناعم'),
-(7, 'FOOD-002', 'أرز بسمتي 5 كيلو', 'Basmati Rice 5kg', 3, 7, 'Stockable', 1, 'أرز عالي الجودة'),
-(8, 'FOOD-003', 'ماء عبوة 330 مل', 'Water Bottle 330ml', 3, 9, 'Stockable', 1, 'ماء شرب معبأ'),
+(6, 'FOOD-001', 'سكر كيلو', 'Sugar 1kg', 8.50, 40.00, 11.90, 3, 'السكريات', 'السكر', 'أبيض', NULL, NULL, NULL, 7, 'Stockable', 3, 1, 'سكر أبيض ناعم'),
+(7, 'FOOD-002', 'أرز بسمتي 5 كيلو', 'Basmati Rice 5kg', 65.00, 35.00, 87.75, 3, 'الحبوب', 'الأرز', 'بسمتي', NULL, NULL, NULL, 7, 'Stockable', 3, 1, 'أرز عالي الجودة'),
+(8, 'FOOD-003', 'ماء عبوة 330 مل', 'Water Bottle 330ml', 2.00, 50.00, 3.00, 3, 'المشروبات', 'الماء', 'معبأ', NULL, NULL, NULL, 9, 'Stockable', 3, 1, 'ماء شرب معبأ'),
 
 -- OFFICE SUPPLIES (category_id = 4)
-(9, 'OFF-001', 'دفتر 100 ورقة', 'Notebook 100 pages', 4, 1, 'Stockable', 1, 'دفتر للكتابة'),
-(10, 'OFF-002', 'حبرة طابعة HP', 'HP Printer Ink', 4, 1, 'Stockable', 1, 'حبرة طابعة أصلية'),
-(11, 'OFF-003', 'قلم حبر أزرق', 'Blue Ink Pen', 4, 5, 'Stockable', 1, 'قلم حبر كتابة'),
+(9, 'OFF-001', 'دفتر 100 ورقة', 'Notebook 100 pages', 5.00, 60.00, 8.00, 4, 'أدوات الكتابة', 'الدفاتر', 'عادي', NULL, NULL, NULL, 1, 'Stockable', 4, 1, 'دفتر للكتابة'),
+(10, 'OFF-002', 'حبرة طابعة HP', 'HP Printer Ink', 75.00, 45.00, 108.75, 4, 'الحبر والطباعة', 'الحبر', 'أسود', NULL, NULL, NULL, 1, 'Stockable', 4, 1, 'حبرة طابعة أصلية'),
+(11, 'OFF-003', 'قلم حبر أزرق', 'Blue Ink Pen', 1.50, 70.00, 2.55, 4, 'أدوات الكتابة', 'الأقلام', 'أزرق', NULL, NULL, NULL, 5, 'Stockable', 4, 1, 'قلم حبر كتابة'),
 
 -- FURNITURE (category_id = 5)
-(12, 'FURN-001', 'كرسي مكتب', 'Office Chair', 5, 1, 'Stockable', 1, 'كرسي مريح'),
-(13, 'FURN-002', 'طاولة عمل', 'Work Desk', 5, 1, 'Stockable', 1, 'طاولة خشبية للمكتب'),
+(12, 'FURN-001', 'كرسي مكتب', 'Office Chair', 400.00, 40.00, 560.00, 5, 'مقاعد', 'الكراسي', 'مكتبية', NULL, NULL, NULL, 1, 'Stockable', 5, 1, 'كرسي مريح'),
+(13, 'FURN-002', 'طاولة عمل', 'Work Desk', 600.00, 35.00, 810.00, 5, 'طاولات', 'الطاولات', 'خشبية', NULL, NULL, NULL, 1, 'Stockable', 5, 1, 'طاولة خشبية للمكتب'),
 
 -- CLOTHING (category_id = 6)
-(14, 'CLOT-001', 'قميص رجالي', 'Men Shirt', 6, 1, 'Stockable', 1, 'قميص قطن'),
-(15, 'CLOT-002', 'بنطال جينز', 'Jeans Pants', 6, 1, 'Stockable', 1, 'بنطال جينز عالي الجودة'),
+(14, 'CLOT-001', 'قميص رجالي', 'Men Shirt', 80.00, 50.00, 120.00, 6, 'ملابس رجالية', 'القمصان', 'قطن', NULL, NULL, NULL, 1, 'Stockable', 6, 1, 'قميص قطن'),
+(15, 'CLOT-002', 'بنطال جينز', 'Jeans Pants', 150.00, 45.00, 217.50, 6, 'ملابس رجالية', 'البنطلونات', 'جينز', NULL, NULL, NULL, 1, 'Stockable', 6, 1, 'بنطال جينز عالي الجودة'),
 
 -- COSMETICS (category_id = 8)
-(16, 'COS-001', 'عطر نسائي', 'Women Perfume', 8, 8, 'Stockable', 1, 'عطر أنيق'),
-(17, 'COS-002', 'شامبو 500 مل', 'Shampoo 500ml', 8, 9, 'Stockable', 1, 'شامبو للشعر'),
+(16, 'COS-001', 'عطر نسائي', 'Women Perfume', 200.00, 55.00, 310.00, 8, 'العطور', 'عطور نسائية', 'فرنسي', NULL, NULL, NULL, 8, 'Stockable', 8, 1, 'عطر أنيق'),
+(17, 'COS-002', 'شامبو 500 مل', 'Shampoo 500ml', 25.00, 60.00, 40.00, 8, 'العناية', 'الشعر', 'شامبو', NULL, NULL, NULL, 9, 'Stockable', 8, 1, 'شامبو للشعر'),
 
 -- PHARMACEUTICALS (category_id = 9)
-(18, 'MED-001', 'باراسيتامول 500 مج', 'Paracetamol 500mg', 9, 1, 'Stockable', 1, 'مسكن آلام'),
+(18, 'MED-001', 'باراسيتامول 500 مج', 'Paracetamol 500mg', 15.00, 25.00, 18.75, 9, 'الأدوية', 'مسكنات', 'باراسيتامول', NULL, NULL, NULL, 1, 'Stockable', 9, 1, 'مسكن آلام'),
 
 -- AUTO PARTS (category_id = 10)
-(19, 'AUTO-001', 'فلتر زيت', 'Oil Filter', 10, 1, 'Stockable', 1, 'فلتر محرك'),
-(20, 'AUTO-002', 'بطارية سيارة', 'Car Battery', 10, 1, 'Stockable', 1, 'بطارية عالية الجودة'),
+(19, 'AUTO-001', 'فلتر زيت', 'Oil Filter', 50.00, 40.00, 70.00, 10, 'قطع المحرك', 'الفلاتر', 'زيت', NULL, NULL, NULL, 1, 'Stockable', 10, 1, 'فلتر محرك'),
+(20, 'AUTO-002', 'بطارية سيارة', 'Car Battery', 300.00, 30.00, 390.00, 10, 'البطاريات', 'سيارات', 'رصاص', NULL, NULL, NULL, 1, 'Stockable', 10, 1, 'بطارية عالية الجودة'),
 
 -- CLEANING PRODUCTS (category_id = 11)
-(21, 'CLEAN-001', 'كلور 3 لتر', 'Chlorine 3L', 11, 9, 'Stockable', 1, 'مطهر قوي'),
-(22, 'CLEAN-002', 'مناديل معطرة', 'Wet Wipes', 11, 1, 'Stockable', 1, 'مناديل مطهرة'),
+(21, 'CLEAN-001', 'كلور 3 لتر', 'Chlorine 3L', 18.00, 65.00, 29.70, 11, 'المطهرات', 'الكلور', 'سائل', NULL, NULL, NULL, 9, 'Stockable', 11, 1, 'مطهر قوي'),
+(22, 'CLEAN-002', 'مناديل معطرة', 'Wet Wipes', 5.00, 75.00, 8.75, 11, 'المنظفات', 'مناديل', 'معطرة', NULL, NULL, NULL, 1, 'Stockable', 11, 1, 'مناديل مطهرة'),
 
 -- TOYS (category_id = 12)
-(23, 'TOY-001', 'لعبة سيارات', 'Toy Car', 12, 1, 'Stockable', 1, 'لعبة أطفال'),
+(23, 'TOY-001', 'لعبة سيارات', 'Toy Car', 30.00, 55.00, 46.50, 12, 'ألعاب', 'سيارات', 'صغيرة', NULL, NULL, NULL, 1, 'Stockable', 12, 1, 'لعبة أطفال'),
 
 -- SERVICES (category_id = 13) — product_type = Service
-(24, 'SRV-001', 'خدمة صيانة كمبيوتر', 'Computer Maintenance Service', 13, NULL, 'Service', 1, 'خدمة إصلاح وصيانة أجهزة'),
-(25, 'SRV-002', 'تصميم موقع إلكتروني', 'Website Design Service', 13, NULL, 'Service', 1, 'خدمة تصميم المواقع'),
+(24, 'SRV-001', 'خدمة صيانة كمبيوتر', 'Computer Maintenance Service', 0.00, 0.00, 250.00, 13, 'الخدمات', 'الصيانة', 'الكمبيوتر', NULL, NULL, NULL, NULL, 'Service', 13, 1, 'خدمة إصلاح وصيانة أجهزة'),
+(25, 'SRV-002', 'تصميم موقع إلكتروني', 'Website Design Service', 0.00, 0.00, 1500.00, 13, 'الخدمات', 'التصميم', 'ويب', NULL, NULL, NULL, NULL, 'Service', 13, 1, 'خدمة تصميم المواقع'),
 
 -- INDUSTRIAL EQUIPMENT (category_id = 14)
-(26, 'IND-001', 'مثقاب كهربائي', 'Electric Drill', 14, 1, 'Stockable', 1, 'عدة كهربائية'),
-(27, 'IND-002', 'مطرقة', 'Hammer', 14, 1, 'Stockable', 1, 'مطرقة معدنية'),
+(26, 'IND-001', 'مثقاب كهربائي', 'Electric Drill', 350.00, 30.00, 455.00, 14, 'الأدوات', 'المثاقب', 'كهربائي', NULL, NULL, NULL, 1, 'Stockable', 14, 1, 'عدة كهربائية'),
+(27, 'IND-002', 'مطرقة', 'Hammer', 40.00, 50.00, 60.00, 14, 'الأدوات', 'المطاقم', 'معادن', NULL, NULL, NULL, 1, 'Stockable', 14, 1, 'مطرقة معدنية'),
 
 -- CONSTRUCTION MATERIALS (category_id = 15)
-(28, 'CONS-001', 'أسمنت كيس 50kg', 'Cement 50kg Bag', 15, 7, 'Stockable', 1, 'أسمنت البناء'),
-(29, 'CONS-002', 'طلاء أبيض', 'White Paint', 15, 9, 'Stockable', 1, 'دهان داخلي'),
+(28, 'CONS-001', 'أسمنت كيس 50kg', 'Cement 50kg Bag', 35.00, 20.00, 42.00, 15, 'مواد البناء', 'الأسمنت', 'أبيض', NULL, NULL, NULL, 7, 'Stockable', 15, 1, 'أسمنت البناء'),
+(29, 'CONS-002', 'طلاء أبيض', 'White Paint', 120.00, 35.00, 162.00, 15, 'مواد البناء', 'الدهانات', 'أبيض', NULL, NULL, NULL, 9, 'Stockable', 15, 1, 'دهان داخلي'),
 
 -- DIGITAL PRODUCTS (category_id = 16)
-(30, 'DIG-001', 'رخصة ويندوز', 'Windows License', 16, NULL, 'Service', 1, 'رخصة برامج رقمية'),
+(30, 'DIG-001', 'رخصة ويندوز', 'Windows License', 0.00, 0.00, 500.00, 16, 'المنتجات الرقمية', 'البرامج', 'نظام تشغيل', NULL, NULL, NULL, NULL, 'Service', 16, 1, 'رخصة برامج رقمية'),
 
 -- NETWORKING DEVICES (category_id = 20)
-(31, 'NET-001', 'راوتر واي فاي', 'WiFi Router', 20, 1, 'Stockable', 1, 'راوتر لاسلكي'),
-(32, 'NET-002', 'سويتش شبكات 8 منافذ', '8-Port Network Switch', 20, 1, 'Stockable', 1, 'سويتش قوي للشبكات');
+(31, 'NET-001', 'راوتر واي فاي', 'WiFi Router', 280.00, 35.00, 378.00, 20, 'معدات الشبكة', 'الراوترات', 'لاسلكي', NULL, NULL, NULL, 1, 'Stockable', 20, 1, 'راوتر لاسلكي'),
+(32, 'NET-002', 'سويتش شبكات 8 منافذ', '8-Port Network Switch', 400.00, 30.00, 520.00, 20, 'معدات الشبكة', 'السويتش', '8 منافذ', NULL, NULL, NULL, 1, 'Stockable', 20, 1, 'سويتش قوي للشبكات');
 
 -- ==========================================
 -- ==========================================

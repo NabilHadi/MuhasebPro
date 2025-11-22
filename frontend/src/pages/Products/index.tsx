@@ -19,6 +19,16 @@ export default function Products() {
     product_code: '',
     product_name_ar: '',
     product_name_en: '',
+    cost: 0,
+    profit_ratio: 0,
+    selling_price: 0,
+    main_category_id: null,
+    product_group: null,
+    classification_1: null,
+    classification_2: null,
+    classification_3: null,
+    classification_4: null,
+    classification_5: null,
     category_id: null,
     unit_id: null,
     product_type: 'Stockable',
@@ -53,6 +63,8 @@ export default function Products() {
     }
   };
 
+  console.log(products)
+
   const fetchUnits = async () => {
     try {
       const response = await apiClient.get('/units-of-measure');
@@ -76,6 +88,16 @@ export default function Products() {
       product_code: '',
       product_name_ar: '',
       product_name_en: '',
+      cost: 0,
+      profit_ratio: 0,
+      selling_price: 0,
+      main_category_id: null,
+      product_group: null,
+      classification_1: null,
+      classification_2: null,
+      classification_3: null,
+      classification_4: null,
+      classification_5: null,
       category_id: null,
       unit_id: null,
       product_type: 'Stockable',
@@ -99,6 +121,16 @@ export default function Products() {
       product_code: product.product_code,
       product_name_ar: product.product_name_ar,
       product_name_en: product.product_name_en || '',
+      cost: product.cost || 0,
+      profit_ratio: product.profit_ratio || 0,
+      selling_price: product.selling_price || 0,
+      main_category_id: product.main_category_id || null,
+      product_group: product.product_group || null,
+      classification_1: product.classification_1 || null,
+      classification_2: product.classification_2 || null,
+      classification_3: product.classification_3 || null,
+      classification_4: product.classification_4 || null,
+      classification_5: product.classification_5 || null,
       category_id: product.category_id || null,
       unit_id: product.unit_id || null,
       product_type: product.product_type,

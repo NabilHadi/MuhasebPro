@@ -6,10 +6,10 @@ interface ProductFiltersProps {
   onSearchChange: (term: string) => void;
   typeFilter: string;
   onTypeFilterChange: (type: string) => void;
-  categoryFilter: number | null;
-  onCategoryFilterChange: (categoryId: number | null) => void;
-  statusFilter: 'all' | 'active' | 'inactive';
-  onStatusFilterChange: (status: 'all' | 'active' | 'inactive') => void;
+  categoryFilter: number | "";
+  onCategoryFilterChange: (categoryId: number | "") => void;
+  statusFilter: '' | 'active' | 'inactive';
+  onStatusFilterChange: (status: '' | 'active' | 'inactive') => void;
   categories: ProductCategory[];
   onAddClick: () => void;
 }
@@ -53,9 +53,12 @@ export default function ProductFilters({
       type: 'select',
       label: 'الفئة',
       value: categoryFilter || '',
-      onChange: (val) => onCategoryFilterChange(val ? parseInt(val) : null),
+      onChange: (val) => {
+        console.log(val)
+        return onCategoryFilterChange(val ? parseInt(val) : "");
+      },
       options: [
-        { label: 'الكل', value: '' },
+        { label: 'الكل', value: "" },
         ...categories.map((cat) => ({
           label: cat.category_name_ar,
           value: cat.id,
@@ -67,9 +70,9 @@ export default function ProductFilters({
       type: 'enum',
       label: 'الحالة',
       value: statusFilter,
-      onChange: (val) => onStatusFilterChange(val as 'all' | 'active' | 'inactive'),
+      onChange: (val) => onStatusFilterChange(val as '' | 'active' | 'inactive'),
       options: [
-        { label: 'الكل', value: 'all' },
+        { label: 'الكل', value: '' },
         { label: 'نشط', value: 'active' },
         { label: 'معطل', value: 'inactive' },
       ],
