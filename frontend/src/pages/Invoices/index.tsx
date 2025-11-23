@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import InvoiceHeader from './components/InvoiceHeader';
 import InvoiceLineItemsTable from './components/InvoiceLineItemsTable';
 import InvoiceSummary from './components/InvoiceSummary';
@@ -6,8 +7,41 @@ import { Invoice, InvoiceLineItem } from './types';
 import { CirclePoundSterling, ClipboardList, Copy, CornerLeftDown, CornerRightDown, DollarSign, Download, Percent, Plus, Printer, RefreshCcw, Rotate3d, RotateCcw, Save, Search, Sheet, X } from 'lucide-react';
 import ExcelIcon from "../../assets/excel.png"
 import BinderIcon from "../../assets/binder.png"
+import { useTabStore } from '../../store/tabStore';
+
+// localStorage helper functions for invoices
+const INVOICES_STORAGE_KEY = 'invoices_data';
+
+const getInvoicesFromStorage = (): Map<string, Partial<Invoice>> => {
+  try {
+    const data = localStorage.getItem(INVOICES_STORAGE_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      return new Map(Object.entries(parsed));
+    }
+  } catch (error) {
+    console.error('Failed to parse invoices from localStorage:', error);
+  }
+  return new Map();
+};
+
+const saveInvoicesToStorage = (invoices: Map<string, Partial<Invoice>>) => {
+  try {
+    const data = Object.fromEntries(invoices);
+    localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Failed to save invoices to localStorage:', error);
+  }
+};
+
+// In-memory storage for invoices (synced with localStorage)
+let invoiceStorage = getInvoicesFromStorage();
 
 export default function SalesInvoice() {
+  const navigate = useNavigate();
+  const { addTab, switchTab } = useTabStore();
+  const { invoiceId } = useParams<{ invoiceId?: string }>();
+
   // Memoize the initialization function
   const initializeLineItems = useMemo(() => {
     return Array(25)
@@ -29,39 +63,61 @@ export default function SalesInvoice() {
       }));
   }, []);
 
-  const [invoice, setInvoice] = useState<Partial<Invoice>>({
-    invoice_number: '1000001',
-    invoice_date: new Date().toISOString().split('T')[0],
-    customer_id: undefined,
-    customer_name_ar: '',
-    payment_method: '',
-    company_name: '',
-    warehouse_name: '',
-    tax_number: '',
-    mobile: '',
-    document_number: '',
-    supply_date: '',
-    branch_name: '',
-    account_id: undefined,
-    employee_name: '',
-    address: '',
-    line_items: initializeLineItems,
-    subtotal: 0,
-    discount_fixed: 0,
-    discount_percent: 0,
-    tax: 0,
-    total: 0,
-    notes: '',
-  });
+  // Initialize invoice state from storage or create new one
+  const getInitialInvoice = useCallback((): Partial<Invoice> => {
+    if (invoiceId && invoiceStorage.has(invoiceId)) {
+      return invoiceStorage.get(invoiceId)!;
+    }
+
+    return {
+      invoice_number: '1000001',
+      invoice_date: new Date().toISOString().split('T')[0],
+      customer_id: undefined,
+      customer_name_ar: '',
+      payment_method: '',
+      company_name: '',
+      warehouse_name: '',
+      tax_number: '',
+      mobile: '',
+      document_number: '',
+      supply_date: '',
+      branch_name: '',
+      account_id: undefined,
+      employee_name: '',
+      address: '',
+      line_items: initializeLineItems,
+      subtotal: 0,
+      discount_fixed: 0,
+      discount_percent: 0,
+      tax: 0,
+      total: 0,
+      notes: '',
+    };
+  }, [invoiceId, initializeLineItems]);
+
+  const [invoice, setInvoice] = useState<Partial<Invoice>>(getInitialInvoice());
+
+  // Reset state when invoiceId changes
+  useEffect(() => {
+    setInvoice(getInitialInvoice());
+  }, [invoiceId, getInitialInvoice]);
 
   const handleInvoiceFieldChange = useCallback(
     (field: keyof Invoice, value: any) => {
-      setInvoice((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+      setInvoice((prev) => {
+        const updated = {
+          ...prev,
+          [field]: value,
+        };
+        // Save to storage
+        if (invoiceId) {
+          invoiceStorage.set(invoiceId, updated);
+          saveInvoicesToStorage(invoiceStorage);
+        }
+        return updated;
+      });
     },
-    []
+    [invoiceId]
   );
 
   const handleLineItemChange = useCallback(
@@ -84,42 +140,56 @@ export default function SalesInvoice() {
           (subtotal * (prev.discount_percent || 0)) / 100 +
           (prev.tax || 0);
 
-        return {
+        const updated = {
           ...prev,
           line_items: items,
           subtotal,
           total,
         };
+
+        // Save to storage
+        if (invoiceId) {
+          invoiceStorage.set(invoiceId, updated);
+          saveInvoicesToStorage(invoiceStorage);
+        }
+
+        return updated;
       });
     },
-    []
-  );
+    [invoiceId]
+  ); const handleAddLineItem = useCallback(() => {
+    setInvoice((prev) => {
+      const updated = {
+        ...prev,
+        line_items: [
+          ...(prev.line_items || []),
+          {
+            line_number: (prev.line_items?.length || 0) + 1,
+            product_code: '',
+            product_name_ar: '',
+            unit: '',
+            quantity: 0,
+            price: 0,
+            discount_amount: 0,
+            discount_percent: 0,
+            total_discount: 0,
+            net_amount: 0,
+            tax: 0,
+            total: 0,
+            notes: '',
+          },
+        ],
+      };
 
-  const handleAddLineItem = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      line_items: [
-        ...(prev.line_items || []),
-        {
-          line_number: (prev.line_items?.length || 0) + 1,
-          product_code: '',
-          product_name_ar: '',
-          unit: '',
-          quantity: 0,
-          price: 0,
-          discount_amount: 0,
-          discount_percent: 0,
-          total_discount: 0,
-          net_amount: 0,
-          tax: 0,
-          total: 0,
-          notes: '',
-        },
-      ],
-    }));
-  }, []);
+      // Save to storage
+      if (invoiceId) {
+        invoiceStorage.set(invoiceId, updated);
+        saveInvoicesToStorage(invoiceStorage);
+      }
 
-  const handleRemoveLineItem = useCallback((index: number) => {
+      return updated;
+    });
+  }, [invoiceId]); const handleRemoveLineItem = useCallback((index: number) => {
     setInvoice((prev) => {
       const items = prev.line_items?.filter((_, i) => i !== index) || [];
 
@@ -134,20 +204,43 @@ export default function SalesInvoice() {
         (subtotal * (prev.discount_percent || 0)) / 100 +
         (prev.tax || 0);
 
-      return {
+      const updated = {
         ...prev,
         line_items: items,
         subtotal,
         total,
       };
+
+      // Save to storage
+      if (invoiceId) {
+        invoiceStorage.set(invoiceId, updated);
+        saveInvoicesToStorage(invoiceStorage);
+      }
+
+      return updated;
     });
-  }, []);
+  }, [invoiceId]); const handleAddNewInvoice = () => {
+    const invoiceId = `invoice-${Date.now()}`;
+    const invoicePath = `/invoices/${invoiceId}`;
+
+    addTab({
+      id: invoiceId,
+      title: 'فاتورة جديدة',
+      path: invoicePath,
+      icon: '🧾',
+    });
+
+    switchTab(invoiceId);
+    navigate(invoicePath);
+  };
 
   return (
     <div className="flex-1 flex flex-col w-full h-full">
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center flex-shrink">
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          onClick={handleAddNewInvoice}
+          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <Plus size={16} /> اضافة
         </button>
         <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">

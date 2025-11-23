@@ -22,9 +22,9 @@ export async function testConnection(): Promise<void> {
     const connection = await getConnection();
     await connection.ping();
     connection.release();
-    console.log('✓ تم الاتصال بقاعدة البيانات بنجاح');
+    console.log('✓ Successfully connected to the database');
   } catch (error) {
-    console.error('✗ فشل الاتصال بقاعدة البيانات:', error);
+    console.error('✗ Failed to connect to the database:', error);
     process.exit(1);
   }
 }

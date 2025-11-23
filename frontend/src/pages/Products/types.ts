@@ -23,9 +23,9 @@ export interface Product {
   product_code: string;
   product_name_ar: string;
   product_name_en?: string;
-  cost?: number;
-  profit_ratio?: number;
-  selling_price?: number;
+  cost?: string;
+  profit_ratio?: string;
+  selling_price?: string;
   main_category_id?: number | null;
   product_group?: string | null;
   classification_1?: string | null;

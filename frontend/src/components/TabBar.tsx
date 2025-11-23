@@ -1,7 +1,13 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTabStore } from '../store/tabStore';
 import { useNavigate } from 'react-router-dom';
 
-export default function TabBar() {
+interface TabBarProps {
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
+}
+
+export default function TabBar({ sidebarOpen, onToggleSidebar }: TabBarProps) {
   const { tabs, activeTabId, removeTab, switchTab } = useTabStore();
   const navigate = useNavigate();
 
@@ -31,8 +37,18 @@ export default function TabBar() {
   };
 
   return (
-    <div className="tab-bar h-8 ">
-      <div className="tabs-container">
+    <div className="tab-bar h-8 flex items-center gap-2 px-2">
+      {/* Sidebar Toggle Button */}
+      <button
+        onClick={onToggleSidebar}
+        className="flex-shrink-0 p-1 hover:bg-gray-300 rounded transition"
+        title={sidebarOpen ? 'إغلاق الشريط الجانبي' : 'فتح الشريط الجانبي'}
+      >
+        {sidebarOpen ? <ChevronRight /> : <ChevronLeft />}
+      </button>
+
+      {/* Tabs Container */}
+      <div className="tabs-container flex-1">
         {tabs.length > 0 ? (
           tabs.map((tab) => (
             <div

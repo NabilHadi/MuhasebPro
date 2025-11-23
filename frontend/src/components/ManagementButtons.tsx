@@ -9,6 +9,7 @@ export interface ManagementButton {
   path: string;
   tabTitle: string;
   isDisabled?: boolean;
+  onClick?: () => void;
 }
 
 interface ManagementButtonsProps {
@@ -25,6 +26,12 @@ export default function ManagementButtons({
 
   const handleButtonClick = (button: ManagementButton) => {
     if (button.isDisabled) return;
+
+    // If custom onClick is provided, use it instead
+    if (button.onClick) {
+      button.onClick();
+      return;
+    }
 
     const tabId = `${button.id}-${Date.now()}`;
     addTab({

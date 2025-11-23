@@ -54,6 +54,7 @@ function App() {
           <Route path="accounts" element={<Accounts />} />
           <Route path="accounts/foundational" element={<FoundationalAccounts />} />
           <Route path="invoices" element={<Invoices />} />
+          <Route path="invoices/:invoiceId" element={<Invoices />} />
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="*" element={<NotFound />} />

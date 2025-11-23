@@ -76,11 +76,11 @@ async function startServer() {
   try {
     await testConnection();
     app.listen(PORT, () => {
-      console.log(`✓ السيرفر يعمل على المنفذ ${PORT}`);
-      console.log(`✓ قم بزيارة http://localhost:${PORT}/api/health`);
+      console.log(`✓ Server is running on port ${PORT}`);
+      console.log(`✓ Visit http://localhost:${PORT}/api/health`);
     });
   } catch (error) {
-    console.error('✗ فشل بدء السيرفر:', error);
+    console.error('✗ Failed to start server:', error);
     process.exit(1);
   }
 }

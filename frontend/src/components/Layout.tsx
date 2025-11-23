@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TabBar from './TabBar';
@@ -8,6 +8,7 @@ export default function Layout() {
   const { tabs, activeTabId, addTab, switchTab } = useTabStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Sync URL when tabs load on page refresh
   useEffect(() => {
@@ -40,9 +41,9 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+      {sidebarOpen && <Sidebar />}
       <div className="h-screen flex-1 grid grid-rows-[auto_1fr]">
-        <TabBar />
+        <TabBar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
