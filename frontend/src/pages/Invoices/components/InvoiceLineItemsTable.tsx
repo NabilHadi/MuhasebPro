@@ -84,38 +84,52 @@ export default function InvoiceLineItemsTable({
 
   return (
     <>
-      <div className="bg-white shadow overflow-x-auto">
+      <div className="bg-white shadow overflow-x-auto flex-1">
         {/* Table Header */}
         <table className="w-full cursor-text">
           <colgroup>
+            {/* ID */}
             <col style={{ width: '3%' }} />
+            {/* Product Code */}
             <col style={{ width: '10%' }} />
+            {/* Product Name */}
             <col style={{ width: '20%' }} />
-            <col style={{ width: '3%' }} />
-            <col style={{ width: '3%' }} />
+            {/* Unit */}
+            <col style={{ width: '4%' }} />
+            {/* Quantity */}
+            <col style={{ width: '4%' }} />
+            {/* Price */}
+            <col style={{ width: '4%' }} />
+            {/* Discount Amount */}
             <col style={{ width: '5%' }} />
+            {/* Discount Percent */}
+            <col style={{ width: '4%' }} />
+            {/* Total Discounts */}
             <col style={{ width: '5%' }} />
+            {/* Net Amount */}
+            <col style={{ width: '4%' }} />
+            {/* Tax */}
             <col style={{ width: '5%' }} />
-            <col style={{ width: '5%' }} />
-            <col style={{ width: '5%' }} />
-            <col style={{ width: '5%' }} />
-            <col style={{ width: '7%' }} />
+            {/* Total */}
+            <col style={{ width: '6%' }} />
+            {/* Notes */}
+            <col style={{ width: '10%' }} />
           </colgroup>
           <thead>
-            <tr className="bg-sky-900 text-white">
-              <th className="px-1 py-1 text-right text-xs font-semibold whitespace-nowrap">م.س</th>
-              <th className="px-3 py-3 text-right text-xs font-semibold whitespace-nowrap">رقم الصنف</th>
-              <th className="px-3 py-3 text-right text-xs font-semibold whitespace-nowrap">اسم الصنف</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">الوحدة</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">الكمية</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">السعر</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">خصم مبلغ</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">خصم %</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">خصومات</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">الصافي</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">الضريبة</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">الإجمالي</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold whitespace-nowrap">ملاحظات</th>
+            <tr className="bg-sky-900 text-white sticky top-0 z-10">
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">م.س</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">رقم الصنف</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">اسم الصنف</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">الوحدة</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">الكمية</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">السعر</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">خصم مبلغ</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">خصم %</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">خصومات</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">الصافي</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">الضريبة</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">الإجمالي</th>
+              <th className="p-2 text-center text-xs font-semibold whitespace-nowrap">ملاحظة</th>
             </tr>
           </thead>
           <tbody>
@@ -124,9 +138,9 @@ export default function InvoiceLineItemsTable({
               const totals = calculateLineItemTotals(item);
 
               return (
-                <tr key={index} className={"text-sm/3 " + (isEmptyRow ? "border-b border-dashed border-gray-300 h-10" : "border-b border-gray-200 hover:bg-gray-50")}>
+                <tr key={index} className={"border-b border-gray-200 hover:bg-gray-50"}>
                   {/* Line Number */}
-                  <td className=" p-0 text-center text-gray-400 bg-sky-100 border-2">
+                  <td className="p-0 text-center text-gray-400 bg-sky-100 border-2">
                     {index + 1}
                   </td>
 
@@ -142,7 +156,7 @@ export default function InvoiceLineItemsTable({
                           handleCellClick(index, item.product_code);
                         }
                       }}
-                      className="w-full h-full px-2 py-1 text-xs focus:outline-none border-0"
+                      className="w-full h-full px-2 text-xs focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -159,7 +173,7 @@ export default function InvoiceLineItemsTable({
                           handleCellClick(index, item.product_name_ar);
                         }
                       }}
-                      className="w-full h-full px-2 py-1 text-xs focus:outline-none border-0"
+                      className="w-full h-full px-2 text-xs focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -170,7 +184,7 @@ export default function InvoiceLineItemsTable({
                       type="text"
                       value={item.unit}
                       onChange={(e) => onItemChange(index, 'unit', e.target.value)}
-                      className="w-full h-full px-2 py-1 text-xs focus:outline-none border-0"
+                      className="w-full h-full px-2 text-xs focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -181,7 +195,7 @@ export default function InvoiceLineItemsTable({
                       type="number"
                       value={item.product_code || item.product_name_ar ? (item.quantity || 0) : (item.quantity || '')}
                       onChange={(e) => onItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 py-1 text-xs text-center focus:outline-none border-0"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 text-xs text-center focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -192,7 +206,7 @@ export default function InvoiceLineItemsTable({
                       type="number"
                       value={item.product_code || item.product_name_ar ? (item.price || 0) : (item.price || '')}
                       onChange={(e) => onItemChange(index, 'price', parseFloat(e.target.value) || 0)}
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 py-1 text-xs text-center focus:outline-none border-0"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 text-xs text-center focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -203,7 +217,7 @@ export default function InvoiceLineItemsTable({
                       type="number"
                       value={item.product_code || item.product_name_ar ? (item.discount_amount || 0) : (item.discount_amount ? item.discount_amount : '')}
                       onChange={(e) => onItemChange(index, 'discount_amount', parseFloat(e.target.value) || 0)}
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 py-1 text-xs text-center focus:outline-none border-0"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 text-xs text-center focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -214,7 +228,7 @@ export default function InvoiceLineItemsTable({
                       type="number"
                       value={item.product_code || item.product_name_ar ? (item.discount_percent || 0) : (item.discount_percent ? item.discount_percent : '')}
                       onChange={(e) => onItemChange(index, 'discount_percent', parseFloat(e.target.value) || 0)}
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 py-1 text-xs text-center focus:outline-none border-0"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 text-xs text-center focus:outline-none border-0"
                       min="0"
                       max="100"
                       disabled={isEmptyRow}
@@ -237,7 +251,7 @@ export default function InvoiceLineItemsTable({
                       type="number"
                       value={item.product_code || item.product_name_ar ? (item.tax || 0) : (item.tax ? item.tax : '')}
                       onChange={(e) => onItemChange(index, 'tax', parseFloat(e.target.value) || 0)}
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 py-1 text-xs text-center focus:outline-none border-0"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full h-full px-2 text-xs text-center focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>
@@ -253,7 +267,7 @@ export default function InvoiceLineItemsTable({
                       type="text"
                       value={item.notes || ''}
                       onChange={(e) => onItemChange(index, 'notes', e.target.value)}
-                      className="w-full h-full px-2 py-1 text-xs focus:outline-none border-0"
+                      className="w-full h-full px-2 text-xs focus:outline-none border-0"
                       disabled={isEmptyRow}
                     />
                   </td>

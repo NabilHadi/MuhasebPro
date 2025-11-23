@@ -219,10 +219,6 @@ body {
   @apply text-blue-600 border-b-blue-600 bg-blue-50;
 }
 
-.tab-icon {
-  @apply text-lg;
-}
-
 .tab-title {
   @apply truncate flex-1;
 }
@@ -242,4 +238,8 @@ body {
 
 .tab-empty {
   @apply flex items-center justify-center w-full py-4 text-gray-400;
+}
+
+.custom-date-input::-webkit-calendar-picker-indicator {
+  display: none;
 }

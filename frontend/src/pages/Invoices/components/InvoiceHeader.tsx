@@ -14,175 +14,286 @@ export default function InvoiceHeader({ invoice, onFieldChange }: InvoiceHeaderP
   );
 
   return (
-    <div className="p-2 rounded-lg">
-      <div className="grid grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-3">
-          {/* رقم التسلسل */}
-          <FormField label="رقم التسلسل *">
+    <div className="flex gap-6 py-2 px-6 text-sm">
+      {/* Left Column */}
+      <div className="space-y-1 flex-1">
+        {/* رقم التسلسل */}
+        <FormField label="رقم التسلسل">
+          <div className='flex gap-3'>
             <input
               type="text"
-              value={invoice.invoice_number || ''}
+              value={'1'}
               onChange={(e) => onFieldChange('invoice_number', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
               required
             />
-          </FormField>
+            <input
+              type="text"
+              value={'فرع جدة'}
+              onChange={(e) => onFieldChange('invoice_number', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              required
+            />
+          </div>
+        </FormField>
 
-          {/* طريقة الدفع */}
-          <FormField label="طريقة الدفع">
-            <select
-              value={invoice.payment_method || ''}
+        {/* طريقة الدفع */}
+        <FormField label="طريقة الدفع">
+          <div className='flex gap-3'>
+            <input
+              type="text"
+              value={'1'}
               onChange={(e) => onFieldChange('payment_method', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
-            >
-              <option value="">اختر طريقة الدفع</option>
-              <option value="نقدا">نقدا</option>
-              <option value="شيك">شيك</option>
-              <option value="تحويل بنكي">تحويل بنكي</option>
-              <option value="بطاقة ائتمان">بطاقة ائتمان</option>
-            </select>
-          </FormField>
-
-          {/* الشركة */}
-          <FormField label="الشركة">
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              required
+            />
             <input
               type="text"
-              value={invoice.company_name || ''}
+              value={'نقداًَ'}
+              onChange={(e) => onFieldChange('payment_method', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              required
+            />
+          </div>
+        </FormField>
+
+        {/* الشركة */}
+        <FormField label="الشركة">
+          <div className='flex gap-3'>
+            <input
+              type="text"
+              value={1}
               onChange={(e) => onFieldChange('company_name', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
             />
-          </FormField>
-
-          {/* المخزن */}
-          <FormField label="المخزن">
             <input
               type="text"
-              value={invoice.warehouse_name || ''}
-              onChange={(e) => onFieldChange('warehouse_name', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              value={'شركة العامة'}
+              onChange={(e) => onFieldChange('company_name', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
             />
-          </FormField>
+          </div>
+        </FormField>
 
-          {/* انزال المستند */}
-          <FormField label="انزال المستند">
+        {/* المخزن */}
+        <FormField label="المخزن">
+          <div className='flex gap-3'>
+            <input
+              type="text"
+              value={'1'}
+              onChange={(e) => onFieldChange('warehouse_name', e.target.value)}
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+            />
+            <input
+              type="text"
+              value={'فرع جدة'}
+              onChange={(e) => onFieldChange('warehouse_name', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+            />
+          </div>
+        </FormField>
+
+        {/* انزال المستند */}
+        <FormField label="انزال المستند">
+          <div className='flex gap-3'>
             <input
               type="text"
               value={''}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
               onChange={(e) => onFieldChange('is_posted', e.target.value)}
             />
-          </FormField>
+            <input
+              type="text"
+              value={'حجز البضاعة'}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              onChange={(e) => onFieldChange('is_posted', e.target.value)}
+            />
+          </div>
+        </FormField>
 
-          {/* الرقم الضريبي */}
-          <FormField label="الرقم الضريبي">
+        {/* الرقم الضريبي */}
+        <FormField label="الرقم الضريبي">
+          <div className='flex gap-3'>
             <input
               type="text"
               value={invoice.tax_number || ''}
               onChange={(e) => onFieldChange('tax_number', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
             />
-          </FormField>
+            <div className="flex gap-3 w-2/3">
+              <input
+                type="text"
+                value={invoice.tax_number || ''}
+                onChange={(e) => onFieldChange('tax_number', e.target.value)}
+                className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              />
+              <input
+                type="text"
+                value={invoice.tax_number || ''}
+                onChange={(e) => onFieldChange('tax_number', e.target.value)}
+                className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
+              />
+            </div>
 
-          {/* رقم الجوال */}
-          <FormField label="رقم الجوال">
+          </div>
+        </FormField>
+
+        {/* رقم الجوال */}
+        <FormField label="رقم الجوال">
+          <div className='flex gap-3'>
             <input
               type="tel"
               value={invoice.mobile || ''}
               onChange={(e) => onFieldChange('mobile', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
             />
-          </FormField>
-        </div>
+            <input
+              type="tel"
+              value={invoice.mobile || ''}
+              onChange={(e) => onFieldChange('mobile', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+            />
+          </div>
+        </FormField>
+      </div>
 
-        {/* Right Column */}
-        <div className="space-y-3">
+      {/* Right Column */}
+      <div className="space-y-1 flex-1">
 
-          {/* رقم المستند */}
-          <FormField label="رقم المستند">
+        {/* رقم المستند */}
+        <FormField label="رقم المستند">
+          <div className='flex gap-3'>
             <input
               type="text"
-              value={invoice.document_number || ''}
+              value={'100001'}
               onChange={(e) => onFieldChange('document_number', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 text-center p-0.5 focus:outline-none border border-gray-400"
             />
-          </FormField>
-
-          <div className='flex gap-2 w-full justify-between'>
-            {/* التاريخ */}
-            <FormField label="التاريخ *">
+            <div className="flex gap-3 w-2/3">
               <input
-                type="date"
-                value={invoice.invoice_date || ''}
-                onChange={(e) => onFieldChange('invoice_date', e.target.value)}
-                className="w-full focus:outline-none border border-gray-400"
-                required
+                type="text"
+                value={'فاتورة مبيعات'}
+                onChange={(e) => onFieldChange('document_number', e.target.value)}
+                className="w-3/5 p-0.5 text-center focus:outline-none border border-gray-400"
               />
-            </FormField>
+              <div className="flex items-center justify-center gap-1 w-2/5 py-0.5 px-1 focus:outline-none border border-gray-400">
+                <input type='checkbox' />
+                <span className='text-[0.8rem] text-sky-900'>
+                  تعليق المستند
+                </span>
+              </div>
+            </div>
+          </div>
+        </FormField>
 
-            {/* تاريخ التوريد */}
-            <FormField label="تاريخ التوريد">
+        {/* التاريخ */}
+        <FormField label="التاريخ *">
+          <div className='flex gap-3'>
+            <input
+              type="date"
+              value={invoice.invoice_date || ''}
+              onChange={(e) => onFieldChange('invoice_date', e.target.value)}
+              className="appearance-none custom-date-input w-1/3 text-center focus:outline-none border border-gray-400"
+              required
+            />
+
+            <div className='flex gap-3 w-2/3'>
+              <div className='w-3/5 p-0.5 text-center focus:outline-none border border-gray-400 bg-white'>
+                تعليق المستند
+              </div>
               <input
                 type="date"
                 value={invoice.supply_date || ''}
                 onChange={(e) => onFieldChange('supply_date', e.target.value)}
-                className="w-full focus:outline-none border border-gray-400"
+                className="appearance-none custom-date-input w-2/5 text-center focus:outline-none border border-gray-400"
               />
-            </FormField>
+            </div>
+
+
           </div>
+        </FormField>
 
 
-          {/* الفرع */}
-          <FormField label="الفرع">
+        {/* الفرع */}
+        <FormField label="الفرع">
+          <div className='flex gap-3'>
             <input
               type="text"
-              value={invoice.branch_name || ''}
+              value={'1'}
               onChange={(e) => onFieldChange('branch_name', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
-            />
-          </FormField>
-
-          {/* رقم الحساب */}
-          <FormField label="رقم الحساب">
-            <input
-              type="text"
-              value={invoice.account_id || ''}
-              onChange={(e) => onFieldChange('account_id', e.target.value as any)}
-              className="w-full focus:outline-none border border-gray-400"
-            />
-          </FormField>
-
-          {/* الموظف */}
-          <FormField label="الموظف">
-            <input
-              type="text"
-              value={invoice.employee_name || ''}
-              onChange={(e) => onFieldChange('employee_name', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
-            />
-          </FormField>
-
-          {/* اسم العميل */}
-          <FormField label="اسم العميل *">
-            <input
-              type="text"
-              value={invoice.customer_name_ar || ''}
-              onChange={(e) => onFieldChange('customer_name_ar', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
               required
             />
-          </FormField>
-
-          {/* العنوان */}
-          <FormField label="العنوان">
             <input
               type="text"
-              value={invoice.address || ''}
-              onChange={(e) => onFieldChange('address', e.target.value)}
-              className="w-full focus:outline-none border border-gray-400"
+              value={'فرع جدة'}
+              onChange={(e) => onFieldChange('branch_name', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              required
             />
-          </FormField>
-        </div>
+          </div>
+        </FormField>
+
+        {/* رقم الحساب */}
+        <FormField label="رقم الحساب">
+          <div className='flex gap-3'>
+            <input
+              type="text"
+              value={'121001001'}
+              onChange={(e) => onFieldChange('account_id', e.target.value)}
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              required
+            />
+            <input
+              type="text"
+              value={'الصندوق العام'}
+              onChange={(e) => onFieldChange('account_id', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              required
+            />
+          </div>
+        </FormField>
+
+        {/* الموظف */}
+        <FormField label="الموظف">
+          <div className='flex gap-3'>
+            <input
+              type="text"
+              value={'1'}
+              onChange={(e) => onFieldChange('employee_name', e.target.value)}
+              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              required
+            />
+            <input
+              type="text"
+              value={'موظف جدة 1'}
+              onChange={(e) => onFieldChange('employee_name', e.target.value)}
+              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              required
+            />
+          </div>
+        </FormField>
+
+        {/* اسم العميل */}
+        <FormField label="اسم العميل *">
+          <input
+            type="text"
+            value={invoice.customer_name_ar || ''}
+            onChange={(e) => onFieldChange('customer_name_ar', e.target.value)}
+            className="w-full p-0.5 focus:outline-none border border-gray-400"
+            required
+          />
+        </FormField>
+
+        {/* العنوان */}
+        <FormField label="العنوان">
+          <input
+            type="text"
+            value={invoice.address || ''}
+            onChange={(e) => onFieldChange('address', e.target.value)}
+            className="w-full p-0.5 focus:outline-none border border-gray-400"
+          />
+        </FormField>
       </div>
     </div>
   );
