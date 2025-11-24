@@ -47,6 +47,27 @@ export interface Invoice {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
+  // Header-specific fields
+  invoice_seq?: string;
+  branch_name_seq?: string;
+  payment_method_code?: string;
+  payment_method_name?: string;
+  company_code?: number | string;
+  warehouse_code?: string;
+  document_post_status?: string;
+  document_post_name?: string;
+  document_type?: string;
+  is_suspended?: boolean;
+  branch_code?: string;
+  branch?: string;
+  account_code?: string;
+  account_name?: string;
+  employee_code?: string;
+  tax_number_1?: string;
+  tax_number_2?: string;
+  tax_number_3?: string;
+  mobile_1?: string;
+  mobile_2?: string;
 }
 
 export interface InvoiceFormData {

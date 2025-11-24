@@ -88,6 +88,28 @@ export default function SalesInvoice() {
       account_id: undefined,
       employee_name: '',
       address: '',
+      // Header state fields
+      invoice_seq: '1',
+      branch_name_seq: 'فرع جدة',
+      payment_method_code: '1',
+      payment_method_name: 'نقداًَ',
+      company_code: 1,
+      warehouse_code: '1',
+      document_post_status: '',
+      document_post_name: 'حجز البضاعة',
+      document_type: 'فاتورة مبيعات',
+      is_suspended: false,
+      branch_code: '1',
+      branch: 'فرع جدة',
+      account_code: '121001001',
+      account_name: 'الصندوق العام',
+      employee_code: '1',
+      tax_number_1: '',
+      tax_number_2: '',
+      tax_number_3: '',
+      mobile_1: '',
+      mobile_2: '',
+      // Line items
       line_items: initializeLineItems,
       subtotal: 0,
       discount_fixed: 0,
@@ -104,6 +126,24 @@ export default function SalesInvoice() {
   useEffect(() => {
     setInvoice(getInitialInvoice());
   }, [invoiceId, getInitialInvoice]);
+
+  const handleHeaderStateChange = useCallback(
+    (fieldName: string, value: any) => {
+      setInvoice((prev) => {
+        const updated = {
+          ...prev,
+          [fieldName]: value,
+        };
+        // Save to storage
+        if (invoiceId) {
+          invoiceStorage.set(invoiceId, updated);
+          saveInvoicesToStorage(invoiceStorage);
+        }
+        return updated;
+      });
+    },
+    [invoiceId]
+  );
 
   const handleInvoiceFieldChange = useCallback(
     (field: keyof Invoice, value: any) => {
@@ -222,7 +262,9 @@ export default function SalesInvoice() {
 
       return updated;
     });
-  }, [invoiceId]); const handleAddNewInvoice = () => {
+  }, [invoiceId]);
+
+  const handleAddNewInvoice = () => {
     const invoiceId = `invoice-${Date.now()}`;
     const invoicePath = `/invoices/${invoiceId}`;
 
@@ -322,7 +364,11 @@ export default function SalesInvoice() {
       </div>
 
       {/* Invoice Header */}
-      <InvoiceHeader invoice={invoice} onFieldChange={handleInvoiceFieldChange} />
+      <InvoiceHeader
+        invoice={invoice}
+        onFieldChange={handleInvoiceFieldChange}
+        onHeaderStateChange={handleHeaderStateChange}
+      />
 
       {/* Line Items Table - Scrollable */}
       <InvoiceLineItemsTable
