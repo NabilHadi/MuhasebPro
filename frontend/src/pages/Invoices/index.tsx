@@ -8,6 +8,8 @@ import { CirclePoundSterling, ClipboardList, Copy, CornerLeftDown, CornerRightDo
 import ExcelIcon from "../../assets/excel.png"
 import BinderIcon from "../../assets/binder.png"
 import { useTabStore } from '../../store/tabStore';
+import useToast from '../../hooks/useToast';
+import ToastContainer from '../../components/Toast';
 
 // localStorage helper functions for invoices
 const INVOICES_STORAGE_KEY = 'invoices_data';
@@ -41,6 +43,7 @@ export default function SalesInvoice() {
   const navigate = useNavigate();
   const { addTab, switchTab } = useTabStore();
   const { invoiceId } = useParams<{ invoiceId?: string }>();
+  const { toasts, removeToast, showError } = useToast();
 
   // Memoize the initialization function
   const initializeLineItems = useMemo(() => {
@@ -327,6 +330,7 @@ export default function SalesInvoice() {
         onItemChange={handleLineItemChange}
         onAddItem={handleAddLineItem}
         onRemoveItem={handleRemoveLineItem}
+        onShowError={showError}
       />
 
       <div className='p-3 bg-slate-300 flex-shrink text-sm border-t-2 border-gray-400'>
@@ -344,6 +348,9 @@ export default function SalesInvoice() {
 
       <div className='p-3 bg-sky-900 flex-shrink text-sm'>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

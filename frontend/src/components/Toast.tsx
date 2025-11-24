@@ -34,7 +34,7 @@ export const Toast: React.FC<ToastProps> = ({
 
   const icon = {
     success: '✓',
-    error: '✕',
+    error: '',
     warning: '⚠',
     info: 'ℹ',
   }[type];

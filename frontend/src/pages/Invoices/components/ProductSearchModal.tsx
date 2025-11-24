@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Product } from '../../Products/types';
 import apiClient from '../../../services/api';
 import { Check, Shapes, X } from 'lucide-react';
@@ -28,10 +28,12 @@ export default function ProductSearchModal({
   const [hideZeroQuantity, setHideZeroQuantity] = useState(false);
   const [showCostColumn, setShowCostColumn] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-  const handleSearch = async (query?: string) => {
-    const queryToSearch = query !== undefined ? query : searchQuery;
-
+  const handleSearch = async () => {
     setLoading(true);
     setHasSearched(true);
     setError(null);
@@ -39,6 +41,8 @@ export default function ProductSearchModal({
     try {
       const response = await apiClient.get('/products');
       const fetchedProducts: Product[] = response.data;
+
+      setAllProducts(fetchedProducts);
 
       // Extract unique categories and groups for filters
       const uniqueCategories = Array.from(new Set(
@@ -51,35 +55,6 @@ export default function ProductSearchModal({
       setCategories(uniqueCategories);
       setGroups(uniqueGroups);
 
-      // Apply filters
-      let results = fetchedProducts;
-
-      if (queryToSearch.trim()) {
-        const queryLower = queryToSearch.toLowerCase();
-        results = results.filter((product) => {
-          return (
-            product.product_code.toLowerCase().includes(queryLower) ||
-            product.product_name_ar.toLowerCase().includes(queryLower)
-          );
-        });
-      }
-
-      if (selectedCategory) {
-        results = results.filter(p => p.category_name_ar === selectedCategory);
-      }
-
-      if (selectedGroup) {
-        results = results.filter(p => p.product_group === selectedGroup);
-      }
-
-      setFilteredProducts(results);
-
-      // Auto-select first row if requested and results exist
-      if (selectFirstRowByDefault && results.length > 0) {
-        setSelectedRowId(results[0].id);
-      } else {
-        setSelectedRowId(null);
-      }
     } catch (err) {
       console.error('Error fetching products:', err);
       setError('خطأ في تحميل الأصناف');
@@ -89,42 +64,148 @@ export default function ProductSearchModal({
     }
   };
 
-  // Auto-search when modal opens with initial query
+  // Now filter in a separate effect
   useEffect(() => {
-    if (initialQuery.trim()) {
-      handleSearch(initialQuery);
+    let results = allProducts;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      results = results.filter(
+        p =>
+          p.product_code.toLowerCase().includes(q) ||
+          p.product_name_ar.toLowerCase().includes(q)
+      );
+    }
+
+    if (selectedCategory) {
+      results = results.filter(p => p.category_name_ar === selectedCategory);
+    }
+    if (selectedGroup) {
+      results = results.filter(p => p.product_group === selectedGroup);
+    }
+
+    setFilteredProducts(results);
+
+    if (selectFirstRowByDefault && results.length > 0) {
+      setSelectedRowId(results[0].id);
     } else {
-      handleSearch('');
+      setSelectedRowId(null);
     }
-  }, [initialQuery]);
+  }, [allProducts, searchQuery, selectedCategory, selectedGroup, selectFirstRowByDefault]);
 
-  // Re-filter when category or group changes
+  // // Auto-search when modal opens with initial query
   useEffect(() => {
-    if (hasSearched) {
-      handleSearch(searchQuery);
-    }
-  }, [selectedCategory, selectedGroup]);
+    handleSearch();
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  // Scroll selected row into view
+  useEffect(() => {
+    if (selectedRowId && containerRef.current) {
+      const selectedRow = containerRef.current.querySelector(
+        `tr[data-row-id="${selectedRowId}"]`
+      ) as HTMLTableRowElement;
+
+      if (selectedRow) {
+        selectedRow.scrollIntoView({
+          behavior: 'instant',
+          block: 'nearest',
+        });
+      }
+    }
+  }, [selectedRowId]);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.code === 'F9') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [onClose]);
+
+  const handleSearchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSearch();
+      // if we have results, move focus to table
+      if (filteredProducts.length > 0) {
+        tableRef.current?.focus();
+      }
+    }
+
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && filteredProducts.length > 0) {
+      e.preventDefault();
+      // ensure a row is selected
+      if (selectedRowId == null) {
+        setSelectedRowId(filteredProducts[0].id);
+      }
+      tableRef.current?.focus();
     }
   };
 
-  const handleTableKeyDown = (e: React.KeyboardEvent<any>) => {
-    if (e.key === 'Enter') {
+  const handleTableKeyDown = (e: React.KeyboardEvent<HTMLTableElement>) => {
+    // F9: Focus search bar
+    if (e.code === 'F9') {
       e.preventDefault();
-      const selectedProduct = filteredProducts.find(p => p.id === selectedRowId);
-      if (selectedProduct) {
-        onSelect(selectedProduct);
+      searchInputRef.current?.focus();
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+
+
+    if (!filteredProducts.length) return;
+
+    const currentIndex = filteredProducts.findIndex(p => p.id === selectedRowId);
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        const nextIndex = (currentIndex + 1) % filteredProducts.length;
+        setSelectedRowId(filteredProducts[nextIndex].id);
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        const prevIndex = currentIndex <= 0 ? filteredProducts.length - 1 : currentIndex - 1;
+        setSelectedRowId(filteredProducts[prevIndex].id);
+        break;
+      }
+      case 'Enter': {
+        e.preventDefault();
+        const selectedProduct = filteredProducts.find(p => p.id === selectedRowId);
+        if (selectedProduct) {
+          onSelect(selectedProduct);
+        }
+        break;
       }
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white absolute top-12 rounded-lg shadow-lg w-full max-w-[70%] min-h-[80vh] max-h-[80vh] flex flex-col">
+      <div className="bg-white absolute top-12 rounded-lg shadow-lg w-full max-w-[70%] min-h-[80vh] max-h-[80vh] flex flex-col"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            tableRef.current?.focus();
+          }
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between py-2 px-3 border-b border-gray-200">
           <button
@@ -140,13 +221,13 @@ export default function ProductSearchModal({
         <div className="p-2 border-b border-gray-200 bg-gray-50">
           <div className="flex gap-2">
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={handleSearchInputKeyDown}
               placeholder="ابحث برقم أو اسم الصنف..."
-              className="flex-1 px-2  border border-gray-300 focus:outline-none  text-sm"
-              autoFocus
+              className="flex-1 px-2  border border-gray-300 text-sm"
             />
             {/* Filters */}
             <div className="flex gap-2">
@@ -184,7 +265,7 @@ export default function ProductSearchModal({
 
         </div>
         {/* Results */}
-        <div className="flex-1 overflow-y-auto px-1">
+        <div ref={containerRef} className="flex-1 overflow-y-auto px-1">
           {!hasSearched && (
             <div className="p-6 text-center text-gray-500">
               ابحث برقم أو اسم الصنف
@@ -210,7 +291,12 @@ export default function ProductSearchModal({
           )}
 
           {hasSearched && !loading && filteredProducts.length > 0 && (
-            <table className="w-full text-sm" onKeyDown={handleTableKeyDown}>
+            <table
+              ref={tableRef}
+              className="w-full text-sm focus:outline-none"
+              onKeyDown={handleTableKeyDown}
+              tabIndex={0}
+            >
               <thead>
                 <tr className="bg-gray-100 border-b border-gray-200">
                   <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">رقم الصنف</th>
@@ -228,9 +314,10 @@ export default function ProductSearchModal({
                   .map((product) => (
                     <tr
                       key={product.id}
+                      data-row-id={product.id}
                       onClick={() => setSelectedRowId(product.id)}
                       onDoubleClick={() => onSelect(product)}
-                      className={`border-b border-gray-200 cursor-pointer transition-colors ${selectedRowId === product.id
+                      className={`border-b border-gray-200 cursor-pointer ${selectedRowId === product.id
                         ? 'bg-sky-800 hover:bg-sky-900 text-white'
                         : 'hover:bg-blue-100'
                         }`}

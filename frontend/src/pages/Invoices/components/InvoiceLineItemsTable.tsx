@@ -4,13 +4,13 @@ import { Product } from '../../Products/types';
 import ProductSearchModal from './ProductSearchModal';
 import InvoiceLineItemRow from './InvoiceLineItemRow';
 import apiClient from '../../../services/api';
-import useToast from '../../../hooks/useToast';
 
 interface InvoiceLineItemsTableProps {
   items: InvoiceLineItem[];
   onItemChange: (index: number, field: keyof InvoiceLineItem, value: any) => void;
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
+  onShowError?: (message: string) => void;
 }
 
 // Map of editable column indices
@@ -35,12 +35,12 @@ export default function InvoiceLineItemsTable({
   items,
   onItemChange,
   onAddItem,
+  onShowError,
 }: InvoiceLineItemsTableProps) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchLineIndex, setSearchLineIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
-  const { showError } = useToast();
 
   const handleCellClick = (index: number, currentValue: string) => {
     setSearchLineIndex(index);
@@ -50,7 +50,8 @@ export default function InvoiceLineItemsTable({
 
   const searchForProducts = async (query: string, rowIndex: number) => {
     if (!query.trim()) {
-      showError('يرجى ادخال رقم الصنف');
+      console.log('Empty query');
+      onShowError?.('يرجى ادخال رقم الصنف');
       return;
     }
 
@@ -67,7 +68,8 @@ export default function InvoiceLineItemsTable({
       });
 
       if (matchingProducts.length === 0) {
-        showError('لم يتم العثور على الصنف');
+        console.log("No matching products found");
+        onShowError?.('لم يتم العثور على الصنف');
         return;
       }
 
@@ -82,7 +84,7 @@ export default function InvoiceLineItemsTable({
       }
     } catch (error) {
       console.error('Error searching for products:', error);
-      showError('خطأ في البحث عن الأصناف');
+      onShowError?.('خطأ في البحث عن الأصناف');
     }
   };
 
@@ -141,7 +143,15 @@ export default function InvoiceLineItemsTable({
       case "ArrowLeft": {
         e.preventDefault();
         // RTL: Left arrow moves right in the navigation (increase column index)
-        const nextIdx = currentColIdx + 1;
+        let nextIdx = 0;
+
+        // Skip the "Unit" column (index 1) when moving right from the first editable column
+        if (currentColIdx === 0) {
+          nextIdx = 2;
+        } else {
+          nextIdx = currentColIdx + 1;
+        }
+
         if (nextIdx < COLUMN_INDICES.length) focusByIndex(rowIndex, nextIdx);
         break;
       }
@@ -151,6 +161,7 @@ export default function InvoiceLineItemsTable({
         // Skip the "Unit" column (index 1) when moving right from the first editable column
         if (currentColIdx === 0) nextIdx = 2;
         else nextIdx = currentColIdx + 1;
+
         if (nextIdx < COLUMN_INDICES.length) {
           focusByIndex(rowIndex, nextIdx);
         } else {
@@ -199,7 +210,7 @@ export default function InvoiceLineItemsTable({
       // Focus on the price field (next editable field after product code)
       setSearchModalOpen(false);
       setTimeout(() => {
-        focusCell(targetLineIndex, 5); // Column 5 is the price field
+        focusCell(targetLineIndex, 4); // Column 4 is the Quantity field
       }, 0);
     }
     setSearchModalOpen(false);
