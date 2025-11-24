@@ -7,12 +7,14 @@ interface ProductSearchModalProps {
   initialQuery: string;
   onSelect: (product: Product) => void;
   onClose: () => void;
+  selectFirstRowByDefault?: boolean;
 }
 
 export default function ProductSearchModal({
   initialQuery,
   onSelect,
   onClose,
+  selectFirstRowByDefault = true,
 }: ProductSearchModalProps) {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -71,6 +73,13 @@ export default function ProductSearchModal({
       }
 
       setFilteredProducts(results);
+
+      // Auto-select first row if requested and results exist
+      if (selectFirstRowByDefault && results.length > 0) {
+        setSelectedRowId(results[0].id);
+      } else {
+        setSelectedRowId(null);
+      }
     } catch (err) {
       console.error('Error fetching products:', err);
       setError('خطأ في تحميل الأصناف');
@@ -100,6 +109,16 @@ export default function ProductSearchModal({
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSearch();
+    }
+  };
+
+  const handleTableKeyDown = (e: React.KeyboardEvent<any>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const selectedProduct = filteredProducts.find(p => p.id === selectedRowId);
+      if (selectedProduct) {
+        onSelect(selectedProduct);
+      }
     }
   };
 
@@ -191,7 +210,7 @@ export default function ProductSearchModal({
           )}
 
           {hasSearched && !loading && filteredProducts.length > 0 && (
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" onKeyDown={handleTableKeyDown}>
               <thead>
                 <tr className="bg-gray-100 border-b border-gray-200">
                   <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">رقم الصنف</th>

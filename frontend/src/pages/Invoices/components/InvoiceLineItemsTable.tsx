@@ -3,6 +3,8 @@ import { InvoiceLineItem } from '../types';
 import { Product } from '../../Products/types';
 import ProductSearchModal from './ProductSearchModal';
 import InvoiceLineItemRow from './InvoiceLineItemRow';
+import apiClient from '../../../services/api';
+import useToast from '../../../hooks/useToast';
 
 interface InvoiceLineItemsTableProps {
   items: InvoiceLineItem[];
@@ -12,7 +14,7 @@ interface InvoiceLineItemsTableProps {
 }
 
 // Map of editable column indices
-const COLUMN_INDICES = [1, 3, 4, 5, 6, 7, 11, 12]; // Indices of editable columns in order
+const COLUMN_INDICES = [1, 3, 4, 5, 6, 7, 12]; // Indices of editable columns in order
 
 const EMPTY_LINE_ITEM: InvoiceLineItem = {
   product_code: '',
@@ -38,6 +40,7 @@ export default function InvoiceLineItemsTable({
   const [searchLineIndex, setSearchLineIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+  const { showError } = useToast();
 
   const handleCellClick = (index: number, currentValue: string) => {
     setSearchLineIndex(index);
@@ -45,64 +48,159 @@ export default function InvoiceLineItemsTable({
     setSearchModalOpen(true);
   };
 
+  const searchForProducts = async (query: string, rowIndex: number) => {
+    if (!query.trim()) {
+      showError('يرجى ادخال رقم الصنف');
+      return;
+    }
+
+    try {
+      const response = await apiClient.get('/products');
+      const allProducts: Product[] = response.data;
+
+      const queryLower = query.toLowerCase();
+      const matchingProducts = allProducts.filter((product) => {
+        return (
+          product.product_code.toLowerCase().includes(queryLower) ||
+          product.product_name_ar.toLowerCase().includes(queryLower)
+        );
+      });
+
+      if (matchingProducts.length === 0) {
+        showError('لم يتم العثور على الصنف');
+        return;
+      }
+
+      if (matchingProducts.length === 1) {
+        // Auto-select single product
+        handleProductSelect(matchingProducts[0], rowIndex);
+      } else {
+        // Open modal with multiple products
+        setSearchLineIndex(rowIndex);
+        setSearchQuery(query);
+        setSearchModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error searching for products:', error);
+      showError('خطأ في البحث عن الأصناف');
+    }
+  };
+
   const getRefKey = (row: number, col: number) => `${row}-${col}`;
+
+
   const focusCell = (row: number, col: number) => {
-    inputRefs.current.get(getRefKey(row, col))?.focus();
+    const el = inputRefs.current.get(getRefKey(row, col));
+    if (!el) return;
+
+    el.focus();
+
+
+
+    // Some browsers complain for type="number", so wrap in try/catch
+    setTimeout(() => {
+      // Move caret to the end of the value
+      const len = el.value.length;
+      try {
+        el.setSelectionRange(len, len);
+      } catch {
+        /* ignore */
+      }
+    }, 0);
   };
 
   const handleArrowNavigation = (e: React.KeyboardEvent<HTMLInputElement>, rowIndex: number, columnIndex: number) => {
     const currentColIdx = COLUMN_INDICES.indexOf(columnIndex);
+    const currentRow = displayItems[rowIndex];
+    const hasProduct = !!(currentRow?.product_code);
+    const nextRow = displayItems[rowIndex + 1];
+    const nextRowHasProduct = !!(nextRow?.product_code);
 
     const focusByIndex = (row: number, colIdx: number) => {
       const col = COLUMN_INDICES[colIdx];
       focusCell(row, col);
     };
 
-    switch (e.key) {
-      case "Enter":
-      case "ArrowLeft": {
+    // If row has no product, only allow up arrow navigation
+    if (!hasProduct) {
+      if (e.key === 'ArrowUp') {
         e.preventDefault();
-        const nextIdx = currentColIdx + 1;
-        if (nextIdx < COLUMN_INDICES.length) {
-          focusByIndex(rowIndex, nextIdx);
-        } else if (e.key === 'Enter') {
-          focusByIndex(rowIndex + 1, 0);
-        }
-        break;
+        if (rowIndex > 0) focusCell(rowIndex - 1, columnIndex);
       }
+      return;
+    }
+
+    switch (e.key) {
       case "ArrowRight": {
         e.preventDefault();
+        // RTL: Right arrow moves left in the navigation (decrease column index)
         const prevIdx = currentColIdx - 1;
         if (prevIdx >= 0) focusByIndex(rowIndex, prevIdx);
         break;
       }
+      case "ArrowLeft": {
+        e.preventDefault();
+        // RTL: Left arrow moves right in the navigation (increase column index)
+        const nextIdx = currentColIdx + 1;
+        if (nextIdx < COLUMN_INDICES.length) focusByIndex(rowIndex, nextIdx);
+        break;
+      }
+      case "Enter": {
+        e.preventDefault();
+        let nextIdx = 0;
+        // Skip the "Unit" column (index 1) when moving right from the first editable column
+        if (currentColIdx === 0) nextIdx = 2;
+        else nextIdx = currentColIdx + 1;
+        if (nextIdx < COLUMN_INDICES.length) {
+          focusByIndex(rowIndex, nextIdx);
+        } else {
+          focusByIndex(rowIndex + 1, 0);
+        }
+        break;
+      }
       case "ArrowDown": {
         e.preventDefault();
-        focusCell(rowIndex + 1, columnIndex);
+        // If current row has product and next row doesn't, go to first cell in next row
+        if (!nextRowHasProduct && rowIndex + 1 < displayItems.length) {
+          focusByIndex(rowIndex + 1, 0);
+        } else if (nextRowHasProduct) {
+          // If current row has product, allow moving down
+          focusCell(rowIndex + 1, columnIndex);
+        }
+        // If no product in current row, don't allow down arrow
         break;
       }
       case "ArrowUp": {
         e.preventDefault();
+        // Always allow up arrow
         if (rowIndex > 0) focusCell(rowIndex - 1, columnIndex);
         break;
       }
     }
   };
 
-  const handleProductSelect = (product: Product) => {
-    if (searchLineIndex !== null) {
+  const handleProductSelect = (product: Product, lineIndex?: number) => {
+    const targetLineIndex = lineIndex !== undefined ? lineIndex : searchLineIndex;
+
+    if (targetLineIndex !== null) {
       // Set product details
-      onItemChange(searchLineIndex, 'product_code', product.product_code);
-      onItemChange(searchLineIndex, 'product_name_ar', product.product_name_ar);
-      onItemChange(searchLineIndex, 'unit', product.unit_name_ar || '');
-      onItemChange(searchLineIndex, 'price', product.selling_price || 0);
-      onItemChange(searchLineIndex, 'quantity', 1);
-      onItemChange(searchLineIndex, 'tax', 15);
+      onItemChange(targetLineIndex, 'product_code', product.product_code);
+      onItemChange(targetLineIndex, 'product_name_ar', product.product_name_ar);
+      onItemChange(targetLineIndex, 'unit', product.unit_name_ar || '');
+      onItemChange(targetLineIndex, 'price', product.selling_price || 0);
+      onItemChange(targetLineIndex, 'quantity', 1);
+      onItemChange(targetLineIndex, 'tax', 15);
 
       // Auto-add new line if we're on the last line
-      if (searchLineIndex === items.length - 1 && items.length < 11) {
+      if (targetLineIndex === items.length - 1 && items.length < 11) {
         onAddItem();
       }
+
+      // Focus on the price field (next editable field after product code)
+      setSearchModalOpen(false);
+      setTimeout(() => {
+        focusCell(targetLineIndex, 5); // Column 5 is the price field
+      }, 0);
     }
     setSearchModalOpen(false);
   };
@@ -175,6 +273,7 @@ export default function InvoiceLineItemsTable({
                 handleArrowNavigation={handleArrowNavigation}
                 inputRefs={inputRefs}
                 onOpenProductSearch={handleCellClick}
+                onSearchProductCode={searchForProducts}
               />
             ))}
           </tbody>

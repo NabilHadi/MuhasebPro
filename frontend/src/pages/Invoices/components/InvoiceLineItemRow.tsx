@@ -15,6 +15,7 @@ export interface InvoiceLineItemRowProps {
   handleArrowNavigation: (e: React.KeyboardEvent<HTMLInputElement>, rowIndex: number, columnIndex: number) => void;
   inputRefs: React.MutableRefObject<Map<string, HTMLInputElement>>;
   onOpenProductSearch: (index: number, currentValue: string) => void;
+  onSearchProductCode?: (query: string, rowIndex: number) => Promise<void>;
 }
 
 export const calculateLineItemTotals = (item: InvoiceLineItem) => {
@@ -49,9 +50,30 @@ export default function InvoiceLineItemRow({
   handleArrowNavigation,
   inputRefs,
   onOpenProductSearch,
+  onSearchProductCode,
 }: InvoiceLineItemRowProps) {
   const hasProduct = !!(item.product_code);
   const totals = calculateLineItemTotals(item);
+
+  const quantityValue =
+    hasProduct && item.quantity !== null && item.quantity !== undefined
+      ? item.quantity.toString()
+      : '';
+
+  const priceValue =
+    hasProduct && item.price !== null && item.price !== undefined
+      ? item.price.toString()
+      : '';
+
+  const discountAmountValue =
+    hasProduct && item.discount_amount !== null && item.discount_amount !== undefined
+      ? item.discount_amount.toString()
+      : '';
+
+  const discountPercentValue =
+    hasProduct && item.discount_percent !== null && item.discount_percent !== undefined
+      ? item.discount_percent.toString()
+      : '';
 
   return (
     <tr className={"border-b border-gray-200 hover:bg-sky-100 focus-within:bg-sky-100"}>
@@ -73,6 +95,11 @@ export default function InvoiceLineItemRow({
             if (e.code === 'F9') {
               e.preventDefault();
               onOpenProductSearch(index, item.product_code);
+            } else if (e.key === 'Enter') {
+              e.preventDefault();
+              if (onSearchProductCode) {
+                onSearchProductCode(item.product_code, index);
+              }
             } else {
               handleArrowNavigation(e, index, 1);
             }
@@ -97,7 +124,7 @@ export default function InvoiceLineItemRow({
           value={hasProduct ? item.unit : ''}
           onChange={(e) => onItemChange(index, 'unit', e.target.value)}
           onKeyDown={(e) => handleArrowNavigation(e, index, 3)}
-          className="w-full h-full bg-transparent px-2 text-xs focus:outline-none border-0 focus:bg-yellow-100"
+          className="w-full h-full bg-transparent px-2 text-xs text-center focus:outline-none border-0 focus:bg-yellow-100"
           disabled={isEmptyRow}
         />
       </td>
@@ -108,9 +135,37 @@ export default function InvoiceLineItemRow({
           ref={(el) => {
             if (el) inputRefs.current.set(`${index}-4`, el);
           }}
-          type="number"
-          value={hasProduct ? (item.quantity || 0) : ''}
-          onChange={(e) => onItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+          type="text"
+          inputMode="decimal"
+          value={quantityValue}
+          onFocus={(e) => {
+            // Only auto-select if the value is exactly "0"
+            if (e.target.value === '0') {
+              e.target.select();
+            }
+          }}
+          onChange={(e) => {
+            const raw = e.target.value;
+
+            // While typing, allow empty
+            if (raw === '') {
+              onItemChange(index, 'quantity', null); // or undefined
+              return;
+            }
+
+            const num = parseFloat(raw);
+            console.log({
+              raw,
+              num
+            })
+            onItemChange(index, 'quantity', Number.isNaN(num) ? null : num);
+          }}
+          onBlur={(e) => {
+            // If user leaves it empty, force it back to 0
+            if (e.target.value === '') {
+              onItemChange(index, 'quantity', 0);
+            }
+          }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 4)}
           className={numberInputClass}
           disabled={isEmptyRow}
@@ -123,9 +178,33 @@ export default function InvoiceLineItemRow({
           ref={(el) => {
             if (el) inputRefs.current.set(`${index}-5`, el);
           }}
-          type="number"
-          value={hasProduct ? (item.price || 0) : ''}
-          onChange={(e) => onItemChange(index, 'price', parseFloat(e.target.value) || 0)}
+          type="text"
+          inputMode="decimal"
+          value={priceValue}
+          onFocus={(e) => {
+            // Only auto-select if the value is exactly "0"
+            if (e.target.value === '0') {
+              e.target.select();
+            }
+          }}
+          onChange={(e) => {
+            const raw = e.target.value;
+
+            // While typing, allow empty
+            if (raw === '') {
+              onItemChange(index, 'price', null); // or undefined
+              return;
+            }
+
+            const num = parseFloat(raw);
+            onItemChange(index, 'price', Number.isNaN(num) ? null : num);
+          }}
+          onBlur={(e) => {
+            // If user leaves it empty, force it back to 0
+            if (e.target.value === '') {
+              onItemChange(index, 'price', 0);
+            }
+          }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 5)}
           className={numberInputClass}
           disabled={isEmptyRow}
@@ -138,9 +217,33 @@ export default function InvoiceLineItemRow({
           ref={(el) => {
             if (el) inputRefs.current.set(`${index}-6`, el);
           }}
-          type="number"
-          value={hasProduct ? (item.discount_amount || 0) : ''}
-          onChange={(e) => onItemChange(index, 'discount_amount', parseFloat(e.target.value) || 0)}
+          type="text"
+          inputMode="decimal"
+          value={discountAmountValue}
+          onFocus={(e) => {
+            // Only auto-select if the value is exactly "0"
+            if (e.target.value === '0') {
+              e.target.select();
+            }
+          }}
+          onChange={(e) => {
+            const raw = e.target.value;
+
+            // While typing, allow empty
+            if (raw === '') {
+              onItemChange(index, 'discount_amount', null); // or undefined
+              return;
+            }
+
+            const num = parseFloat(raw);
+            onItemChange(index, 'discount_amount', Number.isNaN(num) ? null : num);
+          }}
+          onBlur={(e) => {
+            // If user leaves it empty, force it back to 0
+            if (e.target.value === '') {
+              onItemChange(index, 'discount_amount', 0);
+            }
+          }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 6)}
           className={numberInputClass}
           disabled={isEmptyRow}
@@ -153,9 +256,43 @@ export default function InvoiceLineItemRow({
           ref={(el) => {
             if (el) inputRefs.current.set(`${index}-7`, el);
           }}
-          type="number"
-          value={hasProduct ? (item.discount_percent || 0) : ''}
-          onChange={(e) => onItemChange(index, 'discount_percent', parseFloat(e.target.value) || 0)}
+          type="text"
+          inputMode="decimal"
+          value={discountPercentValue}
+          onFocus={(e) => {
+            // Only auto-select if the value is exactly "0"
+            if (e.target.value === '0') {
+              e.target.select();
+            }
+          }}
+          onChange={(e) => {
+            const raw = e.target.value;
+
+            // While typing, allow empty
+            if (raw === '') {
+              onItemChange(index, 'discount_percent', null); // or undefined
+              return;
+            }
+
+            const num = parseFloat(raw);
+
+            if (num < 0) {
+              return;
+            }
+
+            if (num > 100) {
+              return;
+            }
+
+
+            onItemChange(index, 'discount_percent', Number.isNaN(num) ? null : num);
+          }}
+          onBlur={(e) => {
+            // If user leaves it empty, force it back to 0
+            if (e.target.value === '') {
+              onItemChange(index, 'discount_percent', 0);
+            }
+          }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 7)}
           className={numberInputClass}
           min="0"
@@ -180,25 +317,8 @@ export default function InvoiceLineItemRow({
       </td>
 
       {/* Total */}
-      <td className="p-0 border-2 border-gray-300 text-center text-sm">
-        <input
-          ref={(el) => {
-            if (el) inputRefs.current.set(`${index}-11`, el);
-          }}
-          type="number"
-          value={hasProduct ? totals.total : ''}
-          onChange={(e) => {
-            const newTotal = parseFloat(e.target.value) || 0;
-            const currentTotal = totals.total;
-            const difference = newTotal - currentTotal;
-            const newPrice = item.quantity > 0 ? item.price + (difference / item.quantity) : item.price;
-            onItemChange(index, 'price', Math.max(0, newPrice));
-            onItemChange(index, 'total', newTotal);
-          }}
-          onKeyDown={(e) => handleArrowNavigation(e, index, 11)}
-          className={numberInputClass}
-          disabled={isEmptyRow}
-        />
+      <td className="p-0 bg-sky-50 border-2 border-gray-300 text-center text-sm">
+        {hasProduct ? totals.total.toFixed(2) : ''}
       </td>
 
       {/* Notes */}
@@ -211,7 +331,7 @@ export default function InvoiceLineItemRow({
           value={hasProduct ? (item.notes || '') : ''}
           onChange={(e) => onItemChange(index, 'notes', e.target.value)}
           onKeyDown={(e) => handleArrowNavigation(e, index, 12)}
-          className="w-full h-full px-2 text-xs focus:outline-none border-0"
+          className="w-full h-full px-2 text-xs focus:outline-none border-0 focus:bg-yellow-100"
           disabled={isEmptyRow}
         />
       </td>
