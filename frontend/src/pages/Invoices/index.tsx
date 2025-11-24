@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import InvoiceHeader from './components/InvoiceHeader';
 import InvoiceLineItemsTable from './components/InvoiceLineItemsTable';
 import InvoiceSummary from './components/InvoiceSummary';
+import InvoiceSearchModal from './components/InvoiceSearchModal';
 import { Invoice, InvoiceLineItem } from './types';
 import { CirclePoundSterling, ClipboardList, Copy, CornerLeftDown, CornerRightDown, DollarSign, Download, Percent, Plus, Printer, RefreshCcw, Rotate3d, RotateCcw, Save, Search, Sheet, X } from 'lucide-react';
 import ExcelIcon from "../../assets/excel.png"
@@ -99,6 +100,7 @@ export default function SalesInvoice() {
   }, [invoiceId, initializeLineItems, getInvoiceFromStorage]);
 
   const [invoice, setInvoice] = useState<Partial<Invoice>>(getInitialInvoice());
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   // Reset state when invoiceId changes
   useEffect(() => {
@@ -255,6 +257,50 @@ export default function SalesInvoice() {
     navigate(invoicePath);
   };
 
+  // Handle Next Invoice Navigation
+  const handleNextInvoice = useCallback(() => {
+    if (!invoice.document_number) {
+      showError('يجب حفظ الفاتورة أولاً');
+      return;
+    }
+
+    const nextInvoiceId = getNextInvoiceId(invoice.document_number);
+    if (!nextInvoiceId) {
+      showError('لا توجد فواتير محفوظة');
+      return;
+    }
+
+    switchTab(nextInvoiceId);
+    navigate(`/invoices/${nextInvoiceId}`);
+  }, [invoice.document_number, getNextInvoiceId, switchTab, navigate, showError]);
+
+  // Handle Previous Invoice Navigation
+  const handlePreviousInvoice = useCallback(() => {
+    if (!invoice.document_number) {
+      showError('يجب حفظ الفاتورة أولاً');
+      return;
+    }
+
+    const prevInvoiceId = getPreviousInvoiceId(invoice.document_number);
+    if (!prevInvoiceId) {
+      showError('لا توجد فواتير محفوظة');
+      return;
+    }
+
+    switchTab(prevInvoiceId);
+    navigate(`/invoices/${prevInvoiceId}`);
+  }, [invoice.document_number, getPreviousInvoiceId, switchTab, navigate, showError]);
+
+  // Handle Invoice Selection from Modal
+  const handleSelectFromSearch = useCallback(
+    (selectedInvoiceId: string) => {
+      setShowSearchModal(false);
+      switchTab(selectedInvoiceId);
+      navigate(`/invoices/${selectedInvoiceId}`);
+    },
+    [switchTab, navigate]
+  );
+
   return (
     <div className="flex-1 flex flex-col w-full h-full">
       {/* Action Buttons */}
@@ -270,13 +316,19 @@ export default function SalesInvoice() {
         <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <X size={16} /> حذف
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button 
+          onClick={() => setShowSearchModal(true)}
+          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <Search size={16} /> عرض
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button 
+          onClick={handleNextInvoice}
+          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <CornerRightDown size={16} /> التالي
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button 
+          onClick={handlePreviousInvoice}
+          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <CornerLeftDown size={16} /> السابق
         </button>
         <button 
@@ -372,6 +424,13 @@ export default function SalesInvoice() {
 
       <div className='p-3 bg-sky-900 flex-shrink text-sm'>
       </div>
+
+      {/* Invoice Search Modal */}
+      <InvoiceSearchModal 
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSelectInvoice={handleSelectFromSearch}
+      />
 
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
