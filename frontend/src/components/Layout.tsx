@@ -10,6 +10,13 @@ export default function Layout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Close sidebar when navigating to invoice pages
+  useEffect(() => {
+    if (location.pathname.includes('/invoices/')) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
   // Sync URL when tabs load on page refresh
   useEffect(() => {
     if (tabs.length === 0 && location.pathname !== '/login') {
