@@ -197,10 +197,10 @@ export default function ProductSearchModal({
                   <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">رقم الصنف</th>
                   <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">اسم الصنف</th>
                   <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">كمية متاحة</th>
+                  <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">سعر البيع</th>
                   {showCostColumn && (
                     <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">سعر التكلفة</th>
                   )}
-                  <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">سعر البيع</th>
                 </tr>
               </thead>
               <tbody>
@@ -221,14 +221,14 @@ export default function ProductSearchModal({
                       <td className="px-2 py-1 text-sm text-center border border-gray-400">
                         {'0'}
                       </td>
+                      <td className="px-2 py-1 text-sm text-center border border-gray-400">
+                        {product.selling_price ? Number(product.selling_price).toFixed(2) : '-'}
+                      </td>
                       {showCostColumn && (
                         <td className="px-2 py-1 text-sm text-center border border-gray-400">
                           {product.cost ? Number(product.cost).toFixed(2) : '-'}
                         </td>
                       )}
-                      <td className="px-2 py-1 text-sm text-center border border-gray-400">
-                        {product.selling_price ? Number(product.selling_price).toFixed(2) : '-'}
-                      </td>
                     </tr>
                   ))}
               </tbody>
