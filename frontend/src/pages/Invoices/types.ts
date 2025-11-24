@@ -68,6 +68,9 @@ export interface Invoice {
   tax_number_3?: string;
   mobile_1?: string;
   mobile_2?: string;
+  // Storage metadata fields
+  saved_at?: string;
+  status?: 'draft' | 'saved' | 'posted';
 }
 
 export interface InvoiceFormData {

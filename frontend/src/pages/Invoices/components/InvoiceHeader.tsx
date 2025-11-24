@@ -56,6 +56,16 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
     if (fieldMap[fieldName]) {
       onFieldChange(fieldMap[fieldName], value);
     }
+
+    // Auto-generate document_number when invoice_seq changes
+    if (fieldName === 'invoice_seq' && value) {
+      const seqNum = parseInt(value, 10);
+      if (!isNaN(seqNum) && seqNum > 0) {
+        const docNumber = String(seqNum) + '00001';
+        onHeaderStateChange('document_number', docNumber);
+        onFieldChange('document_number', docNumber);
+      }
+    }
   };
 
   return (
@@ -210,8 +220,8 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
             <input
               type="text"
               value={invoice.document_number || ''}
-              onChange={(e) => handleFieldChange('document_number', e.target.value)}
-              className="w-1/3 text-center p-0.5 focus:outline-none border border-gray-400"
+              readOnly
+              className="w-1/3 text-center p-0.5 focus:outline-none border border-gray-400 bg-gray-100 cursor-not-allowed"
             />
             <div className="flex gap-3 w-2/3">
               <input

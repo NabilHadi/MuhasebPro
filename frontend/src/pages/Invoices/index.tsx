@@ -10,40 +10,14 @@ import BinderIcon from "../../assets/binder.png"
 import { useTabStore } from '../../store/tabStore';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../../components/Toast';
-
-// localStorage helper functions for invoices
-const INVOICES_STORAGE_KEY = 'invoices_data';
-
-const getInvoicesFromStorage = (): Map<string, Partial<Invoice>> => {
-  try {
-    const data = localStorage.getItem(INVOICES_STORAGE_KEY);
-    if (data) {
-      const parsed = JSON.parse(data);
-      return new Map(Object.entries(parsed));
-    }
-  } catch (error) {
-    console.error('Failed to parse invoices from localStorage:', error);
-  }
-  return new Map();
-};
-
-const saveInvoicesToStorage = (invoices: Map<string, Partial<Invoice>>) => {
-  try {
-    const data = Object.fromEntries(invoices);
-    localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error('Failed to save invoices to localStorage:', error);
-  }
-};
-
-// In-memory storage for invoices (synced with localStorage)
-let invoiceStorage = getInvoicesFromStorage();
+import { useInvoiceStorage } from '../../hooks/useInvoiceStorage';
 
 export default function SalesInvoice() {
   const navigate = useNavigate();
   const { addTab, switchTab } = useTabStore();
   const { invoiceId } = useParams<{ invoiceId?: string }>();
-  const { toasts, removeToast, showError } = useToast();
+  const { toasts, removeToast, showError, showSuccess } = useToast();
+  const { saveInvoice: saveToStorage, getNextInvoiceId, getPreviousInvoiceId, getInvoice: getInvoiceFromStorage } = useInvoiceStorage();
 
   // Memoize the initialization function
   const initializeLineItems = useMemo(() => {
@@ -68,8 +42,12 @@ export default function SalesInvoice() {
 
   // Initialize invoice state from storage or create new one
   const getInitialInvoice = useCallback((): Partial<Invoice> => {
-    if (invoiceId && invoiceStorage.has(invoiceId)) {
-      return invoiceStorage.get(invoiceId)!;
+    // Try to load from persistent storage
+    if (invoiceId) {
+      const storedInvoice = getInvoiceFromStorage(invoiceId);
+      if (storedInvoice) {
+        return storedInvoice;
+      }
     }
 
     return {
@@ -118,7 +96,7 @@ export default function SalesInvoice() {
       total: 0,
       notes: '',
     };
-  }, [invoiceId, initializeLineItems]);
+  }, [invoiceId, initializeLineItems, getInvoiceFromStorage]);
 
   const [invoice, setInvoice] = useState<Partial<Invoice>>(getInitialInvoice());
 
@@ -134,15 +112,10 @@ export default function SalesInvoice() {
           ...prev,
           [fieldName]: value,
         };
-        // Save to storage
-        if (invoiceId) {
-          invoiceStorage.set(invoiceId, updated);
-          saveInvoicesToStorage(invoiceStorage);
-        }
         return updated;
       });
     },
-    [invoiceId]
+    []
   );
 
   const handleInvoiceFieldChange = useCallback(
@@ -152,16 +125,33 @@ export default function SalesInvoice() {
           ...prev,
           [field]: value,
         };
-        // Save to storage
-        if (invoiceId) {
-          invoiceStorage.set(invoiceId, updated);
-          saveInvoicesToStorage(invoiceStorage);
-        }
         return updated;
       });
     },
-    [invoiceId]
+    []
   );
+
+  // Handle Save Invoice
+  const handleSaveInvoice = useCallback(() => {
+    if (!invoiceId) {
+      showError('حدث خطأ: معرف الفاتورة مفقود');
+      return;
+    }
+
+    const result = saveToStorage(invoiceId, invoice);
+    if (result.success) {
+      showSuccess(`تم حفظ الفاتورة برقم ${result.documentNumber}`);
+      // Update tab title with document number
+      addTab({
+        id: invoiceId,
+        title: `فاتورة #${result.documentNumber}`,
+        path: `/invoices/${invoiceId}`,
+        icon: '🧾',
+      });
+    } else {
+      showError(result.error || 'فشل حفظ الفاتورة');
+    }
+  }, [invoiceId, invoice, saveToStorage, showSuccess, showError, addTab]);
 
   const handleLineItemChange = useCallback(
     (index: number, field: keyof InvoiceLineItem, value: any) => {
@@ -190,17 +180,13 @@ export default function SalesInvoice() {
           total,
         };
 
-        // Save to storage
-        if (invoiceId) {
-          invoiceStorage.set(invoiceId, updated);
-          saveInvoicesToStorage(invoiceStorage);
-        }
-
         return updated;
       });
     },
-    [invoiceId]
-  ); const handleAddLineItem = useCallback(() => {
+    []
+  );
+  
+  const handleAddLineItem = useCallback(() => {
     setInvoice((prev) => {
       const updated = {
         ...prev,
@@ -224,15 +210,11 @@ export default function SalesInvoice() {
         ],
       };
 
-      // Save to storage
-      if (invoiceId) {
-        invoiceStorage.set(invoiceId, updated);
-        saveInvoicesToStorage(invoiceStorage);
-      }
-
       return updated;
     });
-  }, [invoiceId]); const handleRemoveLineItem = useCallback((index: number) => {
+  }, []);
+
+  const handleRemoveLineItem = useCallback((index: number) => {
     setInvoice((prev) => {
       const items = prev.line_items?.filter((_, i) => i !== index) || [];
 
@@ -254,15 +236,9 @@ export default function SalesInvoice() {
         total,
       };
 
-      // Save to storage
-      if (invoiceId) {
-        invoiceStorage.set(invoiceId, updated);
-        saveInvoicesToStorage(invoiceStorage);
-      }
-
       return updated;
     });
-  }, [invoiceId]);
+  }, []);
 
   const handleAddNewInvoice = () => {
     const invoiceId = `invoice-${Date.now()}`;
@@ -303,7 +279,9 @@ export default function SalesInvoice() {
         <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <CornerLeftDown size={16} /> السابق
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button 
+          onClick={handleSaveInvoice}
+          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <Save size={16} /> حفظ
         </button>
         <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
