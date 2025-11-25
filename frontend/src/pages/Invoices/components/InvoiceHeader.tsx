@@ -5,6 +5,7 @@ interface InvoiceHeaderProps {
   onFieldChange: (field: keyof Invoice, value: any) => void;
   onHeaderStateChange: (fieldName: string, value: any) => void;
   onGenerateDocumentNumber: (seqNum: number) => string;
+  phase: 'viewing' | 'editing';
 }
 
 interface FormFieldProps {
@@ -21,7 +22,7 @@ const FormField = ({ label, children }: FormFieldProps) => (
   </div>
 );
 
-export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateChange, onGenerateDocumentNumber }: InvoiceHeaderProps) {
+export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateChange, onGenerateDocumentNumber, phase }: InvoiceHeaderProps) {
   const handleFieldChange = (fieldName: string, value: any) => {
     // Update header state
     onHeaderStateChange(fieldName, value);
@@ -68,6 +69,14 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
     }
   };
 
+  // Helper to get conditional className for input fields based on phase
+  const getInputClassName = (baseClass: string): string => {
+    const disabledClass = phase === 'viewing'
+      ? 'opacity-50 bg-gray-100 cursor-not-allowed'
+      : '';
+    return `${baseClass} ${disabledClass}`.trim();
+  };
+
   return (
     <div className="flex gap-6 py-2 px-6 text-sm">
       {/* Left Column */}
@@ -79,14 +88,16 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.invoice_seq || ''}
               onChange={(e) => handleFieldChange('invoice_seq', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
               required
             />
             <input
               type="text"
               value={invoice.branch_name_seq || ''}
               onChange={(e) => handleFieldChange('branch_name_seq', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
               required
             />
           </div>
@@ -99,14 +110,16 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.payment_method_code || ''}
               onChange={(e) => handleFieldChange('payment_method_code', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
               required
             />
             <input
               type="text"
               value={invoice.payment_method_name || ''}
               onChange={(e) => handleFieldChange('payment_method_name', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
               required
             />
           </div>
@@ -119,13 +132,15 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.company_code || ''}
               onChange={(e) => handleFieldChange('company_code', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
             />
             <input
               type="text"
               value={invoice.company_name || ''}
               onChange={(e) => handleFieldChange('company_name', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
             />
           </div>
         </FormField>
@@ -137,13 +152,15 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.warehouse_code || ''}
               onChange={(e) => handleFieldChange('warehouse_code', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
             />
             <input
               type="text"
               value={invoice.warehouse_name || ''}
               onChange={(e) => handleFieldChange('warehouse_name', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
             />
           </div>
         </FormField>
@@ -154,13 +171,15 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
             <input
               type="text"
               value={invoice.document_post_status || ''}
-              className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
+              className={getInputClassName('w-1/3 p-0.5 focus:outline-none border border-gray-400')}
+              disabled={phase === 'viewing'}
               onChange={(e) => handleFieldChange('document_post_status', e.target.value)}
             />
             <input
               type="text"
               value={invoice.document_post_name || ''}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
+              disabled={phase === 'viewing'}
               onChange={(e) => handleFieldChange('document_post_name', e.target.value)}
             />
           </div>
@@ -173,20 +192,23 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.tax_number_1 || ''}
               onChange={(e) => handleFieldChange('tax_number_1', e.target.value)}
-              className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 focus:outline-none border border-gray-400')}
             />
             <div className="flex gap-3 w-2/3">
               <input
                 type="text"
                 value={invoice.tax_number_2 || ''}
                 onChange={(e) => handleFieldChange('tax_number_2', e.target.value)}
-                className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+                disabled={phase === 'viewing'}
+                className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
               />
               <input
                 type="text"
                 value={invoice.tax_number_3 || ''}
                 onChange={(e) => handleFieldChange('tax_number_3', e.target.value)}
-                className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
+                disabled={phase === 'viewing'}
+                className={getInputClassName('w-1/3 p-0.5 focus:outline-none border border-gray-400')}
               />
             </div>
           </div>
@@ -199,13 +221,15 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="tel"
               value={invoice.mobile_1 || ''}
               onChange={(e) => handleFieldChange('mobile_1', e.target.value)}
-              className="w-1/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 focus:outline-none border border-gray-400')}
             />
             <input
               type="tel"
               value={invoice.mobile_2 || ''}
               onChange={(e) => handleFieldChange('mobile_2', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
             />
           </div>
         </FormField>
@@ -228,13 +252,15 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
                 type="text"
                 value={invoice.document_type || ''}
                 onChange={(e) => handleFieldChange('document_type', e.target.value)}
-                className="w-3/5 p-0.5 text-center focus:outline-none border border-gray-400"
+                disabled={phase === 'viewing'}
+                className={getInputClassName('w-3/5 p-0.5 text-center focus:outline-none border border-gray-400')}
               />
-              <div className="flex items-center justify-center gap-1 w-2/5 py-0.5 px-1 focus:outline-none border border-gray-400">
+              <div className={`flex items-center justify-center gap-1 w-2/5 py-0.5 px-1 focus:outline-none border border-gray-400 ${phase === 'viewing' ? 'opacity-50 bg-gray-100 cursor-not-allowed' : ''}`}>
                 <input
                   type='checkbox'
                   checked={invoice.is_suspended || false}
                   onChange={(e) => handleFieldChange('is_suspended', e.target.checked)}
+                  disabled={phase === 'viewing'}
                 />
                 <span className='text-[0.8rem] text-sky-900'>
                   تعليق المستند
@@ -245,25 +271,27 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
         </FormField>
 
         {/* التاريخ */}
-        <FormField label="التاريخ *">
+        <FormField label="التاريخ">
           <div className='flex gap-3'>
             <input
               type="date"
               value={invoice.invoice_date || ''}
               onChange={(e) => handleFieldChange('invoice_date', e.target.value)}
-              className="appearance-none custom-date-input w-1/3 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('appearance-none custom-date-input w-1/3 text-center focus:outline-none border border-gray-400')}
               required
             />
 
             <div className='flex gap-3 w-2/3'>
-              <div className='w-3/5 p-0.5 text-center focus:outline-none border border-gray-400 bg-white'>
+              <div className={`w-3/5 p-0.5 text-center focus:outline-none border border-gray-400 bg-white ${phase === 'viewing' ? 'opacity-50 bg-gray-100' : ''}`}>
                 تعليق المستند
               </div>
               <input
                 type="date"
                 value={invoice.supply_date || ''}
                 onChange={(e) => handleFieldChange('supply_date', e.target.value)}
-                className="appearance-none custom-date-input w-2/5 text-center focus:outline-none border border-gray-400"
+                disabled={phase === 'viewing'}
+                className={getInputClassName('appearance-none custom-date-input w-2/5 text-center focus:outline-none border border-gray-400')}
               />
             </div>
           </div>
@@ -276,14 +304,16 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.branch_code || ''}
               onChange={(e) => handleFieldChange('branch_code', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
               required
             />
             <input
               type="text"
               value={invoice.branch || ''}
               onChange={(e) => handleFieldChange('branch', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
               required
             />
           </div>
@@ -296,14 +326,16 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.account_code || ''}
               onChange={(e) => handleFieldChange('account_code', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
               required
             />
             <input
               type="text"
               value={invoice.account_name || ''}
               onChange={(e) => handleFieldChange('account_name', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
               required
             />
           </div>
@@ -316,26 +348,29 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
               type="text"
               value={invoice.employee_code || ''}
               onChange={(e) => handleFieldChange('employee_code', e.target.value)}
-              className="w-1/3 p-0.5 text-center focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-1/3 p-0.5 text-center focus:outline-none border border-gray-400')}
               required
             />
             <input
               type="text"
               value={invoice.employee_name || ''}
               onChange={(e) => handleFieldChange('employee_name', e.target.value)}
-              className="w-2/3 p-0.5 focus:outline-none border border-gray-400"
+              disabled={phase === 'viewing'}
+              className={getInputClassName('w-2/3 p-0.5 focus:outline-none border border-gray-400')}
               required
             />
           </div>
         </FormField>
 
         {/* اسم العميل */}
-        <FormField label="اسم العميل *">
+        <FormField label="اسم العميل">
           <input
             type="text"
             value={invoice.customer_name_ar || ''}
             onChange={(e) => handleFieldChange('customer_name_ar', e.target.value)}
-            className="w-full p-0.5 focus:outline-none border border-gray-400"
+            disabled={phase === 'viewing'}
+            className={getInputClassName('w-full p-0.5 focus:outline-none border border-gray-400')}
             required
           />
         </FormField>
@@ -346,7 +381,8 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
             type="text"
             value={invoice.address || ''}
             onChange={(e) => handleFieldChange('address', e.target.value)}
-            className="w-full p-0.5 focus:outline-none border border-gray-400"
+            disabled={phase === 'viewing'}
+            className={getInputClassName('w-full p-0.5 focus:outline-none border border-gray-400')}
           />
         </FormField>
       </div>

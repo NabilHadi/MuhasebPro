@@ -115,20 +115,6 @@ export default function InvoiceSearchModal({
       closeButtonLabel="إغلاق"
       noResultsMessage="لا توجد فواتير"
       emptyStateMessage="ابدأ بالبحث عن فاتورة"
-      filters={[
-        {
-          id: 'status',
-          label: 'الحالة',
-          type: 'select',
-          options: [
-            { value: 'saved', label: 'محفوظة' },
-            { value: 'draft', label: 'مسودة' },
-            { value: 'all', label: 'الكل' },
-          ],
-          value: 'saved',
-          onChange: () => { }, // Handled through search callback
-        },
-      ]}
     />
   );
 }

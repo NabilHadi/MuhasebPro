@@ -20,6 +20,7 @@ export default function SalesInvoice() {
   const { toasts, removeToast, showError, showSuccess } = useToast();
   const { saveInvoice: saveToStorage, getNextInvoiceId, getPreviousInvoiceId, getInvoice: getInvoiceFromStorage, getNextDocumentNumber, documentNumberExists, getSortedInvoiceNumbers } = useInvoiceStorage();
 
+
   // Memoize the initialization function
   const initializeLineItems = useMemo(() => {
     return Array(25)
@@ -43,6 +44,7 @@ export default function SalesInvoice() {
 
   // Initialize invoice state from storage or create new one
   const getInitialInvoice = (): Invoice => {
+
     // Try to load from persistent storage
     if (invoiceId) {
       const storedInvoice = getInvoiceFromStorage(invoiceId);
@@ -101,10 +103,12 @@ export default function SalesInvoice() {
 
   const [invoice, setInvoice] = useState<Invoice>(() => getInitialInvoice());
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [phase, setPhase] = useState<'viewing' | 'editing'>('viewing');
 
   // Reset state when invoiceId changes
   useEffect(() => {
     setInvoice(getInitialInvoice());
+    setPhase('viewing');
   }, [invoiceId]);
 
   const handleHeaderStateChange = useCallback(
@@ -248,7 +252,6 @@ export default function SalesInvoice() {
   }, []);
 
   const handleAddNewInvoice = useCallback(() => {
-    // Get the next document number
     const nextDocNumber = generateDocumentNumber(1);
 
     // Initialize a new invoice with the next document number
@@ -302,10 +305,20 @@ export default function SalesInvoice() {
 
     // Set the current invoice state to the new initialized invoice
     setInvoice(newInvoice);
+    setPhase('editing');
 
-    // Show success message with the next document number
-    showSuccess(`فاتورة جديدة برقم ${nextDocNumber}`);
   }, [getNextDocumentNumber, initializeLineItems, showSuccess]);
+
+  // Handle Edit Invoice - Enter editing phase for current invoice
+  const handleEditInvoice = useCallback(() => {
+    setPhase('editing');
+  }, []);
+
+  // Handle Undo - Clear invoice state and return to viewing phase
+  const handleUndo = useCallback(() => {
+    setInvoice(getInitialInvoice());
+    setPhase('viewing');
+  }, [initializeLineItems]);
 
   // Handle Next Invoice Navigation
   const handleNextInvoice = useCallback(() => {
@@ -378,60 +391,142 @@ export default function SalesInvoice() {
     return nextDocNumber;
   }, [getSortedInvoiceNumbers]);
 
+  // Helper to determine if a button is enabled based on phase
+  const isButtonEnabled = (buttonId: string): boolean => {
+    const viewingPhaseButtons = [
+      'add', 'edit', 'delete', 'show', 'next', 'previous', 'print',
+      'import', 'attachments', 'entry', 'convert', 'relations'
+    ];
+    const editingPhaseButtons = ['save', 'undo'];
+
+    if (phase === 'viewing') {
+      return viewingPhaseButtons.includes(buttonId);
+    } else {
+      return editingPhaseButtons.includes(buttonId);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col w-full h-full">
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center flex-shrink">
         <button
           onClick={handleAddNewInvoice}
-          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+          disabled={!isButtonEnabled('add')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('add')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <Plus size={16} /> اضافة
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          onClick={handleEditInvoice}
+          disabled={!isButtonEnabled('edit')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('edit')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <RefreshCcw size={16} /> تعديل
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('delete')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('delete')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <X size={16} /> حذف
         </button>
         <button
           onClick={() => setShowSearchModal(true)}
-          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+          disabled={!isButtonEnabled('show')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('show')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <Search size={16} /> عرض
         </button>
         <button
           onClick={handleNextInvoice}
-          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+          disabled={!isButtonEnabled('next')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('next')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <CornerRightDown size={16} /> التالي
         </button>
         <button
           onClick={handlePreviousInvoice}
-          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+          disabled={!isButtonEnabled('previous')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('previous')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <CornerLeftDown size={16} /> السابق
         </button>
         <button
           onClick={handleSaveInvoice}
-          className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+          disabled={!isButtonEnabled('save')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('save')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <Save size={16} /> حفظ
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('print')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('print')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <Printer size={16} /> طباعة
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('import')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('import')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <img src={ExcelIcon} alt="Excel" className="w-4 h-4" /> استيراد
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('attachments')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('attachments')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <img src={BinderIcon} alt="Binder" className="w-4 h-4" /> مرفقات
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('entry')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('entry')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <Sheet size={16} /> القيد
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('convert')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('convert')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <RefreshCcw size={16} /> تحويل
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          disabled={!isButtonEnabled('relations')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('relations')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <Rotate3d size={16} /> العلاقات
         </button>
-        <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
+        <button
+          onClick={handleUndo}
+          disabled={!isButtonEnabled('undo')}
+          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('undo')
+            ? 'hover:bg-gray-200 cursor-pointer'
+            : 'opacity-50 cursor-not-allowed'
+            }`}>
           <RotateCcw size={16} /> تراجع
         </button>
       </div>
@@ -476,6 +571,7 @@ export default function SalesInvoice() {
         onFieldChange={handleInvoiceFieldChange}
         onHeaderStateChange={handleHeaderStateChange}
         onGenerateDocumentNumber={generateDocumentNumber}
+        phase={phase}
       />
 
       {/* Line Items Table - Scrollable */}
@@ -485,6 +581,7 @@ export default function SalesInvoice() {
         onAddItem={handleAddLineItem}
         onRemoveItem={handleRemoveLineItem}
         onShowError={showError}
+        phase={phase}
       />
 
       <div className='p-3 bg-slate-300 flex-shrink text-sm border-t-2 border-gray-400'>

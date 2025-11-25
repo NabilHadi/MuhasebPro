@@ -77,10 +77,6 @@ const saveInvoicesToStorage = (invoices: Map<string, Partial<Invoice>>): void =>
 const validateInvoice = (invoice: Partial<Invoice>): ValidationResult => {
   const errors: string[] = [];
 
-  if (!invoice.customer_name_ar?.trim()) {
-    errors.push('يجب إدخال اسم العميل');
-  }
-
   if (!invoice.invoice_date) {
     errors.push('يجب تحديد تاريخ الفاتورة');
   }
@@ -107,17 +103,6 @@ const validateInvoice = (invoice: Partial<Invoice>): ValidationResult => {
     errors,
   };
 };
-
-// Build index from invoices
-// const buildInvoiceIndex = (invoices: Map<string, Partial<Invoice>>): Record<string, string> => {
-//   const index: Record<string, string> = {};
-//   invoices.forEach((invoice, invoiceId) => {
-//     if (invoice.document_number) {
-//       index[invoice.document_number] = invoiceId;
-//     }
-//   });
-//   return index;
-// };
 
 // Get sorted array of document numbers
 const getSortedDocumentNumbers = (): string[] => {
@@ -263,9 +248,6 @@ export const useInvoiceStorage = () => {
 
   const searchInvoices = (filters: SearchFilters): SearchResult[] => {
     const invoices = getInvoicesFromStorage();
-    console.log({
-      invoices
-    })
     const results: SearchResult[] = [];
 
     invoices.forEach((invoice, invoiceId) => {

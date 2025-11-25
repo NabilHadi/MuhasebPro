@@ -50,7 +50,7 @@ export default function ResultsTable<T>({
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-8 text-red-500">
+      <div className="flex flex-1 items-center justify-center py-8 text-red-500">
         {error}
       </div>
     );
@@ -58,7 +58,7 @@ export default function ResultsTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8 text-gray-500">
+      <div className="flex flex-1 items-center justify-center py-8 text-gray-500">
         {noResultsMessage}
       </div>
     );
@@ -67,7 +67,7 @@ export default function ResultsTable<T>({
   return (
     <div
       ref={tableRef}
-      className="flex-1 overflow-y-auto px-1"
+      className="flex-1 overflow-y-auto px-1 focus:outline-none"
       onKeyDown={onTableKeyDown}
       tabIndex={0}
     >

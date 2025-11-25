@@ -16,6 +16,7 @@ export interface InvoiceLineItemRowProps {
   inputRefs: React.MutableRefObject<Map<string, HTMLInputElement>>;
   onOpenProductSearch: (index: number, currentValue: string) => void;
   onSearchProductCode?: (query: string, rowIndex: number) => Promise<void>;
+  phase: 'viewing' | 'editing';
 }
 
 export const calculateLineItemTotals = (item: InvoiceLineItem) => {
@@ -51,9 +52,18 @@ export default function InvoiceLineItemRow({
   inputRefs,
   onOpenProductSearch,
   onSearchProductCode,
+  phase,
 }: InvoiceLineItemRowProps) {
   const hasProduct = !!(item.product_code);
   const totals = calculateLineItemTotals(item);
+
+  // Helper to get conditional className for editable input fields based on phase
+  const getEditableInputClassName = (baseClass: string): string => {
+    const disabledClass = phase === 'viewing'
+      ? 'opacity-50 bg-gray-100 cursor-not-allowed'
+      : '';
+    return `${baseClass} ${disabledClass}`.trim();
+  };
 
   const quantityValue =
     hasProduct && item.quantity !== null && item.quantity !== undefined
@@ -104,8 +114,8 @@ export default function InvoiceLineItemRow({
               handleArrowNavigation(e, index, 1);
             }
           }}
-          className="w-full h-full bg-transparent px-2 text-xs focus:outline-none border-0 focus:bg-yellow-100"
-          disabled={isEmptyRow}
+          disabled={isEmptyRow || phase === 'viewing'}
+          className={getEditableInputClassName('w-full h-full bg-transparent px-2 text-xs focus:outline-none border-0 focus:bg-yellow-100')}
         />
       </td>
 
@@ -124,8 +134,8 @@ export default function InvoiceLineItemRow({
           value={hasProduct ? item.unit : ''}
           onChange={(e) => onItemChange(index, 'unit', e.target.value)}
           onKeyDown={(e) => handleArrowNavigation(e, index, 3)}
-          className="w-full h-full bg-transparent px-2 text-xs text-center focus:outline-none border-0 focus:bg-yellow-100"
-          disabled={isEmptyRow}
+          disabled={isEmptyRow || phase === 'viewing'}
+          className={getEditableInputClassName('w-full h-full bg-transparent px-2 text-xs text-center focus:outline-none border-0 focus:bg-yellow-100')}
         />
       </td>
 
@@ -163,8 +173,8 @@ export default function InvoiceLineItemRow({
             }
           }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 4)}
-          className={numberInputClass}
-          disabled={isEmptyRow}
+          disabled={isEmptyRow || phase === 'viewing'}
+          className={getEditableInputClassName(numberInputClass)}
         />
       </td>
 
@@ -203,7 +213,7 @@ export default function InvoiceLineItemRow({
           }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 5)}
           className={numberInputClass}
-          disabled={isEmptyRow}
+          disabled={isEmptyRow || phase === 'viewing'}
         />
       </td>
 
@@ -241,8 +251,8 @@ export default function InvoiceLineItemRow({
             }
           }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 6)}
-          className={numberInputClass}
-          disabled={isEmptyRow}
+          disabled={isEmptyRow || phase === 'viewing'}
+          className={getEditableInputClassName(numberInputClass)}
         />
       </td>
 
@@ -290,10 +300,10 @@ export default function InvoiceLineItemRow({
             }
           }}
           onKeyDown={(e) => handleArrowNavigation(e, index, 7)}
-          className={numberInputClass}
+          disabled={isEmptyRow || phase === 'viewing'}
+          className={getEditableInputClassName(numberInputClass)}
           min="0"
           max="100"
-          disabled={isEmptyRow}
         />
       </td>
 
@@ -327,8 +337,8 @@ export default function InvoiceLineItemRow({
           value={hasProduct ? (item.notes || '') : ''}
           onChange={(e) => onItemChange(index, 'notes', e.target.value)}
           onKeyDown={(e) => handleArrowNavigation(e, index, 12)}
-          className="w-full h-full px-2 text-xs focus:outline-none border-0 focus:bg-yellow-100"
-          disabled={isEmptyRow}
+          disabled={isEmptyRow || phase === 'viewing'}
+          className={getEditableInputClassName('w-full h-full px-2 text-xs focus:outline-none border-0 focus:bg-yellow-100')}
         />
       </td>
     </tr>

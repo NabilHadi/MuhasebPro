@@ -11,6 +11,7 @@ interface InvoiceLineItemsTableProps {
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
   onShowError?: (message: string) => void;
+  phase: 'viewing' | 'editing';
 }
 
 // Map of editable column indices
@@ -36,6 +37,7 @@ export default function InvoiceLineItemsTable({
   onItemChange,
   onAddItem,
   onShowError,
+  phase,
 }: InvoiceLineItemsTableProps) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchLineIndex, setSearchLineIndex] = useState<number | null>(null);
@@ -65,11 +67,6 @@ export default function InvoiceLineItemsTable({
           product.product_name_ar.toLowerCase().includes(queryLower)
         );
       });
-
-      if (matchingProducts.length === 0) {
-        onShowError?.('لم يتم العثور على الصنف');
-        return;
-      }
 
       if (matchingProducts.length === 1) {
         // Auto-select single product
@@ -283,6 +280,7 @@ export default function InvoiceLineItemsTable({
                 inputRefs={inputRefs}
                 onOpenProductSearch={handleCellClick}
                 onSearchProductCode={searchForProducts}
+                phase={phase}
               />
             ))}
           </tbody>
