@@ -32,7 +32,7 @@ const getMetadata = (): InvoicesMetadata => {
   } catch (error) {
     console.error('Failed to parse invoices metadata:', error);
   }
-  
+
   return {
     document_number_sequence: 100001,
     total_saved_invoices: 0,
@@ -109,15 +109,15 @@ const validateInvoice = (invoice: Partial<Invoice>): ValidationResult => {
 };
 
 // Build index from invoices
-const buildInvoiceIndex = (invoices: Map<string, Partial<Invoice>>): Record<string, string> => {
-  const index: Record<string, string> = {};
-  invoices.forEach((invoice, invoiceId) => {
-    if (invoice.document_number) {
-      index[invoice.document_number] = invoiceId;
-    }
-  });
-  return index;
-};
+// const buildInvoiceIndex = (invoices: Map<string, Partial<Invoice>>): Record<string, string> => {
+//   const index: Record<string, string> = {};
+//   invoices.forEach((invoice, invoiceId) => {
+//     if (invoice.document_number) {
+//       index[invoice.document_number] = invoiceId;
+//     }
+//   });
+//   return index;
+// };
 
 // Get sorted array of document numbers
 const getSortedDocumentNumbers = (): string[] => {
@@ -128,6 +128,12 @@ const getSortedDocumentNumbers = (): string[] => {
     return numA - numB;
   });
   return docNumbers;
+};
+
+// Check if a document number already exists
+const documentNumberExists = (docNumber: string): boolean => {
+  const metadata = getMetadata();
+  return !!metadata.invoice_index[docNumber];
 };
 
 export const useInvoiceStorage = () => {
@@ -341,6 +347,22 @@ export const useInvoiceStorage = () => {
     return getMetadata();
   };
 
+  // Get next document number for new invoice
+  const getNextDocumentNumber = (): string => {
+    const metadata = getMetadata();
+    const docNumbers = getSortedDocumentNumbers();
+
+    if (docNumbers.length === 0) {
+      // No saved invoices yet, start from sequence
+      return String(metadata.document_number_sequence);
+    }
+
+    // Get the last (highest) document number
+    const lastDocNumber = docNumbers[docNumbers.length - 1];
+    const nextNum = parseInt(lastDocNumber, 10) + 1;
+    return String(nextNum);
+  };
+
   return {
     saveInvoice,
     getInvoice,
@@ -352,5 +374,7 @@ export const useInvoiceStorage = () => {
     searchInvoices,
     getInvoiceByDocumentNumber,
     getMetadata: getMetadataInfo,
+    getNextDocumentNumber,
+    documentNumberExists,
   };
 };

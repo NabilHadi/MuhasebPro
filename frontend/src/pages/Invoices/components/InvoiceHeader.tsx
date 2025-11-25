@@ -4,6 +4,7 @@ interface InvoiceHeaderProps {
   invoice: Partial<Invoice>;
   onFieldChange: (field: keyof Invoice, value: any) => void;
   onHeaderStateChange: (fieldName: string, value: any) => void;
+  onGenerateDocumentNumber: (seqNum: number) => string;
 }
 
 interface FormFieldProps {
@@ -20,7 +21,7 @@ const FormField = ({ label, children }: FormFieldProps) => (
   </div>
 );
 
-export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateChange }: InvoiceHeaderProps) {
+export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateChange, onGenerateDocumentNumber }: InvoiceHeaderProps) {
   const handleFieldChange = (fieldName: string, value: any) => {
     // Update header state
     onHeaderStateChange(fieldName, value);
@@ -60,11 +61,10 @@ export default function InvoiceHeader({ invoice, onFieldChange, onHeaderStateCha
     // Auto-generate document_number when invoice_seq changes
     if (fieldName === 'invoice_seq' && value) {
       const seqNum = parseInt(value, 10);
-      if (!isNaN(seqNum) && seqNum > 0) {
-        const docNumber = String(seqNum) + '00001';
-        onHeaderStateChange('document_number', docNumber);
-        onFieldChange('document_number', docNumber);
-      }
+      const nextDocNumber = onGenerateDocumentNumber(seqNum);
+
+      onHeaderStateChange('document_number', nextDocNumber);
+      onFieldChange('document_number', nextDocNumber);
     }
   };
 

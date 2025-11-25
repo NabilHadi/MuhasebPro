@@ -18,7 +18,7 @@ export default function SalesInvoice() {
   const { addTab, switchTab } = useTabStore();
   const { invoiceId } = useParams<{ invoiceId?: string }>();
   const { toasts, removeToast, showError, showSuccess } = useToast();
-  const { saveInvoice: saveToStorage, getNextInvoiceId, getPreviousInvoiceId, getInvoice: getInvoiceFromStorage } = useInvoiceStorage();
+  const { saveInvoice: saveToStorage, getNextInvoiceId, getPreviousInvoiceId, getInvoice: getInvoiceFromStorage, getNextDocumentNumber, documentNumberExists, getSortedInvoiceNumbers } = useInvoiceStorage();
 
   // Memoize the initialization function
   const initializeLineItems = useMemo(() => {
@@ -42,7 +42,7 @@ export default function SalesInvoice() {
   }, []);
 
   // Initialize invoice state from storage or create new one
-  const getInitialInvoice = useCallback((): Partial<Invoice> => {
+  const getInitialInvoice = (): Partial<Invoice> => {
     // Try to load from persistent storage
     if (invoiceId) {
       const storedInvoice = getInvoiceFromStorage(invoiceId);
@@ -97,15 +97,15 @@ export default function SalesInvoice() {
       total: 0,
       notes: '',
     };
-  }, [invoiceId, initializeLineItems, getInvoiceFromStorage]);
+  };
 
-  const [invoice, setInvoice] = useState<Partial<Invoice>>(getInitialInvoice());
+  const [invoice, setInvoice] = useState<Partial<Invoice>>(() => getInitialInvoice());
   const [showSearchModal, setShowSearchModal] = useState(false);
 
   // Reset state when invoiceId changes
   useEffect(() => {
     setInvoice(getInitialInvoice());
-  }, [invoiceId, getInitialInvoice]);
+  }, [invoiceId]);
 
   const handleHeaderStateChange = useCallback(
     (fieldName: string, value: any) => {
@@ -140,6 +140,12 @@ export default function SalesInvoice() {
       return;
     }
 
+    // Check if document number already exists in storage
+    if (invoice.document_number && documentNumberExists(invoice.document_number)) {
+      showError(`رقم الفاتورة ${invoice.document_number} موجود بالفعل في السجلات`);
+      return;
+    }
+
     const result = saveToStorage(invoiceId, invoice);
     if (result.success) {
       showSuccess(`تم حفظ الفاتورة برقم ${result.documentNumber}`);
@@ -153,7 +159,7 @@ export default function SalesInvoice() {
     } else {
       showError(result.error || 'فشل حفظ الفاتورة');
     }
-  }, [invoiceId, invoice, saveToStorage, showSuccess, showError, addTab]);
+  }, [invoiceId, invoice, saveToStorage, showSuccess, showError, addTab, documentNumberExists]);
 
   const handleLineItemChange = useCallback(
     (index: number, field: keyof InvoiceLineItem, value: any) => {
@@ -187,7 +193,7 @@ export default function SalesInvoice() {
     },
     []
   );
-  
+
   const handleAddLineItem = useCallback(() => {
     setInvoice((prev) => {
       const updated = {
@@ -242,20 +248,64 @@ export default function SalesInvoice() {
     });
   }, []);
 
-  const handleAddNewInvoice = () => {
-    const invoiceId = `invoice-${Date.now()}`;
-    const invoicePath = `/invoices/${invoiceId}`;
+  const handleAddNewInvoice = useCallback(() => {
+    // Get the next document number
+    const nextDocNumber = generateDocumentNumber(1);
 
-    addTab({
-      id: invoiceId,
-      title: 'فاتورة جديدة',
-      path: invoicePath,
-      icon: '🧾',
-    });
+    // Initialize a new invoice with the next document number
+    const newInvoice: Partial<Invoice> = {
+      document_number: nextDocNumber,
+      invoice_number: '',
+      invoice_date: new Date().toISOString().split('T')[0], // Today's date
+      customer_id: undefined,
+      customer_name_ar: '',
+      payment_method: '',
+      tax_number: '',
+      mobile: '',
+      supply_date: new Date().toISOString().split('T')[0], // Today's date
+      branch_name: '',
+      account_id: undefined,
+      address: '',
+      // Header state fields
+      invoice_seq: '1',
+      branch_name_seq: 'فرع جدة',
+      payment_method_code: '1',
+      payment_method_name: 'نقداًَ',
+      company_code: '1',
+      company_name: 'شركة العامة',
+      warehouse_code: '1',
+      warehouse_name: 'فرع جدة',
+      document_post_status: '',
+      document_post_name: 'حجز بضاعة',
+      tax_number_1: '',
+      tax_number_2: '',
+      tax_number_3: '',
+      mobile_1: '',
+      mobile_2: '',
+      document_type: 'فاتورة مبيعات',
+      is_suspended: false,
+      branch_code: '1',
+      branch: 'فرع جدة',
+      account_code: '1210010001',
+      account_name: 'الصندوق العام',
+      employee_code: '1',
+      employee_name: 'موظف جدة 1',
+      // Line items and totals
+      line_items: initializeLineItems,
+      subtotal: 0,
+      discount_fixed: 0,
+      discount_percent: 0,
+      tax: 0,
+      total: 0,
+      notes: '',
+    };
 
-    switchTab(invoiceId);
-    navigate(invoicePath);
-  };
+    // Set the current invoice state to the new initialized invoice
+    setInvoice(newInvoice);
+
+    // Show success message with the next document number
+    showSuccess(`فاتورة جديدة برقم ${nextDocNumber}`);
+  }, [getNextDocumentNumber, initializeLineItems, showSuccess]);
 
   // Handle Next Invoice Navigation
   const handleNextInvoice = useCallback(() => {
@@ -301,6 +351,33 @@ export default function SalesInvoice() {
     [switchTab, navigate]
   );
 
+  // Generate next document number based on invoice sequence
+  const generateDocumentNumber = useCallback((seqNum: number): string => {
+    if (isNaN(seqNum) || seqNum <= 0) {
+      return '';
+    }
+
+    // Get all saved invoice numbers
+    const allInvoiceNumbers = getSortedInvoiceNumbers();
+
+    // Filter for invoices with the same seq prefix
+    const seqPrefix = String(seqNum);
+    const matchingNumbers = allInvoiceNumbers.filter(num => num.startsWith(seqPrefix));
+
+    let nextDocNumber: string;
+    if (matchingNumbers.length === 0) {
+      // No invoices with this seq yet, start with seq + '0001'
+      nextDocNumber = seqPrefix + '00001';
+    } else {
+      // Get the highest number with this seq and increment
+      const highestMatch = matchingNumbers[matchingNumbers.length - 1];
+      const nextNum = parseInt(highestMatch, 10) + 1;
+      nextDocNumber = String(nextNum);
+    }
+
+    return nextDocNumber;
+  }, [getSortedInvoiceNumbers]);
+
   return (
     <div className="flex-1 flex flex-col w-full h-full">
       {/* Action Buttons */}
@@ -316,22 +393,22 @@ export default function SalesInvoice() {
         <button className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <X size={16} /> حذف
         </button>
-        <button 
+        <button
           onClick={() => setShowSearchModal(true)}
           className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <Search size={16} /> عرض
         </button>
-        <button 
+        <button
           onClick={handleNextInvoice}
           className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <CornerRightDown size={16} /> التالي
         </button>
-        <button 
+        <button
           onClick={handlePreviousInvoice}
           className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <CornerLeftDown size={16} /> السابق
         </button>
-        <button 
+        <button
           onClick={handleSaveInvoice}
           className="text-sm px-1 py-1 font-semibold hover:bg-gray-200 flex items-center gap-1">
           <Save size={16} /> حفظ
@@ -398,6 +475,7 @@ export default function SalesInvoice() {
         invoice={invoice}
         onFieldChange={handleInvoiceFieldChange}
         onHeaderStateChange={handleHeaderStateChange}
+        onGenerateDocumentNumber={generateDocumentNumber}
       />
 
       {/* Line Items Table - Scrollable */}
@@ -426,7 +504,7 @@ export default function SalesInvoice() {
       </div>
 
       {/* Invoice Search Modal */}
-      <InvoiceSearchModal 
+      <InvoiceSearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSelectInvoice={handleSelectFromSearch}

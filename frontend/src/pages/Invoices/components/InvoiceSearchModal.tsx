@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, X } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback, } from 'react';
+import { X } from 'lucide-react';
 import { useInvoiceStorage } from '../../../hooks/useInvoiceStorage';
 
 interface InvoiceSearchModalProps {
@@ -44,6 +44,7 @@ export default function InvoiceSearchModal({
         searchQuery,
         statusFilter,
       });
+      console.log({ searchQuery, statusFilter, searchResults })
       setResults(searchResults);
       setSelectedRowIndex(searchResults.length > 0 ? 0 : -1);
     }, 300);
@@ -209,11 +210,10 @@ export default function InvoiceSearchModal({
                     onDoubleClick={() => {
                       onSelectInvoice(result.invoiceId, result.document_number);
                     }}
-                    className={`cursor-pointer hover:bg-blue-100 transition ${
-                      selectedRowIndex === index
-                        ? 'bg-sky-800 text-white'
-                        : ''
-                    }`}
+                    className={`cursor-pointer hover:bg-blue-100 transition ${selectedRowIndex === index
+                      ? 'bg-sky-800 text-white'
+                      : ''
+                      }`}
                   >
                     <td className="border border-gray-300 p-2 text-sm">
                       {result.document_number}
