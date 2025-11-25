@@ -50,7 +50,7 @@ const saveMetadata = (metadata: InvoicesMetadata): void => {
 };
 
 // Get all invoices from localStorage
-const getInvoicesFromStorage = (): Map<string, Partial<Invoice>> => {
+const getInvoicesFromStorage = (): Map<string, Invoice> => {
   try {
     const data = localStorage.getItem(INVOICES_STORAGE_KEY);
     if (data) {
@@ -138,7 +138,7 @@ const documentNumberExists = (docNumber: string): boolean => {
 
 export const useInvoiceStorage = () => {
   // Save invoice with validation
-  const saveInvoice = (invoiceId: string, invoice: Partial<Invoice>): SaveResult => {
+  const saveInvoice = (invoiceId: string, invoice: Invoice): SaveResult => {
     const validation = validateInvoice(invoice);
     if (!validation.isValid) {
       return {
@@ -150,20 +150,9 @@ export const useInvoiceStorage = () => {
     const invoices = getInvoicesFromStorage();
     const metadata = getMetadata();
 
-    // If invoice already has document_number, use it
-    let documentNumber = invoice.document_number;
-
-    // If no document_number, generate a new one
-    if (!documentNumber) {
-      documentNumber = String(metadata.document_number_sequence);
-      metadata.document_number_sequence++;
-      metadata.total_saved_invoices++;
-    }
-
     // Update invoice with document_number, saved_at, and status
-    const updatedInvoice: Partial<Invoice> = {
+    const updatedInvoice: Invoice = {
       ...invoice,
-      document_number: documentNumber,
       saved_at: new Date().toISOString(),
       status: 'saved',
     };
@@ -173,19 +162,19 @@ export const useInvoiceStorage = () => {
     saveInvoicesToStorage(invoices);
 
     // Update metadata
-    metadata.invoice_index[documentNumber] = invoiceId;
+    metadata.invoice_index[invoice.document_number] = invoiceId;
     metadata.last_accessed_invoice_id = invoiceId;
     saveMetadata(metadata);
 
     return {
       success: true,
-      documentNumber,
+      documentNumber: invoice.document_number,
       invoiceId,
     };
   };
 
   // Get invoice by ID
-  const getInvoice = (invoiceId: string): Partial<Invoice> | null => {
+  const getInvoice = (invoiceId: string): Invoice | null => {
     const invoices = getInvoicesFromStorage();
     return invoices.get(invoiceId) ?? null;
   };
@@ -274,6 +263,9 @@ export const useInvoiceStorage = () => {
 
   const searchInvoices = (filters: SearchFilters): SearchResult[] => {
     const invoices = getInvoicesFromStorage();
+    console.log({
+      invoices
+    })
     const results: SearchResult[] = [];
 
     invoices.forEach((invoice, invoiceId) => {

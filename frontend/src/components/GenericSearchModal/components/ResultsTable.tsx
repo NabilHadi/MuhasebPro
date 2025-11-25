@@ -77,8 +77,8 @@ export default function ResultsTable<T>({
             {visibleColumns.map((col) => (
               <th
                 key={String(col.field)}
-                className={`px-2 py-1 text-sm font-semibold border border-gray-400 text-${col.align || 'left'
-                  }`}
+                className={`px-2 py-1 text-sm font-semibold border border-gray-400 text-${col.headerAlign || 'left'
+                  } ${col.width || ''}`}
               >
                 {col.label}
               </th>
@@ -108,7 +108,7 @@ export default function ResultsTable<T>({
                   return (
                     <td
                       key={String(col.field)}
-                      className={`px-2 py-1 text-sm border border-gray-400 text-${col.align || 'left'
+                      className={`px-2 py-1 text-sm border border-gray-400 text-${col.cellAlign || 'left'
                         }`}
                     >
                       {displayValue}

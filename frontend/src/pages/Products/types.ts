@@ -48,6 +48,7 @@ export interface Product {
   unit_name_ar?: string;
   unit_name_en?: string;
   short_name?: string;
+  product_quantity?: string | null;
 }
 
 export interface ProductFormData {

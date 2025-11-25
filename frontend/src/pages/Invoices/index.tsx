@@ -42,7 +42,7 @@ export default function SalesInvoice() {
   }, []);
 
   // Initialize invoice state from storage or create new one
-  const getInitialInvoice = (): Partial<Invoice> => {
+  const getInitialInvoice = (): Invoice => {
     // Try to load from persistent storage
     if (invoiceId) {
       const storedInvoice = getInvoiceFromStorage(invoiceId);
@@ -99,7 +99,7 @@ export default function SalesInvoice() {
     };
   };
 
-  const [invoice, setInvoice] = useState<Partial<Invoice>>(() => getInitialInvoice());
+  const [invoice, setInvoice] = useState<Invoice>(() => getInitialInvoice());
   const [showSearchModal, setShowSearchModal] = useState(false);
 
   // Reset state when invoiceId changes
@@ -140,9 +140,8 @@ export default function SalesInvoice() {
       return;
     }
 
-    // Check if document number already exists in storage
-    if (invoice.document_number && documentNumberExists(invoice.document_number)) {
-      showError(`رقم الفاتورة ${invoice.document_number} موجود بالفعل في السجلات`);
+    if (!invoice.document_number) {
+      showError('يجب إدخال رقم الفاتورة');
       return;
     }
 
@@ -253,7 +252,7 @@ export default function SalesInvoice() {
     const nextDocNumber = generateDocumentNumber(1);
 
     // Initialize a new invoice with the next document number
-    const newInvoice: Partial<Invoice> = {
+    const newInvoice: Invoice = {
       document_number: nextDocNumber,
       invoice_number: '',
       invoice_date: new Date().toISOString().split('T')[0], // Today's date
@@ -290,6 +289,7 @@ export default function SalesInvoice() {
       account_name: 'الصندوق العام',
       employee_code: '1',
       employee_name: 'موظف جدة 1',
+
       // Line items and totals
       line_items: initializeLineItems,
       subtotal: 0,
@@ -367,7 +367,7 @@ export default function SalesInvoice() {
     let nextDocNumber: string;
     if (matchingNumbers.length === 0) {
       // No invoices with this seq yet, start with seq + '0001'
-      nextDocNumber = seqPrefix + '00001';
+      nextDocNumber = seqPrefix + '0001';
     } else {
       // Get the highest number with this seq and increment
       const highestMatch = matchingNumbers[matchingNumbers.length - 1];

@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 
-export const useRowSelection = <T,>(
-  _rowKeyField: keyof T,
+export const useRowSelection = (
   selectFirstByDefault: boolean = true
 ) => {
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
+
 
   const selectRow = useCallback((index: number, totalRows: number) => {
     if (totalRows === 0) {

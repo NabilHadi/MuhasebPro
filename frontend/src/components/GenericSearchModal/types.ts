@@ -7,7 +7,8 @@ export interface ColumnConfig<T> {
   width?: string;
   formatter?: (value: any, row: T) => React.ReactNode;
   visible?: boolean | (() => boolean);
-  align?: 'left' | 'center' | 'right';
+  headerAlign?: 'left' | 'center' | 'right';
+  cellAlign?: 'left' | 'center' | 'right';
 }
 
 // Filter Configuration
@@ -53,6 +54,9 @@ export interface KeyboardShortcuts {
 
 // Main Props
 export interface GenericSearchModalProps<T> {
+
+  initialQuery: string;
+
   // Control
   isOpen: boolean;
   onClose: () => void;

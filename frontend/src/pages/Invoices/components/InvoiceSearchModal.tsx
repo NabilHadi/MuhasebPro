@@ -34,32 +34,44 @@ export default function InvoiceSearchModal({
       {
         field: 'document_number',
         label: 'رقم الفاتورة',
+        headerAlign: "center",
+        cellAlign: "center",
       },
       {
         field: 'invoice_date',
         label: 'التاريخ',
+        headerAlign: "center",
+        cellAlign: "center",
       },
       {
         field: 'account_code',
         label: 'رقم الحساب',
+        headerAlign: "center",
+        cellAlign: "center",
       },
       {
         field: 'account_name',
         label: 'اسم الحساب',
+        headerAlign: "center",
+        cellAlign: "center",
       },
       {
         field: 'mobile',
         label: 'رقم الجوال',
+        headerAlign: "center",
+        cellAlign: "center",
       },
       {
         field: 'quantity',
         label: 'الكمية',
-        align: 'center',
+        headerAlign: "center",
+        cellAlign: "center",
       },
       {
         field: 'total',
         label: 'المجموع',
-        align: 'left',
+        headerAlign: "center",
+        cellAlign: "center",
         formatter: (value: number) => value.toFixed(2),
       },
     ],
@@ -88,6 +100,7 @@ export default function InvoiceSearchModal({
 
   return (
     <GenericSearchModal<InvoiceSearchResult>
+      initialQuery={''}
       isOpen={isOpen}
       onClose={onClose}
       onSelect={handleSelect}
@@ -113,7 +126,7 @@ export default function InvoiceSearchModal({
             { value: 'all', label: 'الكل' },
           ],
           value: 'saved',
-          onChange: () => {}, // Handled through search callback
+          onChange: () => { }, // Handled through search callback
         },
       ]}
     />

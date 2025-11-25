@@ -4,6 +4,7 @@ import { SearchHeader, SearchBar, ResultsTable, Footer } from './components';
 import { useRowSelection, useDebouncedSearch } from './hooks';
 
 export default function GenericSearchModal<T>({
+  initialQuery,
   isOpen,
   onClose,
   onSelect,
@@ -33,7 +34,6 @@ export default function GenericSearchModal<T>({
     useDebouncedSearch(onSearch, debounceMs);
 
   const { selectedRowIndex, nextRow, prevRow, resetSelection } = useRowSelection(
-    rowKeyField,
     selectFirstByDefault
   );
 
@@ -51,9 +51,8 @@ export default function GenericSearchModal<T>({
   // Reset modal state on open
   useEffect(() => {
     if (isOpen) {
-      setSearchQuery('');
+      setSearchQuery(initialQuery);
       setFocusedElement('search');
-      resetSelection(0);
       setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [isOpen, setSearchQuery, resetSelection]);
@@ -61,8 +60,11 @@ export default function GenericSearchModal<T>({
   // Perform search when query or filters change
   useEffect(() => {
     debouncedSearch(searchQuery, filterValues);
-    resetSelection(0); // Reset to first item on new search
   }, [searchQuery, filterValues, debouncedSearch, resetSelection]);
+
+  useEffect(() => {
+    resetSelection(results.length);
+  }, [results])
 
   // Auto-scroll selected row into view
   useEffect(() => {
@@ -76,6 +78,22 @@ export default function GenericSearchModal<T>({
       }
     }
   }, [focusedElement, selectedRowIndex]);
+
+  // Global keyboard listener for Enter key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && selectedRowIndex >= 0) {
+        e.preventDefault();
+        const selected = results[selectedRowIndex];
+        onSelect(selected);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isOpen, selectedRowIndex, results, onSelect]);
 
   // Handle search input keyboard events
   const handleSearchKeyDown = useCallback(
@@ -116,13 +134,9 @@ export default function GenericSearchModal<T>({
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         prevRow(results.length);
-      } else if (e.key === 'Enter' && selectedRowIndex >= 0) {
-        e.preventDefault();
-        const selected = results[selectedRowIndex];
-        onSelect(selected);
       }
     },
-    [results, selectedRowIndex, nextRow, prevRow, onSelect, onClose]
+    [results.length, nextRow, prevRow, onClose]
   );
 
   // Handle row selection
@@ -158,7 +172,7 @@ export default function GenericSearchModal<T>({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-11/12 h-5/6 flex flex-col">
+      <div className="bg-white rounded-lg shadow-lg w-10/12 h-5/6 flex flex-col">
         <SearchHeader title={title} onClose={onClose} />
 
         <SearchBar

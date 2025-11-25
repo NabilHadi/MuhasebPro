@@ -26,7 +26,7 @@ export interface Invoice {
   is_posted?: boolean;
   tax_number?: string;
   mobile?: string;
-  document_number?: string;
+  document_number: string;
   invoice_date: string;
   supply_date?: string;
   branch_id?: number;

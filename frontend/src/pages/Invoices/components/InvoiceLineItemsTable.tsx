@@ -50,7 +50,6 @@ export default function InvoiceLineItemsTable({
 
   const searchForProducts = async (query: string, rowIndex: number) => {
     if (!query.trim()) {
-      console.log('Empty query');
       onShowError?.('يرجى ادخال رقم الصنف');
       return;
     }
@@ -68,7 +67,6 @@ export default function InvoiceLineItemsTable({
       });
 
       if (matchingProducts.length === 0) {
-        console.log("No matching products found");
         onShowError?.('لم يتم العثور على الصنف');
         return;
       }

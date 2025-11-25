@@ -154,10 +154,6 @@ export default function InvoiceLineItemRow({
             }
 
             const num = parseFloat(raw);
-            console.log({
-              raw,
-              num
-            })
             onItemChange(index, 'quantity', Number.isNaN(num) ? null : num);
           }}
           onBlur={(e) => {
