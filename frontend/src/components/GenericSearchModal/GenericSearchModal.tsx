@@ -170,10 +170,10 @@ export default function GenericSearchModal<T>({
           filters={
             filters
               ? filters.map((f) => ({
-                  ...f,
-                  value: filterValues[f.id] || f.value,
-                  onChange: (val) => handleFilterChange(f.id, val),
-                }))
+                ...f,
+                value: filterValues[f.id] || f.value,
+                onChange: (val) => handleFilterChange(f.id, val),
+              }))
               : undefined
           }
         />

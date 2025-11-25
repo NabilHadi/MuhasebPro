@@ -77,9 +77,8 @@ export default function ResultsTable<T>({
             {visibleColumns.map((col) => (
               <th
                 key={String(col.field)}
-                className={`px-2 py-1 text-sm font-semibold border border-gray-400 text-${
-                  col.align || 'left'
-                }`}
+                className={`px-2 py-1 text-sm font-semibold border border-gray-400 text-${col.align || 'left'
+                  }`}
               >
                 {col.label}
               </th>
@@ -97,9 +96,8 @@ export default function ResultsTable<T>({
                 data-row-index={index}
                 onClick={() => onRowSelect(index)}
                 onDoubleClick={() => onRowDoubleClick(row)}
-                className={`border-b border-gray-200 cursor-pointer ${
-                  isSelected ? selectedRowClass : hoverRowClass
-                }`}
+                className={`border-b border-gray-200 cursor-pointer ${isSelected ? selectedRowClass : hoverRowClass
+                  }`}
               >
                 {visibleColumns.map((col) => {
                   const value = row[col.field];
@@ -110,9 +108,8 @@ export default function ResultsTable<T>({
                   return (
                     <td
                       key={String(col.field)}
-                      className={`px-2 py-1 text-sm border border-gray-400 text-${
-                        col.align || 'left'
-                      }`}
+                      className={`px-2 py-1 text-sm border border-gray-400 text-${col.align || 'left'
+                        }`}
                     >
                       {displayValue}
                     </td>

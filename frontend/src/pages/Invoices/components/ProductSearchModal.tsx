@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Product } from '../../Products/types';
 import apiClient from '../../../services/api';
-import { Check, Shapes, X } from 'lucide-react';
+import { GenericSearchModal, ColumnConfig, FooterControlConfig } from '../../../components/GenericSearchModal';
 
 interface ProductSearchModalProps {
   initialQuery: string;
@@ -11,394 +11,139 @@ interface ProductSearchModalProps {
 }
 
 export default function ProductSearchModal({
-  initialQuery,
+  initialQuery: _initialQuery,
   onSelect,
   onClose,
   selectFirstRowByDefault = true,
 }: ProductSearchModalProps) {
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedGroup, setSelectedGroup] = useState<string>('');
-  const [categories, setCategories] = useState<string[]>([]);
-  const [groups, setGroups] = useState<string[]>([]);
+  const [_allProducts, setAllProducts] = useState<Product[]>([]);
+  const [_categories, setCategories] = useState<string[]>([]);
+  const [_groups, setGroups] = useState<string[]>([]);
   const [hideZeroQuantity, setHideZeroQuantity] = useState(false);
   const [showCostColumn, setShowCostColumn] = useState(false);
-  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
-  const tableRef = useRef<HTMLTableElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-  const handleSearch = async () => {
-    setLoading(true);
-    setHasSearched(true);
-    setError(null);
+  // Columns configuration with dynamic visibility
+  const columns: ColumnConfig<Product>[] = useMemo(
+    () => [
+      {
+        field: 'product_code',
+        label: 'رقم الصنف',
+        width: 'w-20',
+      },
+      {
+        field: 'product_name_ar',
+        label: 'اسم الصنف',
+        width: 'w-40',
+      },
+      {
+        field: 'selling_price',
+        label: 'سعر البيع',
+        align: 'center',
+        formatter: (value: any) => (value ? Number(value).toFixed(2) : '-'),
+      },
+      {
+        field: 'cost',
+        label: 'سعر التكلفة',
+        align: 'center',
+        visible: showCostColumn,
+        formatter: (value: any) => (value ? Number(value).toFixed(2) : '-'),
+      },
+    ],
+    [showCostColumn]
+  );
 
-    try {
-      const response = await apiClient.get('/products');
-      const fetchedProducts: Product[] = response.data;
+  // Footer controls configuration
+  const footerControls: FooterControlConfig[] = useMemo(
+    () => [
+      {
+        id: 'showCost',
+        type: 'checkbox',
+        label: 'إظهار سعر التكلفة',
+        value: showCostColumn,
+        onChange: setShowCostColumn,
+      },
+      {
+        id: 'hideZeroQty',
+        type: 'checkbox',
+        label: 'إخفاء الكميات الصفرية',
+        value: hideZeroQuantity,
+        onChange: setHideZeroQuantity,
+      },
+    ],
+    [hideZeroQuantity, showCostColumn]
+  );
 
-      setAllProducts(fetchedProducts);
+  // Async search function
+  const handleSearch = useCallback(
+    async (query: string, filters: Record<string, any>) => {
+      try {
+        const response = await apiClient.get('/products');
+        const fetchedProducts: Product[] = response.data;
 
-      // Extract unique categories and groups for filters
-      const uniqueCategories = Array.from(new Set(
-        fetchedProducts.map(p => p.category_name_ar).filter((x): x is string => !!x)
-      )).sort();
-      const uniqueGroups = Array.from(new Set(
-        fetchedProducts.map(p => p.product_group).filter((x): x is string => !!x)
-      )).sort();
+        // Update categories and groups on first fetch
+        const uniqueCategories = Array.from(
+          new Set(
+            fetchedProducts
+              .map((p) => p.category_name_ar)
+              .filter((x): x is string => !!x)
+          )
+        ).sort();
+        const uniqueGroups = Array.from(
+          new Set(
+            fetchedProducts.map((p) => p.product_group).filter((x): x is string => !!x)
+          )
+        ).sort();
 
-      setCategories(uniqueCategories);
-      setGroups(uniqueGroups);
+        setCategories(uniqueCategories);
+        setGroups(uniqueGroups);
+        setAllProducts(fetchedProducts);
 
-    } catch (err) {
-      console.error('Error fetching products:', err);
-      setError('خطأ في تحميل الأصناف');
-      setFilteredProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+        // Filter products based on search query and filters
+        let results = fetchedProducts;
 
-  // Now filter in a separate effect
-  useEffect(() => {
-    let results = allProducts;
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      results = results.filter(
-        p =>
-          p.product_code.toLowerCase().includes(q) ||
-          p.product_name_ar.toLowerCase().includes(q)
-      );
-    }
-
-    if (selectedCategory) {
-      results = results.filter(p => p.category_name_ar === selectedCategory);
-    }
-    if (selectedGroup) {
-      results = results.filter(p => p.product_group === selectedGroup);
-    }
-
-    setFilteredProducts(results);
-
-    if (selectFirstRowByDefault && results.length > 0) {
-      setSelectedRowId(results[0].id);
-    } else {
-      setSelectedRowId(null);
-    }
-  }, [allProducts, searchQuery, selectedCategory, selectedGroup, selectFirstRowByDefault]);
-
-  // // Auto-search when modal opens with initial query
-  useEffect(() => {
-    handleSearch();
-  }, []);
-
-  // Scroll selected row into view
-  useEffect(() => {
-    if (selectedRowId && containerRef.current) {
-      const selectedRow = containerRef.current.querySelector(
-        `tr[data-row-id="${selectedRowId}"]`
-      ) as HTMLTableRowElement;
-
-      if (selectedRow) {
-        selectedRow.scrollIntoView({
-          behavior: 'instant',
-          block: 'nearest',
-        });
-      }
-    }
-  }, [selectedRowId]);
-
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-      if (e.code === 'F9') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [onClose]);
-
-  const handleSearchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSearch();
-      // if we have results, move focus to table
-      if (filteredProducts.length > 0) {
-        tableRef.current?.focus();
-      }
-    }
-
-    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && filteredProducts.length > 0) {
-      e.preventDefault();
-      // ensure a row is selected
-      if (selectedRowId == null) {
-        setSelectedRowId(filteredProducts[0].id);
-      }
-      tableRef.current?.focus();
-    }
-  };
-
-  const handleTableKeyDown = (e: React.KeyboardEvent<HTMLTableElement>) => {
-    // F9: Focus search bar
-    if (e.code === 'F9') {
-      e.preventDefault();
-      searchInputRef.current?.focus();
-      return;
-    }
-
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
-      return;
-    }
-
-
-    if (!filteredProducts.length) return;
-
-    const currentIndex = filteredProducts.findIndex(p => p.id === selectedRowId);
-
-    switch (e.key) {
-      case 'ArrowDown': {
-        e.preventDefault();
-        const nextIndex = (currentIndex + 1) % filteredProducts.length;
-        setSelectedRowId(filteredProducts[nextIndex].id);
-        break;
-      }
-      case 'ArrowUp': {
-        e.preventDefault();
-        const prevIndex = currentIndex <= 0 ? filteredProducts.length - 1 : currentIndex - 1;
-        setSelectedRowId(filteredProducts[prevIndex].id);
-        break;
-      }
-      case 'Enter': {
-        e.preventDefault();
-        const selectedProduct = filteredProducts.find(p => p.id === selectedRowId);
-        if (selectedProduct) {
-          onSelect(selectedProduct);
+        if (query.trim()) {
+          const q = query.toLowerCase();
+          results = results.filter(
+            (p) =>
+              p.product_code.toLowerCase().includes(q) ||
+              p.product_name_ar.toLowerCase().includes(q)
+          );
         }
-        break;
+
+        if (filters.category) {
+          results = results.filter((p) => p.category_name_ar === filters.category);
+        }
+
+        if (filters.group) {
+          results = results.filter((p) => p.product_group === filters.group);
+        }
+
+        return results;
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        throw new Error('خطأ في تحميل الأصناف');
       }
-    }
-  };
+    },
+    [hideZeroQuantity]
+  );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white absolute top-12 rounded-lg shadow-lg w-full max-w-[70%] min-h-[80vh] max-h-[80vh] flex flex-col"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            tableRef.current?.focus();
-          }
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between py-2 px-3 border-b border-gray-200">
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-          >
-            <X size={16} />
-          </button>
-          <h2 className="text-sm">نافذة البحث عن الاصناف</h2>
-        </div>
-
-        {/* Search Bar */}
-        <div className="p-2 border-b border-gray-200 bg-gray-50">
-          <div className="flex gap-2">
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearchInputKeyDown}
-              placeholder="ابحث برقم أو اسم الصنف..."
-              className="flex-1 px-2  border border-gray-300 text-sm"
-            />
-            {/* Filters */}
-            <div className="flex gap-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="flex-1 px-2  border border-gray-300 focus:outline-none text-sm"
-              >
-                <option value="">القسم</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={selectedGroup}
-                onChange={(e) => setSelectedGroup(e.target.value)}
-                className="flex-1 px-2  border border-gray-300  focus:outline-none text-sm"
-              >
-                <option value="">المجموعة</option>
-                {groups.map((grp) => (
-                  <option key={grp} value={grp}>
-                    {grp}
-                  </option>
-                ))}
-              </select>
-
-              <button className='flex justify-center items-center gap-2'>
-                <Shapes size={16} /> التصنيفات
-              </button>
-            </div>
-          </div>
-
-        </div>
-        {/* Results */}
-        <div ref={containerRef} className="flex-1 overflow-y-auto px-1">
-          {!hasSearched && (
-            <div className="p-6 text-center text-gray-500">
-              ابحث برقم أو اسم الصنف
-            </div>
-          )}
-
-          {hasSearched && loading && (
-            <div className="p-6 text-center text-gray-500">
-              جاري البحث...
-            </div>
-          )}
-
-          {hasSearched && error && (
-            <div className="p-6 text-center text-red-500">
-              {error}
-            </div>
-          )}
-
-          {hasSearched && !loading && !error && filteredProducts.length === 0 && (
-            <div className="p-6 text-center text-gray-500">
-              لم يتم العثور على نتائج
-            </div>
-          )}
-
-          {hasSearched && !loading && filteredProducts.length > 0 && (
-            <table
-              ref={tableRef}
-              className="w-full text-sm focus:outline-none"
-              onKeyDown={handleTableKeyDown}
-              tabIndex={0}
-            >
-              <thead>
-                <tr className="bg-gray-100 border-b border-gray-200">
-                  <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">رقم الصنف</th>
-                  <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">اسم الصنف</th>
-                  <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">كمية متاحة</th>
-                  <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">سعر البيع</th>
-                  {showCostColumn && (
-                    <th className="px-2 py-1 text-center text-sm font-semibold border border-gray-400">سعر التكلفة</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts
-                  .filter(() => !hideZeroQuantity)
-                  .map((product) => (
-                    <tr
-                      key={product.id}
-                      data-row-id={product.id}
-                      onClick={() => setSelectedRowId(product.id)}
-                      onDoubleClick={() => onSelect(product)}
-                      className={`border-b border-gray-200 cursor-pointer ${selectedRowId === product.id
-                        ? 'bg-sky-800 hover:bg-sky-900 text-white'
-                        : 'hover:bg-blue-100'
-                        }`}
-                    >
-                      <td className="px-2 py-1 text-sm border border-gray-400">{product.product_code}</td>
-                      <td className="px-2 py-1 text-sm border border-gray-400">{product.product_name_ar}</td>
-                      <td className="px-2 py-1 text-sm text-center border border-gray-400">
-                        {'0'}
-                      </td>
-                      <td className="px-2 py-1 text-sm text-center border border-gray-400">
-                        {product.selling_price ? Number(product.selling_price).toFixed(2) : '-'}
-                      </td>
-                      {showCostColumn && (
-                        <td className="px-2 py-1 text-sm text-center border border-gray-400">
-                          {product.cost ? Number(product.cost).toFixed(2) : '-'}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="py-2 px-3 border-t border-gray-500 bg-gray-50 flex justify-between items-center">
-          {/* Right: Checkboxes */}
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showCostColumn}
-                onChange={(e) => setShowCostColumn(e.target.checked)}
-                className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="text-sm">إظهار سعر التكلفة</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hideZeroQuantity}
-                onChange={(e) => setHideZeroQuantity(e.target.checked)}
-                className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="text-sm">اخفاء الكميات الصفرية</span>
-            </label>
-          </div>
-
-          {/* Middle: Accept and Cancel Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                const selectedProduct = filteredProducts.find(p => p.id === selectedRowId);
-                if (selectedProduct) {
-                  onSelect(selectedProduct);
-                }
-              }}
-              className="flex items-center justify-center gap-2 font-bold px-6 py-1 bg-gray-200 border-2 border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={selectedRowId === null}
-            >
-              <Check size={18} /> موافق
-            </button>
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center gap-2 font-bold px-6 py-1 bg-gray-200 border-2 border-gray-300 text-sm"
-            >
-              <X size={16} /> إلغاء الأمر
-            </button>
-          </div>
-
-          {/* Left: Empty Select Fields */}
-          <div className="flex gap-2">
-            <select className="px-2 min-w-36 border border-gray-300 focus:outline-none text-sm bg-white">
-              <option value="">المخزن</option>
-            </select>
-            <select className="px-2 min-w-36 border border-gray-300 focus:outline-none text-sm bg-white">
-              <option value=""></option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
+    <GenericSearchModal
+      isOpen={true}
+      onClose={onClose}
+      onSelect={onSelect}
+      title="نافذة البحث عن الاصناف"
+      searchPlaceholder="ابحث برقم أو اسم الصنف..."
+      onSearch={handleSearch}
+      debounceMs={300}
+      columns={columns}
+      rowKeyField="id"
+      selectFirstByDefault={selectFirstRowByDefault}
+      acceptButtonLabel="موافق"
+      closeButtonLabel="إلغاء الأمر"
+      footerControls={footerControls}
+      noResultsMessage="لم يتم العثور على نتائج"
+      emptyStateMessage="ابحث برقم أو اسم الصنف"
+    />
   );
 }
