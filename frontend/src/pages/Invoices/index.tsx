@@ -1,569 +1,76 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import InvoiceHeader from './components/InvoiceHeader';
 import InvoiceLineItemsTable from './components/InvoiceLineItemsTable';
 import InvoiceSummary from './components/InvoiceSummary';
 import InvoiceSearchModal from './components/InvoiceSearchModal';
-import { Invoice, InvoiceLineItem } from './types';
-import { CirclePoundSterling, ClipboardList, Copy, CornerLeftDown, CornerRightDown, DollarSign, Download, Percent, Plus, Printer, RefreshCcw, Rotate3d, RotateCcw, Save, Search, Sheet, X } from 'lucide-react';
-import ExcelIcon from "../../assets/excel.png"
-import BinderIcon from "../../assets/binder.png"
-import { useTabStore } from '../../store/tabStore';
+import InvoiceActionButtons from './components/InvoiceActionButtons';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../../components/Toast';
 import { useInvoiceStorage } from '../../hooks/useInvoiceStorage';
+import { useInvoiceState } from './hooks/useInvoiceState';
+import { useInvoiceOperations } from './hooks/useInvoiceOperations';
+import { useInvoiceNavigation } from './hooks/useInvoiceNavigation';
 
 export default function SalesInvoice() {
-  const navigate = useNavigate();
-  const { addTab, switchTab } = useTabStore();
   const { invoiceId } = useParams<{ invoiceId?: string }>();
-  const { toasts, removeToast, showError, showSuccess } = useToast();
-  const { saveInvoice: saveToStorage, getNextInvoiceId, getPreviousInvoiceId, getInvoice: getInvoiceFromStorage, getNextDocumentNumber, documentNumberExists, getSortedInvoiceNumbers } = useInvoiceStorage();
+  const { toasts, removeToast, showError } = useToast();
+  const { getSortedInvoiceNumbers } = useInvoiceStorage();
 
+  // Use extracted hooks for state management
+  const {
+    invoice,
+    setInvoice,
+    phase,
+    setPhase,
+    showSearchModal,
+    setShowSearchModal,
+    handleHeaderStateChange,
+    handleInvoiceFieldChange,
+    handleLineItemChange,
+    handleAddLineItem,
+    handleRemoveLineItem,
+    getInitialInvoice,
+  } = useInvoiceState();
 
-  // Memoize the initialization function
-  const initializeLineItems = useMemo(() => {
-    return Array(25)
-      .fill(null)
-      .map((_, index) => ({
-        line_number: index + 1,
-        product_code: '',
-        product_name_ar: '',
-        unit: '',
-        quantity: 0,
-        price: 0,
-        discount_amount: 0,
-        discount_percent: 0,
-        total_discount: 0,
-        net_amount: 0,
-        tax: 0,
-        total: 0,
-        notes: '',
-      }));
-  }, []);
+  // Use extracted hooks for operations
+  const {
+    handleSaveInvoice,
+    handleAddNewInvoice,
+    handleEditInvoice,
+    handleUndo,
+    generateDocumentNumber,
+    isButtonEnabled,
+  } = useInvoiceOperations({
+    invoiceId,
+    invoice,
+    phase,
+    setPhase,
+    setInvoice,
+    getInitialInvoice,
+    getSortedInvoiceNumbers,
+  });
 
-  // Initialize invoice state from storage or create new one
-  const getInitialInvoice = (): Invoice => {
-
-    // Try to load from persistent storage
-    if (invoiceId) {
-      const storedInvoice = getInvoiceFromStorage(invoiceId);
-      if (storedInvoice) {
-        return storedInvoice;
-      }
-    }
-
-    return {
-      invoice_number: '',
-      invoice_date: '',
-      customer_id: undefined,
-      customer_name_ar: '',
-      payment_method: '',
-      company_name: '',
-      warehouse_name: '',
-      tax_number: '',
-      mobile: '',
-      document_number: '',
-      supply_date: '',
-      branch_name: '',
-      account_id: undefined,
-      employee_name: '',
-      address: '',
-      // Header state fields - all empty
-      invoice_seq: '',
-      branch_name_seq: '',
-      payment_method_code: '',
-      payment_method_name: '',
-      company_code: '',
-      warehouse_code: '',
-      document_post_status: '',
-      document_post_name: '',
-      document_type: '',
-      is_suspended: false,
-      branch_code: '',
-      branch: '',
-      account_code: '',
-      account_name: '',
-      employee_code: '',
-      tax_number_1: '',
-      tax_number_2: '',
-      tax_number_3: '',
-      mobile_1: '',
-      mobile_2: '',
-      // Line items
-      line_items: initializeLineItems,
-      subtotal: 0,
-      discount_fixed: 0,
-      discount_percent: 0,
-      tax: 0,
-      total: 0,
-      notes: '',
-    };
-  };
-
-  const [invoice, setInvoice] = useState<Invoice>(() => getInitialInvoice());
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [phase, setPhase] = useState<'viewing' | 'editing'>('viewing');
-
-  // Reset state when invoiceId changes
-  useEffect(() => {
-    setInvoice(getInitialInvoice());
-    setPhase('viewing');
-  }, [invoiceId]);
-
-  const handleHeaderStateChange = useCallback(
-    (fieldName: string, value: any) => {
-      setInvoice((prev) => {
-        const updated = {
-          ...prev,
-          [fieldName]: value,
-        };
-        return updated;
-      });
-    },
-    []
-  );
-
-  const handleInvoiceFieldChange = useCallback(
-    (field: keyof Invoice, value: any) => {
-      setInvoice((prev) => {
-        const updated = {
-          ...prev,
-          [field]: value,
-        };
-        return updated;
-      });
-    },
-    []
-  );
-
-  // Handle Save Invoice
-  const handleSaveInvoice = useCallback(() => {
-    if (!invoiceId) {
-      showError('حدث خطأ: معرف الفاتورة مفقود');
-      return;
-    }
-
-    if (!invoice.document_number) {
-      showError('يجب إدخال رقم الفاتورة');
-      return;
-    }
-
-    const result = saveToStorage(invoiceId, invoice);
-    if (result.success) {
-      showSuccess(`تم حفظ الفاتورة برقم ${result.documentNumber}`);
-      // Update tab title with document number
-      addTab({
-        id: invoiceId,
-        title: `فاتورة #${result.documentNumber}`,
-        path: `/invoices/${invoiceId}`,
-        icon: '🧾',
-      });
-    } else {
-      showError(result.error || 'فشل حفظ الفاتورة');
-    }
-  }, [invoiceId, invoice, saveToStorage, showSuccess, showError, addTab, documentNumberExists]);
-
-  const handleLineItemChange = useCallback(
-    (index: number, field: keyof InvoiceLineItem, value: any) => {
-      setInvoice((prev) => {
-        const items = [...(prev.line_items || [])];
-        items[index] = {
-          ...items[index],
-          [field]: value,
-        };
-
-        // Recalculate totals
-        const subtotal = items.reduce((sum, item) => {
-          return sum + item.quantity * item.price;
-        }, 0);
-
-        const total =
-          subtotal -
-          (prev.discount_fixed || 0) -
-          (subtotal * (prev.discount_percent || 0)) / 100 +
-          (prev.tax || 0);
-
-        const updated = {
-          ...prev,
-          line_items: items,
-          subtotal,
-          total,
-        };
-
-        return updated;
-      });
-    },
-    []
-  );
-
-  const handleAddLineItem = useCallback(() => {
-    setInvoice((prev) => {
-      const updated = {
-        ...prev,
-        line_items: [
-          ...(prev.line_items || []),
-          {
-            line_number: (prev.line_items?.length || 0) + 1,
-            product_code: '',
-            product_name_ar: '',
-            unit: '',
-            quantity: 0,
-            price: 0,
-            discount_amount: 0,
-            discount_percent: 0,
-            total_discount: 0,
-            net_amount: 0,
-            tax: 0,
-            total: 0,
-            notes: '',
-          },
-        ],
-      };
-
-      return updated;
-    });
-  }, []);
-
-  const handleRemoveLineItem = useCallback((index: number) => {
-    setInvoice((prev) => {
-      const items = prev.line_items?.filter((_, i) => i !== index) || [];
-
-      // Recalculate totals
-      const subtotal = items.reduce((sum, item) => {
-        return sum + item.quantity * item.price;
-      }, 0);
-
-      const total =
-        subtotal -
-        (prev.discount_fixed || 0) -
-        (subtotal * (prev.discount_percent || 0)) / 100 +
-        (prev.tax || 0);
-
-      const updated = {
-        ...prev,
-        line_items: items,
-        subtotal,
-        total,
-      };
-
-      return updated;
-    });
-  }, []);
-
-  const handleAddNewInvoice = useCallback(() => {
-    const nextDocNumber = generateDocumentNumber(1);
-
-    // Initialize a new invoice with the next document number
-    const newInvoice: Invoice = {
-      document_number: nextDocNumber,
-      invoice_number: '',
-      invoice_date: new Date().toISOString().split('T')[0], // Today's date
-      customer_id: undefined,
-      customer_name_ar: '',
-      payment_method: '',
-      tax_number: '',
-      mobile: '',
-      supply_date: new Date().toISOString().split('T')[0], // Today's date
-      branch_name: '',
-      account_id: undefined,
-      address: '',
-      // Header state fields
-      invoice_seq: '1',
-      branch_name_seq: 'فرع جدة',
-      payment_method_code: '1',
-      payment_method_name: 'نقداًَ',
-      company_code: '1',
-      company_name: 'شركة العامة',
-      warehouse_code: '1',
-      warehouse_name: 'فرع جدة',
-      document_post_status: '',
-      document_post_name: 'حجز بضاعة',
-      tax_number_1: '',
-      tax_number_2: '',
-      tax_number_3: '',
-      mobile_1: '',
-      mobile_2: '',
-      document_type: 'فاتورة مبيعات',
-      is_suspended: false,
-      branch_code: '1',
-      branch: 'فرع جدة',
-      account_code: '1210010001',
-      account_name: 'الصندوق العام',
-      employee_code: '1',
-      employee_name: 'موظف جدة 1',
-
-      // Line items and totals
-      line_items: initializeLineItems,
-      subtotal: 0,
-      discount_fixed: 0,
-      discount_percent: 0,
-      tax: 0,
-      total: 0,
-      notes: '',
-    };
-
-    // Set the current invoice state to the new initialized invoice
-    setInvoice(newInvoice);
-    setPhase('editing');
-
-  }, [getNextDocumentNumber, initializeLineItems, showSuccess]);
-
-  // Handle Edit Invoice - Enter editing phase for current invoice
-  const handleEditInvoice = useCallback(() => {
-    setPhase('editing');
-  }, []);
-
-  // Handle Undo - Clear invoice state and return to viewing phase
-  const handleUndo = useCallback(() => {
-    setInvoice(getInitialInvoice());
-    setPhase('viewing');
-  }, [initializeLineItems]);
-
-  // Handle Next Invoice Navigation
-  const handleNextInvoice = useCallback(() => {
-    if (!invoice.document_number) {
-      showError('يجب حفظ الفاتورة أولاً');
-      return;
-    }
-
-    const nextInvoiceId = getNextInvoiceId(invoice.document_number);
-    if (!nextInvoiceId) {
-      showError('لا توجد فواتير محفوظة');
-      return;
-    }
-
-    switchTab(nextInvoiceId);
-    navigate(`/invoices/${nextInvoiceId}`);
-  }, [invoice.document_number, getNextInvoiceId, switchTab, navigate, showError]);
-
-  // Handle Previous Invoice Navigation
-  const handlePreviousInvoice = useCallback(() => {
-    if (!invoice.document_number) {
-      showError('يجب حفظ الفاتورة أولاً');
-      return;
-    }
-
-    const prevInvoiceId = getPreviousInvoiceId(invoice.document_number);
-    if (!prevInvoiceId) {
-      showError('لا توجد فواتير محفوظة');
-      return;
-    }
-
-    switchTab(prevInvoiceId);
-    navigate(`/invoices/${prevInvoiceId}`);
-  }, [invoice.document_number, getPreviousInvoiceId, switchTab, navigate, showError]);
-
-  // Handle Invoice Selection from Modal
-  const handleSelectFromSearch = useCallback(
-    (selectedInvoiceId: string) => {
-      setShowSearchModal(false);
-      switchTab(selectedInvoiceId);
-      navigate(`/invoices/${selectedInvoiceId}`);
-    },
-    [switchTab, navigate]
-  );
-
-  // Generate next document number based on invoice sequence
-  const generateDocumentNumber = useCallback((seqNum: number): string => {
-    if (isNaN(seqNum) || seqNum <= 0) {
-      return '';
-    }
-
-    // Get all saved invoice numbers
-    const allInvoiceNumbers = getSortedInvoiceNumbers();
-
-    // Filter for invoices with the same seq prefix
-    const seqPrefix = String(seqNum);
-    const matchingNumbers = allInvoiceNumbers.filter(num => num.startsWith(seqPrefix));
-
-    let nextDocNumber: string;
-    if (matchingNumbers.length === 0) {
-      // No invoices with this seq yet, start with seq + '0001'
-      nextDocNumber = seqPrefix + '0001';
-    } else {
-      // Get the highest number with this seq and increment
-      const highestMatch = matchingNumbers[matchingNumbers.length - 1];
-      const nextNum = parseInt(highestMatch, 10) + 1;
-      nextDocNumber = String(nextNum);
-    }
-
-    return nextDocNumber;
-  }, [getSortedInvoiceNumbers]);
-
-  // Helper to determine if a button is enabled based on phase
-  const isButtonEnabled = (buttonId: string): boolean => {
-    const viewingPhaseButtons = [
-      'add', 'edit', 'delete', 'show', 'next', 'previous', 'print',
-      'import', 'attachments', 'entry', 'convert', 'relations'
-    ];
-    const editingPhaseButtons = ['save', 'undo'];
-
-    if (phase === 'viewing') {
-      return viewingPhaseButtons.includes(buttonId);
-    } else {
-      return editingPhaseButtons.includes(buttonId);
-    }
-  };
+  // Use extracted hooks for navigation
+  const {
+    handleNextInvoice,
+    handlePreviousInvoice,
+    handleSelectFromSearch,
+  } = useInvoiceNavigation({
+    invoice,
+  });
 
   return (
     <div className="flex-1 flex flex-col w-full h-full">
-      {/* Action Buttons */}
-      <div className="flex gap-4 justify-center flex-shrink">
-        <button
-          onClick={handleAddNewInvoice}
-          disabled={!isButtonEnabled('add')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('add')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <Plus size={16} /> اضافة
-        </button>
-        <button
-          onClick={handleEditInvoice}
-          disabled={!isButtonEnabled('edit')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('edit')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <RefreshCcw size={16} /> تعديل
-        </button>
-        <button
-          disabled={!isButtonEnabled('delete')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('delete')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <X size={16} /> حذف
-        </button>
-        <button
-          onClick={() => setShowSearchModal(true)}
-          disabled={!isButtonEnabled('show')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('show')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <Search size={16} /> عرض
-        </button>
-        <button
-          onClick={handleNextInvoice}
-          disabled={!isButtonEnabled('next')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('next')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <CornerRightDown size={16} /> التالي
-        </button>
-        <button
-          onClick={handlePreviousInvoice}
-          disabled={!isButtonEnabled('previous')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('previous')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <CornerLeftDown size={16} /> السابق
-        </button>
-        <button
-          onClick={handleSaveInvoice}
-          disabled={!isButtonEnabled('save')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('save')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <Save size={16} /> حفظ
-        </button>
-        <button
-          disabled={!isButtonEnabled('print')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('print')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <Printer size={16} /> طباعة
-        </button>
-        <button
-          disabled={!isButtonEnabled('import')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('import')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <img src={ExcelIcon} alt="Excel" className="w-4 h-4" /> استيراد
-        </button>
-        <button
-          disabled={!isButtonEnabled('attachments')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('attachments')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <img src={BinderIcon} alt="Binder" className="w-4 h-4" /> مرفقات
-        </button>
-        <button
-          disabled={!isButtonEnabled('entry')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('entry')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <Sheet size={16} /> القيد
-        </button>
-        <button
-          disabled={!isButtonEnabled('convert')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('convert')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <RefreshCcw size={16} /> تحويل
-        </button>
-        <button
-          disabled={!isButtonEnabled('relations')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('relations')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <Rotate3d size={16} /> العلاقات
-        </button>
-        <button
-          onClick={handleUndo}
-          disabled={!isButtonEnabled('undo')}
-          className={`text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled('undo')
-            ? 'hover:bg-gray-200 cursor-pointer'
-            : 'opacity-50 cursor-not-allowed'
-            }`}>
-          <RotateCcw size={16} /> تراجع
-        </button>
-      </div>
-
-      <div className='text-sm text-center bg-sky-800 text-white flex-shrink flex justify-between items-center'>
-        <div className='flex items-center'>
-          <button className="text-sm px-2 py-2 bg-sky-900 font-semibold flex items-center gap-1">
-            <Copy size={16} /> نسخ البيانات
-          </button>
-          <button className="text-sm px-2 py-2 bg-sky-900 font-semibold flex items-center gap-1">
-            <ClipboardList size={16} /> لصق البيانات
-          </button>
-          <button className="text-sm px-2 py-2 bg-sky-900 font-semibold flex items-center gap-1">
-            <ClipboardList size={16} /> مردود مبيعات
-          </button>
-          <button className="text-sm px-2 py-2 bg-sky-900 font-semibold flex items-center gap-1">
-            <ClipboardList size={16} /> ترحيل
-          </button>
-        </div>
-        <span className='font-bold'>
-          فاتورة مبيعات
-        </span>
-        <div className='flex items-center'>
-          <button className="text-sm px-2 py-2 font-semibold bg-sky-900 flex items-center gap-1">
-            <Download size={16} /> حجز البضاعة
-          </button>
-          <button className="text-sm px-2 py-2 font-semibold bg-sky-900 flex items-center gap-1">
-            <CirclePoundSterling size={16} />سند القبض
-          </button>
-          <button className="text-sm px-2 py-2 font-semibold bg-sky-900 flex items-center gap-1">
-            <Percent size={16} />حسابة الخصم
-          </button>
-          <button className="text-sm px-2 py-2 font-semibold bg-sky-900 flex items-center gap-1">
-            <DollarSign size={16} />حاسبة المبلغ
-          </button>
-        </div>
-      </div>
+      <InvoiceActionButtons
+        isButtonEnabled={isButtonEnabled}
+        onAddNewInvoice={handleAddNewInvoice}
+        onEditInvoice={handleEditInvoice}
+        onShowSearch={() => setShowSearchModal(true)}
+        onNextInvoice={handleNextInvoice}
+        onPreviousInvoice={handlePreviousInvoice}
+        onSaveInvoice={handleSaveInvoice}
+        onUndo={handleUndo}
+      />
 
       {/* Invoice Header */}
       <InvoiceHeader
