@@ -135,6 +135,13 @@ export const useInvoiceStorage = () => {
     const invoices = getInvoicesFromStorage();
     const metadata = getMetadata();
 
+    const existing = invoices.get(invoiceId);
+
+    // remove old index if document_number changed
+    if (existing?.document_number && existing.document_number !== invoice.document_number) {
+      delete metadata.invoice_index[existing.document_number];
+    }
+
     // Update invoice with document_number, saved_at, and status
     const updatedInvoice: Invoice = {
       ...invoice,
@@ -147,7 +154,7 @@ export const useInvoiceStorage = () => {
     saveInvoicesToStorage(invoices);
 
     // Update metadata
-    metadata.invoice_index[invoice.document_number] = invoiceId;
+    metadata.invoice_index[updatedInvoice.document_number] = invoiceId;
     metadata.last_accessed_invoice_id = invoiceId;
     saveMetadata(metadata);
 
@@ -186,7 +193,12 @@ export const useInvoiceStorage = () => {
   };
 
   // Get next invoice ID based on current document number
-  const getNextInvoiceId = (currentDocNumber?: string): string | null => {
+  const getNextInvoiceId = (currentInvoiceId?: string): string | null => {
+    if (!currentInvoiceId) return null;
+
+    const invoices = getInvoicesFromStorage();
+    const current = invoices.get(currentInvoiceId);
+    const currentDocNumber = current?.document_number;
     if (!currentDocNumber) return null;
 
     const docNumbers = getSortedDocumentNumbers();
@@ -195,7 +207,9 @@ export const useInvoiceStorage = () => {
     const currentIndex = docNumbers.indexOf(currentDocNumber);
     if (currentIndex === -1) return null;
 
-    const nextIndex = (currentIndex + 1) % docNumbers.length;
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= docNumbers.length) return null;
+
     const nextDocNumber = docNumbers[nextIndex];
 
     const metadata = getMetadata();
@@ -203,7 +217,12 @@ export const useInvoiceStorage = () => {
   };
 
   // Get previous invoice ID based on current document number
-  const getPreviousInvoiceId = (currentDocNumber?: string): string | null => {
+  const getPreviousInvoiceId = (currentInvoiceId?: string): string | null => {
+    if (!currentInvoiceId) return null;
+
+    const invoices = getInvoicesFromStorage();
+    const current = invoices.get(currentInvoiceId);
+    const currentDocNumber = current?.document_number;
     if (!currentDocNumber) return null;
 
     const docNumbers = getSortedDocumentNumbers();
@@ -212,7 +231,10 @@ export const useInvoiceStorage = () => {
     const currentIndex = docNumbers.indexOf(currentDocNumber);
     if (currentIndex === -1) return null;
 
-    const prevIndex = (currentIndex - 1 + docNumbers.length) % docNumbers.length;
+    // no wrap-around: stop at first
+    const prevIndex = currentIndex - 1;
+    if (prevIndex < 0) return null;
+
     const prevDocNumber = docNumbers[prevIndex];
 
     const metadata = getMetadata();
@@ -337,6 +359,32 @@ export const useInvoiceStorage = () => {
     return String(nextNum);
   };
 
+  const createDraftInvoice = (invoice: Invoice): { invoiceId: string } => {
+    const invoices = getInvoicesFromStorage();
+    const metadata = getMetadata();
+
+    // generate internal ID
+    const invoiceId = `invoice-${Date.now()}`;
+
+    const draft: Invoice = {
+      ...invoice,
+      status: 'draft',
+      saved_at: new Date().toISOString(),
+    };
+
+    invoices.set(invoiceId, draft);
+    saveInvoicesToStorage(invoices);
+
+    // Optional: index by document_number if you want drafts visible there too
+    if (draft.document_number) {
+      metadata.invoice_index[draft.document_number] = invoiceId;
+    }
+    metadata.last_accessed_invoice_id = invoiceId;
+    saveMetadata(metadata);
+
+    return { invoiceId };
+  };
+
   return {
     saveInvoice,
     getInvoice,
@@ -350,5 +398,6 @@ export const useInvoiceStorage = () => {
     getMetadata: getMetadataInfo,
     getNextDocumentNumber,
     documentNumberExists,
+    createDraftInvoice,
   };
 };

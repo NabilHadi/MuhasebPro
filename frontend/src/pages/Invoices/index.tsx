@@ -30,7 +30,7 @@ export default function SalesInvoice() {
     handleAddLineItem,
     handleRemoveLineItem,
     getInitialInvoice,
-  } = useInvoiceState();
+  } = useInvoiceState(invoiceId);
 
   // Use extracted hooks for operations
   const {
@@ -56,7 +56,7 @@ export default function SalesInvoice() {
     handlePreviousInvoice,
     handleSelectFromSearch,
   } = useInvoiceNavigation({
-    invoice,
+    invoiceId,
   });
 
   return (

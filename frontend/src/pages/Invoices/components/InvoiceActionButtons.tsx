@@ -24,10 +24,9 @@ export default function InvoiceActionButtons({
   onUndo,
 }: InvoiceActionButtonsProps) {
   const buttonClass = (buttonId: string) =>
-    `text-sm px-1 py-1 font-semibold flex items-center gap-1 ${
-      isButtonEnabled(buttonId)
-        ? 'hover:bg-gray-200 cursor-pointer'
-        : 'opacity-50 cursor-not-allowed'
+    `text-sm px-1 py-1 font-semibold flex items-center gap-1 ${isButtonEnabled(buttonId)
+      ? 'hover:bg-gray-200 cursor-pointer'
+      : 'opacity-50 cursor-not-allowed'
     }`;
 
   return (

@@ -1,10 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Invoice, InvoiceLineItem } from '../types';
 import { useInvoiceStorage } from '../../../hooks/useInvoiceStorage';
-import { useParams } from 'react-router-dom';
 
-export function useInvoiceState() {
-  const { invoiceId } = useParams<{ invoiceId?: string }>();
+export function useInvoiceState(invoiceId?: string) {
   const { getInvoice: getInvoiceFromStorage } = useInvoiceStorage();
 
   // Memoize the initialization function
@@ -76,7 +74,7 @@ export function useInvoiceState() {
       mobile_1: '',
       mobile_2: '',
       // Line items
-      line_items: initializeLineItems,
+      line_items: initializeLineItems.map(item => ({ ...item })), // clone,
       subtotal: 0,
       discount_fixed: 0,
       discount_percent: 0,
@@ -84,16 +82,24 @@ export function useInvoiceState() {
       total: 0,
       notes: '',
     };
-  }, [invoiceId, getInvoiceFromStorage, initializeLineItems]);
+  }, [invoiceId, initializeLineItems]);
 
   const [invoice, setInvoice] = useState<Invoice>(() => getInitialInvoice());
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [phase, setPhase] = useState<'viewing' | 'editing'>('viewing');
+  const [phase, setPhase] = useState<'viewing' | 'editing'>(() =>
+    invoiceId ? 'viewing' : 'editing');
 
   // Reset state when invoiceId changes
   useEffect(() => {
-    setInvoice(getInitialInvoice());
-    setPhase('viewing');
+    const intital = getInitialInvoice()
+    setInvoice(intital);
+
+    // If we didn't find an invoice in storage (i.e., new), start in editing
+    if (invoiceId) {
+      setPhase('viewing');
+    } else {
+      setPhase('editing');
+    }
   }, [invoiceId, getInitialInvoice]);
 
   const handleHeaderStateChange = useCallback(

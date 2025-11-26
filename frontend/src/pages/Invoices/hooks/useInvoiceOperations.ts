@@ -3,6 +3,7 @@ import { useTabStore } from '../../../store/tabStore';
 import { useInvoiceStorage } from '../../../hooks/useInvoiceStorage';
 import useToast from '../../../hooks/useToast';
 import { Invoice } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface UseInvoiceOperationsProps {
   invoiceId?: string;
@@ -26,32 +27,41 @@ export function useInvoiceOperations({
   const { addTab } = useTabStore();
   const { saveInvoice: saveToStorage } = useInvoiceStorage();
   const { showError, showSuccess } = useToast();
+  const navigate = useNavigate();
+
+  // Simple ID generator for new invoices
+  const generateInvoiceId = () => `invoice-${Date.now()}`;
 
   const handleSaveInvoice = useCallback(() => {
-    if (!invoiceId) {
-      showError('حدث خطأ: معرف الفاتورة مفقود');
-      return;
-    }
-
     if (!invoice.document_number) {
       showError('يجب إدخال رقم الفاتورة');
       return;
     }
 
-    const result = saveToStorage(invoiceId, invoice);
+    const effectiveId = invoiceId ?? generateInvoiceId();
+
+    const result = saveToStorage(effectiveId, invoice);
     if (result.success) {
       showSuccess(`تم حفظ الفاتورة برقم ${result.documentNumber}`);
+
       // Update tab title with document number
       addTab({
-        id: invoiceId,
+        id: effectiveId,
         title: `فاتورة #${result.documentNumber}`,
-        path: `/invoices/${invoiceId}`,
+        path: `/invoices/${effectiveId}`,
         icon: '🧾',
       });
+
+      // If this was a brand-new invoice (/invoices), move URL to /invoices/:id
+      if (!invoiceId) {
+        navigate(`/invoices/${effectiveId}`);
+      }
+
+      setPhase('viewing');
     } else {
       showError(result.error || 'فشل حفظ الفاتورة');
     }
-  }, [invoiceId, invoice, saveToStorage, showSuccess, showError, addTab]);
+  }, [invoiceId, invoice, saveToStorage, showSuccess, showError, addTab, navigate, setPhase]);
 
   const generateDocumentNumber = useCallback(
     (seqNum: number): string => {
@@ -87,20 +97,25 @@ export function useInvoiceOperations({
   const handleAddNewInvoice = useCallback(() => {
     const nextDocNumber = generateDocumentNumber(1);
 
+    const base = getInitialInvoice();
+
     // Initialize a new invoice with the next document number
     const newInvoice: Invoice = {
+      ...base,
       document_number: nextDocNumber,
       invoice_number: '',
       invoice_date: new Date().toISOString().split('T')[0],
+      supply_date: new Date().toISOString().split('T')[0],
+
       customer_id: undefined,
       customer_name_ar: '',
       payment_method: '',
       tax_number: '',
       mobile: '',
-      supply_date: new Date().toISOString().split('T')[0],
       branch_name: '',
       account_id: undefined,
       address: '',
+
       // Header state fields
       invoice_seq: '1',
       branch_name_seq: 'فرع جدة',
@@ -125,8 +140,25 @@ export function useInvoiceOperations({
       account_name: 'الصندوق العام',
       employee_code: '1',
       employee_name: 'موظف جدة 1',
+
       // Line items and totals
-      line_items: getInitialInvoice().line_items,
+      line_items: (base.line_items || []).map((item, idx) => ({
+        ...item,
+        line_number: idx + 1,
+        product_code: '',
+        product_name_ar: '',
+        unit: '',
+        quantity: 0,
+        price: 0,
+        discount_amount: 0,
+        discount_percent: 0,
+        total_discount: 0,
+        net_amount: 0,
+        tax: 0,
+        total: 0,
+        notes: '',
+      })),
+
       subtotal: 0,
       discount_fixed: 0,
       discount_percent: 0,
